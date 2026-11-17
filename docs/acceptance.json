@@ -78,8 +78,8 @@
       "phase": 1,
       "description": "A teatest flow types a task and duration, starts it, advances a fake clock, sees the countdown change, completes it with 'e', sees a motivational message and the Start screen, and the stored task is completed. The built-in list holds at least 20 distinct messages (R-23).",
       "verify": "go test ./internal/tui/ -count=1 -run 'Flow' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test ./internal/tui/ -count=1 -run 'Flow' -v PASS: teatest types task, starts, fake clock +10s and +5m shows 24:50 then 19:50 via the program's own tick, e shows message, any key to Start, row completed; 22 distinct messages (TestMessagesDistinct) (artifacts/phase-1/p1-05-flow.txt)"
     },
     {
       "id": "P1-06",

@@ -38,7 +38,7 @@ Go toolchain (Makefile, lint, GoReleaser, CI on macOS and Ubuntu). Detail:
         completes with a motivational message, then Start (R-19, R-23 with the full list).
   - [x] Resume an active task on launch (R-05, without the alert); `q`/`ctrl+c` (R-06);
         key-hint bar (R-07).
-  - [ ] A `teatest` test that types a task, starts it, advances a fake clock, completes
+  - [x] A `teatest` test that types a task, starts it, advances a fake clock, completes
         it, and checks the stored row; and one that quits and relaunches mid-task.
   - [ ] CI green on both OSes for a commit the human pushed with `/yeet` (P1-07).
 - **Exit criteria:** P1-01 to P1-07.
