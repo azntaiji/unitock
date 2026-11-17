@@ -1,0 +1,29 @@
+# Copy to .github/workflows/ci.yml
+# Action versions were current majors in late 2026; bump them when newer majors exist.
+# Lint and tool versions are pinned in the Makefile, so CI and local runs match.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Setup
+        run: go mod download
+      - name: Check (build, vet, lint, race tests)
+        run: make check

@@ -1,0 +1,35 @@
+# Release kit (optional). Copy to the repository root and fill the placeholders.
+# `make release-check` validates it and builds a snapshot into dist/; the release
+# workflow publishes on every vX.Y.Z tag. Release notes come from CHANGELOG.md.
+version: 2
+
+project_name: <name>
+
+builds:
+  - main: ./cmd/<name>
+    binary: <name>
+    env:
+      - CGO_ENABLED=0 # static binaries; cross-compiling needs no C toolchain
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.CommitDate}}
+    mod_timestamp: "{{.CommitTimestamp}}"
+
+archives:
+  - formats: [tar.gz]
+    name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+    files: [README.md, LICENSE*, CHANGELOG.md]
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  disable: true
+
+release:
+  github:
+    owner: <owner>
+    name: <repo>
+  prerelease: auto

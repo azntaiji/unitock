@@ -1,0 +1,45 @@
+{
+  "_rules": "Agents may change only `passes` and `evidence`. Set `passes` to true only after running `verify` and seeing it succeed; put the command and result in `evidence`. Adding, removing, or rewording criteria needs human approval.",
+  "criteria": [
+    {
+      "id": "P0-01",
+      "phase": 0,
+      "description": "docs/SPEC.md is complete: every section is filled and no angle-bracket placeholders remain.",
+      "verify": "Read docs/SPEC.md; search it for '<' placeholders.",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P0-02",
+      "phase": 0,
+      "description": "Every command in the AGENTS.md Commands table runs successfully on a clean checkout.",
+      "verify": "Run each command in order and record the exit codes.",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P0-03",
+      "phase": 0,
+      "description": "docs/PLAN.md defines every phase with tasks, exit criteria, and a named approver, and docs/acceptance.json has criteria for each phase.",
+      "verify": "Compare the phase list in docs/PLAN.md with the phase numbers in this file.",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P0-04",
+      "phase": 0,
+      "description": "README.md and the Project section of AGENTS.md contain no placeholders.",
+      "verify": "Search both files for '<' placeholders.",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P0-05",
+      "phase": 0,
+      "description": "The scaffold check passes with no errors and CI is green.",
+      "verify": "python3 scripts/check_scaffold.py; check the latest CI run.",
+      "passes": false,
+      "evidence": ""
+    }
+  ]
+}

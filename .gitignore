@@ -1,0 +1,16 @@
+# Raw command, test, and validation output. Evidence summaries live in STATUS.md and
+# docs/archive/. Remove the next two lines if raw output must be kept as audit evidence.
+artifacts/*
+!artifacts/.gitkeep
+
+# Secrets. Agents commit with `git add -A`, so anything not ignored gets committed.
+.env
+.env.*
+!.env.example
+
+# OS and editor
+.DS_Store
+.idea/
+.vscode/
+
+# Add the lines from profiles/<lang>/PROFILE.md below.

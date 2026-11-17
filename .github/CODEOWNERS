@@ -1,0 +1,10 @@
+# Uncomment and set the approver handles, then enable "Require review from Code Owners"
+# in the branch protection rule for the default branch. This is what makes gate
+# approvals human-only at the repository level; the scaffold check alone cannot tell who
+# wrote a line.
+
+# /GATES.md                 @<approver-handle>
+# /docs/acceptance.json     @<approver-handle>
+# /.scaffold.json           @<approver-handle>
+# /scripts/                 @<approver-handle>
+# /.github/                 @<approver-handle>

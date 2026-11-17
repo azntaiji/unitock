@@ -1,0 +1,30 @@
+{
+  "scaffold_version": "1.6.0",
+  "profiles": [],
+  "limits": {
+    "agents_md_max_lines": 150,
+    "agents_md_max_bytes": 24000,
+    "claude_md_max_lines": 40,
+    "status_md_max_lines": 80
+  },
+  "root_markdown_allowlist": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "README.md",
+    "SCAFFOLD.md",
+    "STATUS.md",
+    "GATES.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "LICENSE.md",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md"
+  ],
+  "sprawl_scan_dirs": ["docs"],
+  "sprawl_exempt_dirs": ["docs/archive"],
+  "sprawl_allow": [],
+  "version_mirrors": [],
+  "readme_version_badge": true,
+  "readme_phase_badge": true,
+  "check_tags": true
+}
