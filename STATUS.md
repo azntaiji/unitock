@@ -9,8 +9,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Minimal Active screen: `MM:SS` countdown ticking each second; `e` completes with a
-   motivational message (≥20, R-23), then Start. Replaces `internal/tui/active.go` stub.
+1. Resume an active task on launch (R-05, no alert); `q`/`ctrl+c` (R-06); key hints (R-07).
 2. Then the remaining Phase 1 tasks in docs/PLAN.md, in order.
 
 ## Blockers
@@ -26,7 +25,8 @@ None. D-02 to D-08 Approved 2026-11-17; D-09 to D-14 Proposed (later phases).
 | P1-03 | `go test ./internal/store/ -count=1 -v` | PASS | artifacts/phase-1/p1-03-store.txt |
 | cmd | `go test ./cmd/unitock/ -count=1 -v` | PASS | artifacts/phase-1/p1-cmd.txt |
 | P1-04 | `go test ./internal/tui/ -count=1 -run 'Start' -v` | PASS | artifacts/phase-1/p1-04-start.txt |
-| check | `make check` | PASS, 0 lint issues | artifacts/phase-1/p1-04-make-check.txt |
+| active | `go test ./internal/tui/ -count=1 -v` | PASS | artifacts/phase-1/p1-active.txt |
+| check | `make check` | PASS, 0 lint issues | artifacts/phase-1/p1-active-make-check.txt |
 
 ## Gate request
 
@@ -48,6 +48,10 @@ None.
   button is not handled or hinted until the Stats screen exists (R-07). Tests drive
   `Model.Update` directly and run commands only for enter/q/ctrl+c, because blink ticks sleep.
   teatest v2 has no tags: pin `v2.0.0-20261101151554-27ecf3e4d454` in P1-05.
+- Active task done: countdown from the clock on each `tickMsg` (1 s, generation-tagged so
+  old loops die); remaining rounds up, overtime shows plain `+MM:SS` (colours wait for
+  D-09). `e` stores completion, then the Done screen shows `messages[Deps.Rand(n)]` (22
+  messages); any key opens Start. Big digits, p/d/n/s: Phase 2.
 - Note: `unitock.db` is created 0644 by SQLite (inside the 0700 dir); spec only requires dir mode.
 - Commit pushes from agents happen only through `yeet` at gate close. P1-07 needs CI green
   on a pushed commit, so ask the human to `/yeet` before requesting G1.

@@ -14,4 +14,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `--version` flag printing `unitock <version> (<commit>, <date>)`.
 - Start screen: task name and duration inputs and a Start task button, with tab/↑/↓
   focus, inline validation errors, and a key-hint bar.
+- Active screen: task name with an `MM:SS` (or `H:MM:SS`) countdown updated every
+  second, `+MM:SS` once over the estimate; `e` completes the task and shows a
+  motivational message.
 - Exit status 1 on startup errors (bad flag, unusable data directory or database).

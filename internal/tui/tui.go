@@ -6,6 +6,7 @@ package tui
 import (
 	"context"
 	"log/slog"
+	"math/rand/v2"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -27,6 +28,8 @@ type Deps struct {
 	Store Store
 	Clock task.Clock
 	Log   *slog.Logger
+	// Rand returns a number in [0, n). Defaults to math/rand/v2.IntN.
+	Rand func(n int) int
 }
 
 type screen int
@@ -34,6 +37,7 @@ type screen int
 const (
 	screenStart screen = iota
 	screenActive
+	screenDone
 )
 
 // Model is the root Bubble Tea model.
@@ -42,6 +46,8 @@ type Model struct {
 	screen screen
 	start  startModel
 	active activeModel
+	done   doneModel
+	gen    int // tick loop generation; bumped for each Active screen
 	width  int
 	height int
 }
@@ -53,6 +59,9 @@ func New(d Deps) Model {
 	}
 	if d.Log == nil {
 		d.Log = slog.New(slog.DiscardHandler)
+	}
+	if d.Rand == nil {
+		d.Rand = rand.IntN
 	}
 	return Model{deps: d, screen: screenStart, start: newStartModel()}
 }
@@ -72,9 +81,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case taskStartedMsg:
 		m.deps.Log.Info("task started", "id", msg.task.ID)
-		m.screen = screenActive
-		m.active = newActiveModel(msg.task)
 		m.start = newStartModel()
+		return m.openActive(msg.task)
+	case taskCompletedMsg:
+		m.deps.Log.Info("task completed", "id", msg.task.ID)
+		m.screen = screenDone
+		m.done = doneModel{task: msg.task, message: messages[m.deps.Rand(len(messages))]}
 		return m, nil
 	}
 
@@ -83,9 +95,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case screenStart:
 		m.start, cmd = m.start.update(msg, m.deps)
 	case screenActive:
-		m.active, cmd = m.active.update(msg)
+		m.active, cmd = m.active.update(msg, m.deps)
+	case screenDone:
+		if _, ok := msg.(tea.KeyPressMsg); ok { // any key opens Start (R-23)
+			m.screen = screenStart
+			m.start = newStartModel()
+			cmd = m.start.focusCmd()
+		}
 	}
 	return m, cmd
+}
+
+// openActive shows t on the Active screen and starts its tick loop.
+func (m Model) openActive(t task.Task) (Model, tea.Cmd) {
+	m.gen++
+	m.screen = screenActive
+	m.active = newActiveModel(t, m.gen)
+	return m, m.active.tick()
 }
 
 // View implements tea.Model.
@@ -95,7 +121,9 @@ func (m Model) View() tea.View {
 	case screenStart:
 		body, hints = m.start.view(), m.start.hints()
 	case screenActive:
-		body, hints = m.active.view(), m.active.hints()
+		body, hints = m.active.view(m.deps.Clock.Now()), m.active.hints()
+	case screenDone:
+		body, hints = m.done.view(), m.done.hints()
 	}
 	v := tea.NewView(lipgloss.JoinVertical(lipgloss.Left, body, "", renderHints(hints)))
 	v.AltScreen = true
