@@ -29,7 +29,7 @@ Go toolchain (Makefile, lint, GoReleaser, CI on macOS and Ubuntu). Detail:
   - [x] `internal/duration`: parser per D-08 with table tests and a fuzz test (R-10, R-11).
   - [x] `internal/task`: pure timer maths (estimate, elapsed, remaining, overtime) from
         stored timestamps and an injected clock (R-04, D-07).
-  - [ ] `internal/store`: SQLite store with embedded migrations, one-active-task index,
+  - [x] `internal/store`: SQLite store with embedded migrations, one-active-task index,
         create/get-active/complete operations; tests against `t.TempDir()` (R-02, R-03).
   - [ ] `cmd/unitock`: `--data-dir` (XDG default) and `--version` flags, exit codes,
         `unitock.log` (Interfaces).

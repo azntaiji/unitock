@@ -62,8 +62,8 @@
       "phase": 1,
       "description": "The SQLite store creates the schema by migration in a fresh data directory, persists a started task, rejects a second active task, and marks a task completed (R-02, R-03).",
       "verify": "go test ./internal/store/ -count=1 -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test ./internal/store/ -count=1 -v PASS: fresh-dir migration, persisted row, second active rejected (ErrActiveExists), Complete (artifacts/phase-1/p1-03-store.txt)"
     },
     {
       "id": "P1-04",
