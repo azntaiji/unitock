@@ -6,8 +6,17 @@ read when the task calls for them.
 
 ## Project
 
-<PROJECT_SUMMARY: two or three sentences on what this is, who uses it, and what "done"
-means. Written in Phase 0.>
+unitock: a single-task terminal time tracker (Go, Bubble Tea, SQLite) for one person on
+macOS and Ubuntu. Start a task with a natural-language duration, watch a countdown, get a
+looping alarm at zero, and review actual vs estimated time. "Done" is 1.0.0 with every
+`docs/SPEC.md` requirement met and the end-to-end verification passing on both OSes.
+
+Packages (keep current):
+
+- `cmd/unitock`: main; flags, wiring, exit codes. Version via `-ldflags`.
+
+Never run the binary against the real data dir; always pass `--data-dir` with a
+scratch or `t.TempDir()` path.
 
 ## Commands
 
@@ -15,13 +24,15 @@ Copied from `profiles/<lang>/PROFILE.md` in Phase 0 and verified by running each
 
 | Task | Command |
 |---|---|
-| Setup | `<fill>` |
-| Format | `<fill>` |
-| Lint | `<fill>` |
-| Typecheck | `<fill>` |
-| Test (all) | `<fill>` |
-| Test (single) | `<fill>` |
-| Build | `<fill>` |
+| Setup | `go mod download` |
+| Format | `make fmt` |
+| Lint | `make lint` |
+| Typecheck | `make vet` |
+| Test (all) | `make test` |
+| Test (single) | `go test ./path/to/pkg -run '^TestName$'` |
+| Build | `make build` |
+| Check (all) | `make check` (must pass before a task is done) |
+| Release preflight | `make release-check` (gates that propose a version) |
 | Scaffold check | `python3 scripts/check_scaffold.py` |
 
 ## Start of every session

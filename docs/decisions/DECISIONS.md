@@ -37,12 +37,15 @@ backup.
 ---
 
 ## D-01 — Language profile
-**Status:** Open
-**Decision:** <python | js-ts | go | other>, with the toolchain in its PROFILE.md.
+**Status:** Settled
+**Decision:** Go (`profiles/go/`), toolchain and commands per its PROFILE.md. Module path
+`github.com/azntaiji/unitock`; binary `unitock`.
+**Why:** specified by the human in the app idea (Go + Bubble Tea, macOS and Ubuntu).
 
 ## D-02 — License and repository visibility
-**Status:** Open
-**Why it matters:** sets the license badge and whether Shields can read CI status.
+**Status:** Settled
+**Decision:** MIT license; public GitHub repository. (Human's answer in the Phase 0
+interview, 2026-11-17; RFI-01.)
 
 ## D-03 — Branching model
 **Status:** Proposed
@@ -50,3 +53,111 @@ backup.
 boundaries; the remote receives a phase when `yeet` runs at gate close.
 **Alternatives:** one branch per phase, merged by pull request at gate close.
 **Consequences:** work in progress exists only on the working machine until gate close. Run `/yeet` mid-phase for a backup; releases are still marked only by tags.
+
+## D-04 — TUI stack
+**Status:** Proposed
+**Decision:** Bubble Tea v2, Bubbles v2 (textinput, progress), and Lip Gloss v2 from
+Charm, latest stable at Phase 1 start. TUI flows tested with Charm's `teatest`, views
+with golden files. Big digits are a small in-repo glyph table, not a dependency.
+**Why:** the human named Bubble Tea; v2 is the current major line.
+**Alternatives:** Bubble Tea v1 (older API, maintenance only).
+**Consequences:** `teatest` lives in `x/exp` and may change; pin its version.
+
+## D-05 — SQLite driver
+**Status:** Proposed
+**Decision:** `modernc.org/sqlite` (pure Go) via `database/sql`.
+**Why:** the release kit builds with `CGO_ENABLED=0` for four OS/arch targets (D-06).
+**Alternatives:** `mattn/go-sqlite3` (cgo; needs a C cross-toolchain per target);
+`ncruces/go-sqlite3` (Wasm-based, pure Go, younger).
+**Consequences:** larger binary (~+8 MB) and somewhat slower queries; irrelevant at this
+data size.
+
+## D-06 — Release kit
+**Status:** Settled
+**Decision:** adopt the Go profile's GoReleaser release kit. Each approved `vX.Y.Z` tag
+publishes darwin/linux × amd64/arm64 binaries to GitHub Releases; `go install
+github.com/azntaiji/unitock/cmd/unitock@latest` also works. `make release-check` is a
+required check at every gate that proposes a version. (Human's answer in the Phase 0
+interview, 2026-11-17.)
+
+## D-07 — Data and time model
+**Status:** Proposed
+**Decision:** times stored as UTC Unix milliseconds. Tables:
+`tasks(id, name, status, started_at, ended_at, original_estimate_ms)`,
+`extensions(id, task_id, at, added_ms)`, `pauses(id, task_id, started_at, ended_at)`.
+A partial unique index allows one `active` task. Estimate = original + sum(extensions);
+elapsed = (ended_at or now) − started_at − paused time (an open pause counts to now).
+Nothing is ticked or accumulated in memory; all state is derived from stored timestamps
+and an injected clock. Migrations are numbered SQL files embedded in the binary, applied
+in a transaction at startup, tracked with `PRAGMA user_version`. WAL mode.
+**Why:** makes R-04/R-05 (resume, sleep, crash) fall out of the model, and keeps timer
+maths pure and testable.
+**Alternatives:** storing a running elapsed counter (drifts, loses time on crash).
+**Consequences:** changing the clock on the machine changes elapsed time; accepted.
+
+## D-08 — Duration grammar
+**Status:** Proposed
+**Decision:** case-insensitive, surrounding spaces ignored. Accepted forms:
+(a) one or more `<number><unit>` terms with optional spaces between them, number
+integer or decimal, units `h|hr|hrs|hour|hours`, `m|min|mins|minute|minutes`,
+`s|sec|secs|second|seconds`, each unit at most once, in h-m-s order;
+(b) a bare number = minutes; (c) `H:MM` (or `H:MM:SS`). Result rounded to the nearest
+second; valid range 1 minute to 24 hours inclusive. Fuzz-tested.
+**Alternatives:** Go's `time.ParseDuration` only (rejects "45 minutes", "1hr").
+
+## D-09 — Timer visuals and colour thresholds
+**Status:** Proposed
+**Decision:** large 5-row block digits (plain bold below 60 columns of free width), a
+horizontal progress bar with elapsed percentage, and a status badge. Colour by remaining
+fraction of the estimate: > 50% neutral; ≤ 50% info (blue); ≤ 25% warning (amber);
+≤ 10% and overtime error (red). Paused dims the digits. Under `NO_COLOR` a text badge
+names the band. Colours use Lip Gloss adaptive light/dark pairs.
+**Alternatives:** a ring drawn with braille characters (harder to read at small sizes).
+
+## D-10 — Extending in overtime
+**Status:** Proposed
+**Decision:** when Extend is chosen from the time-up alert, the estimate grows by the
+overtime so far plus the entered amount, so remaining equals the entered amount from now.
+Extending before time is up (`d`) adds exactly the entered amount. Each extension is
+stored as its own row with the amount actually added.
+**Why:** "give me 10 more minutes" should mean 10 minutes from now, not 10 minus however
+long the alarm rang.
+**Alternatives:** always add only the entered amount (alert can re-fire at once).
+**Consequences:** time spent ignoring the alarm counts toward the estimate in stats.
+
+## D-11 — Stats periods and buckets
+**Status:** Proposed
+**Decision:** all dates local. 7 days = today and the 6 days before, 7 daily buckets.
+30 days = today and the 29 days before, buckets of 7 days starting at the period's first
+day (the last bucket has 2 days), labelled by bucket start. 3 months = from the 1st of
+the month two months ago through today, one bucket per calendar month (current month
+partial). Previous period = the same-length window immediately before (for 3 months, the
+three preceding calendar months). Average per day = completed ÷ days in the period
+(elapsed days for 3 months). Week/month boundaries follow the local time zone, with DST
+handled by calendar dates, not 24-hour steps.
+**Alternatives:** calendar weeks for 30 days; a rolling 90 days for 3 months (would give
+4 partial month bars).
+
+## D-12 — Single-instance lock
+**Status:** Proposed
+**Decision:** an exclusive advisory `flock` on `unitock.lock` in the data directory, held
+for the life of the process (released by the OS on crash).
+**Alternatives:** PID file (stale after crashes); rely on SQLite locking (two UIs would
+fight over the active task).
+
+## D-13 — Alarm sound and notifications
+**Status:** Proposed
+**Decision:** the chime is a short WAV synthesised by the app's own code (no third-party
+audio asset, no licensing question), written once to the data directory. It loops by
+re-running the first available player: `afplay` on macOS; `paplay`, then `aplay` on
+Linux; stopped by killing the process. Fallback: terminal bell every 2 s. Notification:
+`osascript -e 'display notification …'` on macOS (task name passed as an argument via
+`on run argv`, never interpolated), `notify-send` on Linux. Failures are logged, never
+fatal. Behind an interface so tests use a fake.
+**Alternatives:** an audio library such as `oto` (needs cgo on Linux, breaks D-05/D-06).
+
+## D-14 — Export format
+**Status:** Proposed
+**Decision:** JSON schema version 1 exactly as in `docs/SPEC.md` Interfaces. Fields are
+only ever added in later 1.x versions; renames or removals bump `schema_version` and are
+breaking changes.

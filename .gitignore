@@ -17,3 +17,10 @@ artifacts/*
 
 # Internal
 APP-IDEA.md
+# Go (profiles/go/PROFILE.md)
+/bin/
+/dist/
+*.test
+*.out
+coverage.*
+*.code-workspace

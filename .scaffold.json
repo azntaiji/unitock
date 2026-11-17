@@ -1,6 +1,6 @@
 {
   "scaffold_version": "1.6.0",
-  "profiles": [],
+  "profiles": ["go"],
   "limits": {
     "agents_md_max_lines": 150,
     "agents_md_max_bytes": 24000,

@@ -40,6 +40,190 @@
       "verify": "python3 scripts/check_scaffold.py; check the latest CI run.",
       "passes": false,
       "evidence": ""
+    },
+    {
+      "id": "P1-01",
+      "phase": 1,
+      "description": "The duration parser accepts every example in SPEC R-10, rejects values outside 1 minute to 24 hours and malformed input per R-11, and its fuzz test runs 30 s without failure.",
+      "verify": "go test ./internal/duration/ -count=1 && go test ./internal/duration/ -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P1-02",
+      "phase": 1,
+      "description": "Elapsed, remaining, and overtime are computed from stored timestamps and an injected clock; tests cover a task started in the past and time passing while the app was closed (R-04).",
+      "verify": "go test ./internal/task/ -count=1 -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P1-03",
+      "phase": 1,
+      "description": "The SQLite store creates the schema by migration in a fresh data directory, persists a started task, rejects a second active task, and marks a task completed (R-02, R-03).",
+      "verify": "go test ./internal/store/ -count=1 -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P1-04",
+      "phase": 1,
+      "description": "Start screen focus, typing, validation, and shortcut rules behave as R-12 to R-16, including typing 'q' and 's' into the name field without quitting or opening stats.",
+      "verify": "go test ./internal/tui/ -count=1 -run 'Start' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P1-05",
+      "phase": 1,
+      "description": "A teatest flow types a task and duration, starts it, advances a fake clock, sees the countdown change, completes it with 'e', sees a motivational message and the Start screen, and the stored task is completed.",
+      "verify": "go test ./internal/tui/ -count=1 -run 'Flow' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P1-06",
+      "phase": 1,
+      "description": "Quitting with an active task and relaunching against the same --data-dir shows the Active screen with the time elapsed while closed subtracted (R-05, R-06); verified by test and once by hand.",
+      "verify": "go test ./... -count=1 -run 'Resume' -v; then by hand: ./bin/unitock --data-dir <scratch>, start '2m', q, wait 20 s, relaunch, read remaining.",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P1-07",
+      "phase": 1,
+      "description": "make check passes locally and the ci workflow is green on ubuntu-latest and macos-latest for the gate commit; ./bin/unitock --version prints the version line.",
+      "verify": "make check; gh run list --workflow ci.yml --limit 1; ./bin/unitock --version",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P2-01",
+      "phase": 2,
+      "description": "The timer renders in block digits with a progress bar and the colour band for >50%, <=50%, <=25%, <=10%, paused, overtime, and NO_COLOR, matching reviewed golden files (R-17, R-18, D-09).",
+      "verify": "go test ./internal/tui/ -count=1 -run 'View' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P2-02",
+      "phase": 2,
+      "description": "Pause/resume excludes paused time from elapsed and survives a relaunch while paused (R-20, R-05).",
+      "verify": "go test ./... -count=1 -run 'Pause' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P2-03",
+      "phase": 2,
+      "description": "Extend adds the entered amount; extend from the alert sets remaining to the entered amount per D-10; both are stored as extension rows (R-21, R-32).",
+      "verify": "go test ./... -count=1 -run 'Extend' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P2-04",
+      "phase": 2,
+      "description": "Cancel asks for confirmation, and on 'y' stores the task as cancelled and shows the Start screen; 'n' and esc leave it running (R-22).",
+      "verify": "go test ./internal/tui/ -count=1 -run 'Cancel' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P2-05",
+      "phase": 2,
+      "description": "At zero the alert modal appears, one notification is sent, and the alarm plays until Extend or Complete is chosen; on relaunch in overtime the alert fires at once (R-30, R-31, R-05). Verified with fakes in tests and once by hand on macOS with audible sound and a visible notification.",
+      "verify": "go test ./... -count=1 -run 'Alert' -v; then by hand with a 1m task.",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P2-06",
+      "phase": 2,
+      "description": "Notifier and player pick the right tool per OS, pass the task name as an argument rather than through a shell, and fall back to the terminal bell when no player exists (R-33, R-34).",
+      "verify": "go test ./internal/alarm/ -count=1 -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P2-07",
+      "phase": 2,
+      "description": "A second instance on the same data directory exits 1 naming the lock file (R-09), and a terminal smaller than 60x20 shows the too-small message (R-08).",
+      "verify": "go test ./... -count=1 -run 'Lock|TooSmall' -v; then by hand: run two instances.",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P3-01",
+      "phase": 3,
+      "description": "Period ranges, buckets, previous periods, and averages match D-11, including a DST change week, a month end, and a 3-month window crossing a year boundary.",
+      "verify": "go test ./internal/stats/ -count=1 -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P3-02",
+      "phase": 3,
+      "description": "Scorecards show completed count and average per day with previous-period values, signed change, and percentage ('—' when previous is 0); only completed tasks count (R-41, R-42, R-44).",
+      "verify": "go test ./... -count=1 -run 'Scorecard' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P3-03",
+      "phase": 3,
+      "description": "The bar chart renders estimated and actual bars per bucket with legend, y-axis, and the R-43 label formats for each period, and an empty state with no data, matching reviewed golden files (R-43, R-45).",
+      "verify": "go test ./internal/tui/ -count=1 -run 'Chart' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P3-04",
+      "phase": 3,
+      "description": "Stats opens from Start and Active, tab cycles periods starting at 7 days, esc returns to the previous screen with the timer still running, and the time-up alert appears over Stats (R-24, R-30, R-40, R-46).",
+      "verify": "go test ./internal/tui/ -count=1 -run 'Stats' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P3-05",
+      "phase": 3,
+      "description": "Export writes a new timestamped file in the working directory with all tasks, pauses, and extensions in schema v1, never overwrites, and the path or error is shown (R-47, R-50, D-14).",
+      "verify": "go test ./... -count=1 -run 'Export' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P4-01",
+      "phase": 4,
+      "description": "Every step of the SPEC end-to-end verification passes on macOS and on Ubuntu, run by hand against a scratch --data-dir, with results recorded.",
+      "verify": "Follow docs/SPEC.md 'End-to-end verification' on each OS; record per-step results in artifacts/phase-4/.",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P4-02",
+      "phase": 4,
+      "description": "With 10,000 seeded tasks, startup to first frame is under 300 ms and a stats render under 100 ms.",
+      "verify": "go test ./... -count=1 -run 'Perf' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P4-03",
+      "phase": 4,
+      "description": "Unwritable data dir, corrupt database, missing audio and notify tools, and unwritable export directory each produce a clear message and no crash or data loss.",
+      "verify": "go test ./... -count=1 -run 'Error' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P4-04",
+      "phase": 4,
+      "description": "make check and make release-check pass, the README documents install and usage, and the CHANGELOG has notes for the release.",
+      "verify": "make check && make release-check; read README.md and CHANGELOG.md.",
+      "passes": false,
+      "evidence": ""
     }
   ]
 }

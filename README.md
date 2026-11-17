@@ -1,13 +1,18 @@
-# <PROJECT_NAME>
+# unitock
 
 [![version](https://img.shields.io/badge/version-0.0.0-blue)](CHANGELOG.md)
 [![phase](https://img.shields.io/badge/phase-0%20foundations-orange)](docs/PLAN.md)
-[![CI](https://img.shields.io/github/actions/workflow/status/<OWNER>/<REPO>/ci.yml?branch=main&label=CI)](https://github.com/<OWNER>/<REPO>/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/azntaiji/unitock/ci.yml?branch=main&label=CI)](https://github.com/azntaiji/unitock/actions)
 [![SemVer](https://img.shields.io/badge/semver-2.0.0-blue)](https://semver.org/spec/v2.0.0.html)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-fe5196)](https://www.conventionalcommits.org/en/v1.0.0/)
-[![license](https://img.shields.io/badge/license-<LICENSE>-green)](LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-<ONE_PARAGRAPH: what this project does, who it is for, and its current maturity.>
+unitock is a terminal time tracker for one task at a time, for macOS and Ubuntu. Name a
+task, give it a duration in plain language (`45m`, `1.5 hours`), and watch a colour-shifting
+countdown; when time is up it alerts you on screen, with a system notification, and with a
+looping chime until you extend or complete the task. A stats screen compares actual with
+estimated time over 7 days, 30 days, or 3 months. Status: in planning (Phase 0); nothing is
+usable yet.
 
 ## Key features
 
@@ -18,9 +23,12 @@ Nothing shipped yet. See the roadmap.
 ## Quick start
 
 <!-- BEGIN:quickstart (must match the Commands table in AGENTS.md) -->
+Requires Go 1.26 or newer.
+
 ```sh
-<setup command>
-<run or test command>
+go mod download
+make check          # build, vet, lint, race tests
+./bin/unitock --version
 ```
 <!-- END:quickstart -->
 
@@ -30,6 +38,10 @@ Nothing shipped yet. See the roadmap.
 | Phase | Goal | Status |
 |---|---|---|
 | 0 | Foundations: spec, plan, tooling | In progress |
+| 1 | Walking skeleton: start, countdown, complete, resume | Planned |
+| 2 | Active screen and time-up alert | Planned |
+| 3 | Stats and export | Planned |
+| 4 | Hardening and 1.0.0 | Planned |
 <!-- END:roadmap -->
 
 Status values: Planned, In progress, Awaiting gate, Done (vX.Y.Z).
@@ -48,4 +60,4 @@ and versions work. Coding agents start from [AGENTS.md](AGENTS.md).
 
 ## License
 
-<LICENSE>. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
