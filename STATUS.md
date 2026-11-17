@@ -9,16 +9,14 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Human: confirm D-02 and D-06 (still Proposed). D-09 to D-14 are for later phases.
-2. `internal/duration`: parser per D-08, table tests, fuzz test (P1-01).
-3. `internal/task`: pure timer maths with an injected clock (P1-02).
-4. `internal/store`: SQLite store and migrations (P1-03).
-5. Then the remaining Phase 1 tasks in docs/PLAN.md, in order.
+1. `internal/duration`: parser per D-08, table tests, fuzz test (P1-01).
+2. `internal/task`: pure timer maths with an injected clock (P1-02).
+3. `internal/store`: SQLite store and migrations (P1-03).
+4. Then the remaining Phase 1 tasks in docs/PLAN.md, in order.
 
 ## Blockers
 
-None for Phase 1 (D-03, D-04, D-05, D-07, D-08 Approved 2026-11-17). D-02 and D-06
-still Proposed.
+None. D-02 to D-08 Approved 2026-11-17; D-09 to D-14 Proposed (later phases).
 
 ## Evidence
 
