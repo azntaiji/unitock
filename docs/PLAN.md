@@ -31,7 +31,7 @@ Go toolchain (Makefile, lint, GoReleaser, CI on macOS and Ubuntu). Detail:
         stored timestamps and an injected clock (R-04, D-07).
   - [x] `internal/store`: SQLite store with embedded migrations, one-active-task index,
         create/get-active/complete operations; tests against `t.TempDir()` (R-02, R-03).
-  - [ ] `cmd/unitock`: `--data-dir` (XDG default) and `--version` flags, exit codes,
+  - [x] `cmd/unitock`: `--data-dir` (XDG default) and `--version` flags, exit codes,
         `unitock.log` (Interfaces).
   - [ ] Start screen: inputs, button, focus rules, validation (R-12 to R-16).
   - [ ] Minimal Active screen: name and `MM:SS` countdown ticking each second; `e`
