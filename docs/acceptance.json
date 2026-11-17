@@ -54,8 +54,8 @@
       "phase": 1,
       "description": "Elapsed, remaining, and overtime are computed from stored timestamps and an injected clock; tests cover a task started in the past and time passing while the app was closed (R-04).",
       "verify": "go test ./internal/task/ -count=1 -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test ./internal/task/ -count=1 -v PASS, incl. 'started in the past, app closed meanwhile' and 'ran out while the app was closed' (artifacts/phase-1/p1-02-task.txt)"
     },
     {
       "id": "P1-03",

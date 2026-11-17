@@ -15,6 +15,7 @@ Packages (keep current):
 
 - `cmd/unitock`: main; flags, wiring, exit codes. Version via `-ldflags`.
 - `internal/duration`: parses natural-language durations (D-08) into whole seconds.
+- `internal/task`: task model and timer maths from stored timestamps; `Clock` (system, fake).
 
 Never run the binary against the real data dir; always pass `--data-dir` with a
 scratch or `t.TempDir()` path.
