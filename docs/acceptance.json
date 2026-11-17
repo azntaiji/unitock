@@ -38,8 +38,8 @@
       "phase": 0,
       "description": "The scaffold check passes with no errors and CI is green.",
       "verify": "python3 scripts/check_scaffold.py; check the latest CI run.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: python3 scripts/check_scaffold.py 0 errors, 0 warnings; on fed8777 GitHub Actions scaffold-check run 44189751706 success and ci run 44189751710 success (check ubuntu-latest, check macos-latest)."
     },
     {
       "id": "P1-01",

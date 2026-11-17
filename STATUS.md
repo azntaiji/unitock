@@ -30,14 +30,13 @@ D-02 to D-14 Proposed, awaiting G0.
 | Check | `make check` | exit 0 | artifacts/phase-0/make-check.log |
 | Release preflight | `make release-check` | exit 0, 4 targets | artifacts/phase-0/make-release-check.log |
 | Scaffold | `python3 scripts/check_scaffold.py` | 0 errors, 0 warnings | artifacts/phase-0/python3-scripts-check-scaffold-py.log |
-| CI | GitHub Actions | not run: nothing pushed | — |
+| CI | `gh run view 44189751710` | success on ubuntu + macos; scaffold-check 44189751706 success | artifacts/phase-0/ci-run.log |
 
 ## Gate request
 
 Gate: G0, phase 0 (Foundations)
 Approvers: azntaiji
-Exit criteria: P0-01 to P0-04 passing | failing: P0-05 (scaffold check passes locally; CI
-  cannot run until the human pushes, since agents push only after approval)
+Exit criteria: P0-01 to P0-05 all passing
 Review: fresh-context review found no correctness defects; fixed 5 doc gaps (spec cites
   decisions, R-07/R-23 criteria coverage, P1-07 CI wording, D-02/D-06 to Proposed, STATUS)
 Proposed version: none (only docs/build/ci/chore commits; first release is 0.1.0 at G1)
