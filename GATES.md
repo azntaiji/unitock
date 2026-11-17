@@ -17,3 +17,4 @@ Formats (replace the angle-bracket parts):
 ## Ledger
 
 G0: APPROVED by azntaiji, 2026-11-17. Version: none. Notes: recorded by agent on confirmation
+G1: APPROVED by azntaiji, 2026-11-17. Version: 0.1.0. Notes: recorded by agent on confirmation
