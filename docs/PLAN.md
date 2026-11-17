@@ -26,7 +26,7 @@ Go toolchain (Makefile, lint, GoReleaser, CI on macOS and Ubuntu). Detail:
   survive a quit and relaunch, all stored in SQLite and green in CI on macOS and Ubuntu.
 - **Depends on:** D-03, D-04, D-05, D-07, D-08.
 - **Tasks:**
-  - [ ] `internal/duration`: parser per D-08 with table tests and a fuzz test (R-10, R-11).
+  - [x] `internal/duration`: parser per D-08 with table tests and a fuzz test (R-10, R-11).
   - [ ] `internal/task`: pure timer maths (estimate, elapsed, remaining, overtime) from
         stored timestamps and an injected clock (R-04, D-07).
   - [ ] `internal/store`: SQLite store with embedded migrations, one-active-task index,

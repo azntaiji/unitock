@@ -14,6 +14,7 @@ looping alarm at zero, and review actual vs estimated time. "Done" is 1.0.0 with
 Packages (keep current):
 
 - `cmd/unitock`: main; flags, wiring, exit codes. Version via `-ldflags`.
+- `internal/duration`: parses natural-language durations (D-08) into whole seconds.
 
 Never run the binary against the real data dir; always pass `--data-dir` with a
 scratch or `t.TempDir()` path.

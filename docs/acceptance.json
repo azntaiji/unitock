@@ -46,8 +46,8 @@
       "phase": 1,
       "description": "The duration parser accepts every example in SPEC R-10, rejects values outside 1 minute to 24 hours and malformed input per R-11, and its fuzz test runs 30 s without failure.",
       "verify": "go test ./internal/duration/ -count=1 && go test ./internal/duration/ -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test -count=1 ok; FuzzParse 30s, 8.3M execs, PASS (artifacts/phase-1/p1-01-duration.txt)"
     },
     {
       "id": "P1-02",
