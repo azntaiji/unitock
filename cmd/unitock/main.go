@@ -11,8 +11,11 @@ import (
 	"os"
 	"path/filepath"
 
+	tea "charm.land/bubbletea/v2"
+
 	"github.com/azntaiji/unitock/internal/store"
 	"github.com/azntaiji/unitock/internal/task"
+	"github.com/azntaiji/unitock/internal/tui"
 )
 
 // Set at build time with -ldflags "-X main.version=...".
@@ -38,8 +41,12 @@ type deps struct {
 	log   *slog.Logger
 }
 
-// runUI runs the terminal UI until the user quits. Replaced by the TUI in Phase 1.
-var runUI = func(context.Context, deps) error { return nil }
+// runUI runs the terminal UI until the user quits. Tests replace it.
+var runUI = func(ctx context.Context, d deps) error {
+	m := tui.New(tui.Deps{Ctx: ctx, Store: d.store, Clock: d.clock, Log: d.log})
+	_, err := tea.NewProgram(m, tea.WithContext(ctx)).Run()
+	return err
+}
 
 func run(ctx context.Context, args []string, stdout, stderr io.Writer, getenv func(string) string) int {
 	fs := flag.NewFlagSet("unitock", flag.ContinueOnError)

@@ -12,4 +12,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `--data-dir DIR` flag; defaults to `$XDG_DATA_HOME/unitock` or `~/.local/share/unitock`,
   created with mode 0700. Holds `unitock.db` (SQLite) and `unitock.log`.
 - `--version` flag printing `unitock <version> (<commit>, <date>)`.
+- Start screen: task name and duration inputs and a Start task button, with tab/↑/↓
+  focus, inline validation errors, and a key-hint bar.
 - Exit status 1 on startup errors (bad flag, unusable data directory or database).

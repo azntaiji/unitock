@@ -70,8 +70,8 @@
       "phase": 1,
       "description": "Start screen focus, typing, validation, shortcut, and key-hint rules behave as R-07 and R-12 to R-16, including typing 'q' and 's' into the name field without quitting or opening stats, and the key hints changing with focus.",
       "verify": "go test ./internal/tui/ -count=1 -run 'Start' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test ./internal/tui/ -count=1 -run 'Start' -v PASS (11 tests: focus cycle, q/s typed into inputs, esc then q quits, hints per focus, validation, create opens Active) (artifacts/phase-1/p1-04-start.txt)"
     },
     {
       "id": "P1-05",

@@ -18,6 +18,7 @@ Packages (keep current):
 - `internal/duration`: parses natural-language durations (D-08) into whole seconds.
 - `internal/task`: task model and timer maths from stored timestamps; `Clock` (system, fake).
 - `internal/store`: SQLite persistence (modernc), embedded migrations, task create/get/complete.
+- `internal/tui`: Bubble Tea UI; root model routes to screens (Start, Active).
 
 Never run the binary against the real data dir; always pass `--data-dir` with a
 scratch or `t.TempDir()` path.
