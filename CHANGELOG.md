@@ -17,4 +17,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Active screen: task name with an `MM:SS` (or `H:MM:SS`) countdown updated every
   second, `+MM:SS` once over the estimate; `e` completes the task and shows a
   motivational message.
+- An active task survives quitting: relaunching opens the Active screen with the time
+  spent closed counted as elapsed.
 - Exit status 1 on startup errors (bad flag, unusable data directory or database).

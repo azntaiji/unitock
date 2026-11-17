@@ -36,7 +36,7 @@ Go toolchain (Makefile, lint, GoReleaser, CI on macOS and Ubuntu). Detail:
   - [x] Start screen: inputs, button, focus rules, validation (R-12 to R-16).
   - [x] Minimal Active screen: name and `MM:SS` countdown ticking each second; `e`
         completes with a motivational message, then Start (R-19, R-23 with the full list).
-  - [ ] Resume an active task on launch (R-05, without the alert); `q`/`ctrl+c` (R-06);
+  - [x] Resume an active task on launch (R-05, without the alert); `q`/`ctrl+c` (R-06);
         key-hint bar (R-07).
   - [ ] A `teatest` test that types a task, starts it, advances a fake clock, completes
         it, and checks the stored row; and one that quits and relaunches mid-task.

@@ -43,8 +43,11 @@ type deps struct {
 
 // runUI runs the terminal UI until the user quits. Tests replace it.
 var runUI = func(ctx context.Context, d deps) error {
-	m := tui.New(tui.Deps{Ctx: ctx, Store: d.store, Clock: d.clock, Log: d.log})
-	_, err := tea.NewProgram(m, tea.WithContext(ctx)).Run()
+	m, err := tui.New(tui.Deps{Ctx: ctx, Store: d.store, Clock: d.clock, Log: d.log})
+	if err != nil {
+		return err
+	}
+	_, err = tea.NewProgram(m, tea.WithContext(ctx)).Run()
 	return err
 }
 

@@ -9,8 +9,10 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Resume an active task on launch (R-05, no alert); `q`/`ctrl+c` (R-06); key hints (R-07).
-2. Then the remaining Phase 1 tasks in docs/PLAN.md, in order.
+1. teatest flow test (P1-05) and quit/relaunch teatest; pin teatest v2 pseudo-version.
+2. P1-06 by-hand check (human): `./bin/unitock --data-dir <scratch>`, start `2m`, q, wait
+   20 s, relaunch, read remaining. Then set P1-06 passes.
+3. P1-07: human runs `/yeet`; agent checks `gh run list --workflow ci.yml --limit 1`.
 
 ## Blockers
 
@@ -26,7 +28,8 @@ None. D-02 to D-08 Approved 2026-11-17; D-09 to D-14 Proposed (later phases).
 | cmd | `go test ./cmd/unitock/ -count=1 -v` | PASS | artifacts/phase-1/p1-cmd.txt |
 | P1-04 | `go test ./internal/tui/ -count=1 -run 'Start' -v` | PASS | artifacts/phase-1/p1-04-start.txt |
 | active | `go test ./internal/tui/ -count=1 -v` | PASS | artifacts/phase-1/p1-active.txt |
-| check | `make check` | PASS, 0 lint issues | artifacts/phase-1/p1-active-make-check.txt |
+| P1-06 (test part) | `go test ./... -count=1 -run 'Resume' -v` | PASS; by-hand pending | artifacts/phase-1/p1-06-resume.txt |
+| check | `make check` | PASS, 0 lint issues | artifacts/phase-1/p1-resume-make-check.txt |
 
 ## Gate request
 
@@ -52,6 +55,8 @@ None.
   old loops die); remaining rounds up, overtime shows plain `+MM:SS` (colours wait for
   D-09). `e` stores completion, then the Done screen shows `messages[Deps.Rand(n)]` (22
   messages); any key opens Start. Big digits, p/d/n/s: Phase 2.
+- Resume done: `tui.New` now returns `(Model, error)` and opens Active if the store has an
+  active task. On the Done screen `q` quits (R-06 wins over R-23's "any key").
 - Note: `unitock.db` is created 0644 by SQLite (inside the 0700 dir); spec only requires dir mode.
 - Commit pushes from agents happen only through `yeet` at gate close. P1-07 needs CI green
   on a pushed commit, so ask the human to `/yeet` before requesting G1.

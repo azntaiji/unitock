@@ -32,7 +32,11 @@ func newHarness(t *testing.T) *harness {
 	}
 	t.Cleanup(func() { _ = st.Close() })
 	clk := task.NewFakeClock(t0)
-	return &harness{t: t, m: New(Deps{Store: st, Clock: clk}), store: st, clock: clk}
+	m, err := New(Deps{Store: st, Clock: clk})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return &harness{t: t, m: m, store: st, clock: clk}
 }
 
 // key builds a key press from a Bubble Tea key name ("tab", "shift+tab", "esc", ...)

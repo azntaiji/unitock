@@ -48,4 +48,4 @@ func (m doneModel) view() string {
 	)
 }
 
-func (m doneModel) hints() string { return "any key continue · ctrl+c quit" }
+func (m doneModel) hints() string { return "any key continue · q quit" }

@@ -5,6 +5,8 @@ package tui
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"math/rand/v2"
 	"time"
@@ -12,6 +14,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/azntaiji/unitock/internal/store"
 	"github.com/azntaiji/unitock/internal/task"
 )
 
@@ -52,8 +55,9 @@ type Model struct {
 	height int
 }
 
-// New returns the root model, opening on the Start screen.
-func New(d Deps) Model {
+// New returns the root model. If a task is active it opens on the Active screen with the
+// timer where wall-clock time puts it (R-05); otherwise on the Start screen.
+func New(d Deps) (Model, error) {
 	if d.Ctx == nil {
 		d.Ctx = context.Background()
 	}
@@ -63,11 +67,26 @@ func New(d Deps) Model {
 	if d.Rand == nil {
 		d.Rand = rand.IntN
 	}
-	return Model{deps: d, screen: screenStart, start: newStartModel()}
+	m := Model{deps: d, screen: screenStart, start: newStartModel()}
+	t, err := d.Store.Active(d.Ctx)
+	switch {
+	case errors.Is(err, store.ErrNoActive):
+		return m, nil
+	case err != nil:
+		return Model{}, fmt.Errorf("loading active task: %w", err)
+	}
+	d.Log.Info("resuming task", "id", t.ID)
+	m, _ = m.openActive(t)
+	return m, nil
 }
 
 // Init implements tea.Model.
-func (m Model) Init() tea.Cmd { return m.start.focusCmd() }
+func (m Model) Init() tea.Cmd {
+	if m.screen == screenActive {
+		return m.active.tick()
+	}
+	return m.start.focusCmd()
+}
 
 // Update implements tea.Model.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -97,7 +116,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case screenActive:
 		m.active, cmd = m.active.update(msg, m.deps)
 	case screenDone:
-		if _, ok := msg.(tea.KeyPressMsg); ok { // any key opens Start (R-23)
+		if k, ok := msg.(tea.KeyPressMsg); ok { // any key opens Start (R-23)
+			if k.String() == "q" { // except q, which quits from any screen (R-06)
+				return m, tea.Quit
+			}
 			m.screen = screenStart
 			m.start = newStartModel()
 			cmd = m.start.focusCmd()
