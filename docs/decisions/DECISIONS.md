@@ -48,14 +48,14 @@ backup.
 interview, 2026-11-17; RFI-01.)
 
 ## D-03 — Branching model
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-17
 **Decision:** trunk-based. Agents commit locally to the default branch at task
 boundaries; the remote receives a phase when `yeet` runs at gate close.
 **Alternatives:** one branch per phase, merged by pull request at gate close.
 **Consequences:** work in progress exists only on the working machine until gate close. Run `/yeet` mid-phase for a backup; releases are still marked only by tags.
 
 ## D-04 — TUI stack
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-17
 **Decision:** Bubble Tea v2, Bubbles v2 (textinput, progress), and Lip Gloss v2 from
 Charm, latest stable at Phase 1 start. TUI flows tested with Charm's `teatest`, views
 with golden files. Big digits are a small in-repo glyph table, not a dependency.
@@ -64,7 +64,7 @@ with golden files. Big digits are a small in-repo glyph table, not a dependency.
 **Consequences:** `teatest` lives in `x/exp` and may change; pin its version.
 
 ## D-05 — SQLite driver
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-17
 **Decision:** `modernc.org/sqlite` (pure Go) via `database/sql`.
 **Why:** the release kit builds with `CGO_ENABLED=0` for four OS/arch targets (D-06).
 **Alternatives:** `mattn/go-sqlite3` (cgo; needs a C cross-toolchain per target);
@@ -81,7 +81,7 @@ required check at every gate that proposes a version. (Human's answer in the Pha
 interview, 2026-11-17.)
 
 ## D-07 — Data and time model
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-17
 **Decision:** times stored as UTC Unix milliseconds. Tables:
 `tasks(id, name, status, started_at, ended_at, original_estimate_ms)`,
 `extensions(id, task_id, at, added_ms)`, `pauses(id, task_id, started_at, ended_at)`.
@@ -96,7 +96,7 @@ maths pure and testable.
 **Consequences:** changing the clock on the machine changes elapsed time; accepted.
 
 ## D-08 — Duration grammar
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-17
 **Decision:** case-insensitive, surrounding spaces ignored. Accepted forms:
 (a) one or more `<number><unit>` terms with optional spaces between them, number
 integer or decimal, units `h|hr|hrs|hour|hours`, `m|min|mins|minute|minutes`,
