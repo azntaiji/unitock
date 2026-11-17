@@ -20,29 +20,11 @@ Shipped the spec, phases 1–4 with acceptance criteria, decisions D-01 to D-14,
 Go toolchain (Makefile, lint, GoReleaser, CI on macOS and Ubuntu). Detail:
 `docs/archive/phase-0.md`.
 
-## Phase 1 — Walking skeleton
+## Phase 1 — Walking skeleton (done, G1 approved 2026-11-17, v0.1.0)
 
-- **Goal:** start a named, timed task, watch it count down, complete it, and have it
-  survive a quit and relaunch, all stored in SQLite and green in CI on macOS and Ubuntu.
-- **Depends on:** D-03, D-04, D-05, D-07, D-08.
-- **Tasks:**
-  - [x] `internal/duration`: parser per D-08 with table tests and a fuzz test (R-10, R-11).
-  - [x] `internal/task`: pure timer maths (estimate, elapsed, remaining, overtime) from
-        stored timestamps and an injected clock (R-04, D-07).
-  - [x] `internal/store`: SQLite store with embedded migrations, one-active-task index,
-        create/get-active/complete operations; tests against `t.TempDir()` (R-02, R-03).
-  - [x] `cmd/unitock`: `--data-dir` (XDG default) and `--version` flags, exit codes,
-        `unitock.log` (Interfaces).
-  - [x] Start screen: inputs, button, focus rules, validation (R-12 to R-16).
-  - [x] Minimal Active screen: name and `MM:SS` countdown ticking each second; `e`
-        completes with a motivational message, then Start (R-19, R-23 with the full list).
-  - [x] Resume an active task on launch (R-05, without the alert); `q`/`ctrl+c` (R-06);
-        key-hint bar (R-07).
-  - [x] A `teatest` test that types a task, starts it, advances a fake clock, completes
-        it, and checks the stored row; and one that quits and relaunches mid-task.
-  - [x] CI green on both OSes for a commit the human pushed with `/yeet` (P1-07).
-- **Exit criteria:** P1-01 to P1-07.
-- **Gate G1:** azntaiji. Expected version 0.1.0.
+Shipped the duration parser, timer maths, SQLite store with migrations, CLI flags, and
+the Start, Active (countdown), and Done screens with resume on relaunch; teatest flows
+and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
 
 ## Phase 2 — Active screen and alert
 
