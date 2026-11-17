@@ -55,7 +55,7 @@ Requirement IDs (R-xx) refer to `docs/SPEC.md`.
         key-hint bar (R-07).
   - [ ] A `teatest` test that types a task, starts it, advances a fake clock, completes
         it, and checks the stored row; and one that quits and relaunches mid-task.
-  - [ ] CI green on the default branch on both OSes.
+  - [ ] CI green on both OSes for a commit the human pushed with `/yeet` (P1-07).
 - **Exit criteria:** P1-01 to P1-07.
 - **Gate G1:** azntaiji. Expected version 0.1.0.
 

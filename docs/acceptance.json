@@ -6,32 +6,32 @@
       "phase": 0,
       "description": "docs/SPEC.md is complete: every section is filled and no angle-bracket placeholders remain.",
       "verify": "Read docs/SPEC.md; search it for '<' placeholders.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: all SPEC sections filled; grep '<' finds only the --version format line (not a placeholder). Confirmed by fresh-context review."
     },
     {
       "id": "P0-02",
       "phase": 0,
       "description": "Every command in the AGENTS.md Commands table runs successfully on a clean checkout.",
       "verify": "Run each command in order and record the exit codes.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go mod download, make fmt, make lint, make vet, make test, go test ./cmd/unitock -run '^TestNone$', make build, make check, make release-check, check_scaffold.py all exit 0. Logs: artifacts/phase-0/."
     },
     {
       "id": "P0-03",
       "phase": 0,
       "description": "docs/PLAN.md defines every phase with tasks, exit criteria, and a named approver, and docs/acceptance.json has criteria for each phase.",
       "verify": "Compare the phase list in docs/PLAN.md with the phase numbers in this file.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: PLAN phases 0-4 each have tasks, exit criteria, approver azntaiji; acceptance.json has criteria for phases [0,1,2,3,4]."
     },
     {
       "id": "P0-04",
       "phase": 0,
       "description": "README.md and the Project section of AGENTS.md contain no placeholders.",
       "verify": "Search both files for '<' placeholders.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: grep '<' over README.md and AGENTS.md Project section finds no placeholders."
     },
     {
       "id": "P0-05",
@@ -68,7 +68,7 @@
     {
       "id": "P1-04",
       "phase": 1,
-      "description": "Start screen focus, typing, validation, and shortcut rules behave as R-12 to R-16, including typing 'q' and 's' into the name field without quitting or opening stats.",
+      "description": "Start screen focus, typing, validation, shortcut, and key-hint rules behave as R-07 and R-12 to R-16, including typing 'q' and 's' into the name field without quitting or opening stats, and the key hints changing with focus.",
       "verify": "go test ./internal/tui/ -count=1 -run 'Start' -v",
       "passes": false,
       "evidence": ""
@@ -76,7 +76,7 @@
     {
       "id": "P1-05",
       "phase": 1,
-      "description": "A teatest flow types a task and duration, starts it, advances a fake clock, sees the countdown change, completes it with 'e', sees a motivational message and the Start screen, and the stored task is completed.",
+      "description": "A teatest flow types a task and duration, starts it, advances a fake clock, sees the countdown change, completes it with 'e', sees a motivational message and the Start screen, and the stored task is completed. The built-in list holds at least 20 distinct messages (R-23).",
       "verify": "go test ./internal/tui/ -count=1 -run 'Flow' -v",
       "passes": false,
       "evidence": ""
@@ -92,8 +92,8 @@
     {
       "id": "P1-07",
       "phase": 1,
-      "description": "make check passes locally and the ci workflow is green on ubuntu-latest and macos-latest for the gate commit; ./bin/unitock --version prints the version line.",
-      "verify": "make check; gh run list --workflow ci.yml --limit 1; ./bin/unitock --version",
+      "description": "make check passes locally, ./bin/unitock --version prints the version line, and the ci workflow is green on ubuntu-latest and macos-latest for the latest pushed commit containing the phase's code (the human pushes it with /yeet before the gate request; agents do not push).",
+      "verify": "make check; ./bin/unitock --version; gh run list --workflow ci.yml --limit 1",
       "passes": false,
       "evidence": ""
     },

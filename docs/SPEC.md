@@ -1,7 +1,10 @@
 # Spec
 
-Written in Phase 0 from an interview with the human (azntaiji, 2026-11-17). Self-contained:
-a new session should be able to build from this file and `docs/PLAN.md` alone.
+Written in Phase 0 from an interview with the human (azntaiji, 2026-11-17). A new session
+should be able to build from this file, `docs/PLAN.md`, and the decisions in
+`docs/decisions/DECISIONS.md` that requirements cite (D-xx). Those decisions hold the
+detailed rules (duration grammar, schema, colours, stats buckets, export) and are part
+of the spec once Approved.
 
 ## Problem
 

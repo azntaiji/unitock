@@ -43,7 +43,7 @@ backup.
 **Why:** specified by the human in the app idea (Go + Bubble Tea, macOS and Ubuntu).
 
 ## D-02 — License and repository visibility
-**Status:** Settled
+**Status:** Proposed (chosen by the human in the Phase 0 interview; confirm at G0)
 **Decision:** MIT license; public GitHub repository. (Human's answer in the Phase 0
 interview, 2026-11-17; RFI-01.)
 
@@ -73,7 +73,7 @@ with golden files. Big digits are a small in-repo glyph table, not a dependency.
 data size.
 
 ## D-06 — Release kit
-**Status:** Settled
+**Status:** Proposed (chosen by the human in the Phase 0 interview; confirm at G0)
 **Decision:** adopt the Go profile's GoReleaser release kit. Each approved `vX.Y.Z` tag
 publishes darwin/linux × amd64/arm64 binaries to GitHub Releases; `go install
 github.com/azntaiji/unitock/cmd/unitock@latest` also works. `make release-check` is a
