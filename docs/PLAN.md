@@ -14,32 +14,17 @@ Each phase section uses this shape:
 
 Requirement IDs (R-xx) refer to `docs/SPEC.md`.
 
-## Phase 0 — Foundations
+## Phase 0 — Foundations (done, G0 approved 2026-11-17, no release)
 
-- **Goal:** an approved spec, plan, and working toolchain, with no product code yet.
-- **Depends on:** nothing.
-- **Tasks:**
-  - [x] Interview the human about goals, users, constraints, edge cases, and what is
-        out of scope. Keep asking until the hard parts are covered. Write
-        `docs/SPEC.md`.
-  - [x] Choose the language profile. Set `profiles` and `version_mirrors` in
-        `.scaffold.json`. Delete unused profile directories.
-  - [x] Fill the Commands table in `AGENTS.md` and run every command to prove it works.
-  - [x] Copy the profile's `ci.yml` to `.github/workflows/ci.yml` and its `starter/`
-        files into place; create the layout the profile describes.
-  - [x] Draft the remaining phases below and their criteria in `docs/acceptance.json`.
-  - [x] Record design choices in `docs/decisions/DECISIONS.md` as `Proposed` and open
-        questions in `docs/RFIS.md`.
-  - [x] Replace the placeholders in `README.md` and the Project section of `AGENTS.md`.
-- **Exit criteria:** P0-01 to P0-05.
-- **Gate G0:** azntaiji approves the spec, the plan, and every decision the next
-  phase depends on.
+Shipped the spec, phases 1–4 with acceptance criteria, decisions D-01 to D-14, and the
+Go toolchain (Makefile, lint, GoReleaser, CI on macOS and Ubuntu). Detail:
+`docs/archive/phase-0.md`.
 
 ## Phase 1 — Walking skeleton
 
 - **Goal:** start a named, timed task, watch it count down, complete it, and have it
   survive a quit and relaunch, all stored in SQLite and green in CI on macOS and Ubuntu.
-- **Depends on:** D-03, D-04, D-05, D-07, D-08; RFI-02 before the G1 release.
+- **Depends on:** D-03, D-04, D-05, D-07, D-08.
 - **Tasks:**
   - [ ] `internal/duration`: parser per D-08 with table tests and a fuzz test (R-10, R-11).
   - [ ] `internal/task`: pure timer maths (estimate, elapsed, remaining, overtime) from
@@ -97,7 +82,7 @@ Requirement IDs (R-xx) refer to `docs/SPEC.md`.
 ## Phase 4 — Hardening and 1.0.0
 
 - **Goal:** prove the whole app end to end on both platforms and release 1.0.0.
-- **Depends on:** RFI-02 answered; the human's decision to declare 1.0.0.
+- **Depends on:** the human's decision to declare 1.0.0.
 - **Tasks:**
   - [ ] Run the SPEC end-to-end verification on macOS and Ubuntu; record results.
   - [ ] Performance check with 10,000 seeded tasks (Constraints).

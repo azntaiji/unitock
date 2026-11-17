@@ -1,7 +1,7 @@
 # unitock
 
 [![version](https://img.shields.io/badge/version-0.0.0-blue)](CHANGELOG.md)
-[![phase](https://img.shields.io/badge/phase-0%20foundations-orange)](docs/PLAN.md)
+[![phase](https://img.shields.io/badge/phase-1%20walking%20skeleton-orange)](docs/PLAN.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/azntaiji/unitock/ci.yml?branch=main&label=CI)](https://github.com/azntaiji/unitock/actions)
 [![SemVer](https://img.shields.io/badge/semver-2.0.0-blue)](https://semver.org/spec/v2.0.0.html)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-fe5196)](https://www.conventionalcommits.org/en/v1.0.0/)
@@ -11,8 +11,8 @@ unitock is a terminal time tracker for one task at a time, for macOS and Ubuntu.
 task, give it a duration in plain language (`45m`, `1.5 hours`), and watch a colour-shifting
 countdown; when time is up it alerts you on screen, with a system notification, and with a
 looping chime until you extend or complete the task. A stats screen compares actual with
-estimated time over 7 days, 30 days, or 3 months. Status: in planning (Phase 0); nothing is
-usable yet.
+estimated time over 7 days, 30 days, or 3 months. Status: planned and tooled; the app
+itself is not usable yet (Phase 1 in progress).
 
 ## Key features
 
@@ -37,8 +37,8 @@ make check          # build, vet, lint, race tests
 <!-- BEGIN:roadmap (mirrors docs/PLAN.md; updated at gate close) -->
 | Phase | Goal | Status |
 |---|---|---|
-| 0 | Foundations: spec, plan, tooling | In progress |
-| 1 | Walking skeleton: start, countdown, complete, resume | Planned |
+| 0 | Foundations: spec, plan, tooling | Done |
+| 1 | Walking skeleton: start, countdown, complete, resume | In progress |
 | 2 | Active screen and time-up alert | Planned |
 | 3 | Stats and export | Planned |
 | 4 | Hardening and 1.0.0 | Planned |
