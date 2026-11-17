@@ -32,9 +32,12 @@ type activeModel struct {
 
 func newActiveModel(t task.Task, gen int) activeModel { return activeModel{task: t, gen: gen} }
 
+// tick schedules the next redraw on the system clock's next whole second. Unlike
+// tea.Tick, whose interval starts only after the previous tick is handled, this does not
+// drift, so the countdown never skips a second (R-19).
 func (m activeModel) tick() tea.Cmd {
 	gen := m.gen
-	return tea.Tick(tickInterval, func(time.Time) tea.Msg { return tickMsg{gen: gen} })
+	return tea.Every(tickInterval, func(time.Time) tea.Msg { return tickMsg{gen: gen} })
 }
 
 func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {

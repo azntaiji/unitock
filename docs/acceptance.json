@@ -86,16 +86,16 @@
       "phase": 1,
       "description": "Quitting with an active task and relaunching against the same --data-dir shows the Active screen with the time elapsed while closed subtracted (R-05, R-06); verified by test and once by hand.",
       "verify": "go test ./... -count=1 -run 'Resume' -v; then by hand: ./bin/unitock --data-dir <scratch>, start '2m', q, wait 20 s, relaunch, read remaining.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test ./... -count=1 -run 'Resume' -v PASS, 4 tests incl. teatest relaunch (artifacts/phase-1/p1-06-resume.txt); by hand (azntaiji): --data-dir scratch, start 2m, q, wait ~20 s, relaunch showed 1:38 remaining."
     },
     {
       "id": "P1-07",
       "phase": 1,
       "description": "make check passes locally, ./bin/unitock --version prints the version line, and the ci workflow is green on ubuntu-latest and macos-latest for the latest pushed commit containing the phase's code (the human pushes it with /yeet before the gate request; agents do not push).",
       "verify": "make check; ./bin/unitock --version; gh run list --workflow ci.yml --limit 1",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: make check PASS (artifacts/phase-1/p1-05-make-check.txt); ./bin/unitock --version printed 'unitock dev (none, unknown)'; ci run 44201069710 on 2ed8753 success: check (ubuntu-latest) and check (macos-latest) (artifacts/phase-1/p1-07-ci.txt)."
     },
     {
       "id": "P2-01",

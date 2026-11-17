@@ -40,7 +40,7 @@ Go toolchain (Makefile, lint, GoReleaser, CI on macOS and Ubuntu). Detail:
         key-hint bar (R-07).
   - [x] A `teatest` test that types a task, starts it, advances a fake clock, completes
         it, and checks the stored row; and one that quits and relaunches mid-task.
-  - [ ] CI green on both OSes for a commit the human pushed with `/yeet` (P1-07).
+  - [x] CI green on both OSes for a commit the human pushed with `/yeet` (P1-07).
 - **Exit criteria:** P1-01 to P1-07.
 - **Gate G1:** azntaiji. Expected version 0.1.0.
 
