@@ -9,8 +9,9 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Await G0 decision from azntaiji (approve spec, plan, decisions, new criteria).
-2. Human: push with `/yeet` so CI runs (P0-05).
+1. Human: push with `/yeet` so CI runs. Then check CI, mark P0-05, append the confirmed
+   line `G0: APPROVED by azntaiji, 2026-11-17. Version: none. Notes: recorded by agent
+   on confirmation` to GATES.md, and run the gate close routine.
 
 ## Blockers
 
@@ -52,4 +53,5 @@ Open decisions or RFIs the next phase depends on: D-03, D-04, D-05, D-07, D-08
 - docs/APP-IDEA.md is gitignored (internal); SPEC carries everything from it.
 - Timer visual (D-09) was described to the human as a mockup mid-session; there was no
   objection, but it is still Proposed.
+- G0 approved by reply and line confirmed 2026-11-17; not yet appended (waits on P0-05).
 - Approving G0 should also set D-02..D-14 to Approved in DECISIONS.md (human edits it).
