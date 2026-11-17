@@ -10,11 +10,11 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 ## Next tasks
 
 1. Await G0 decision from azntaiji (approve spec, plan, decisions, new criteria).
-2. Human: push with `/yeet` so CI runs (P0-05), and answer RFI-02 (repo rename).
+2. Human: push with `/yeet` so CI runs (P0-05).
 
 ## Blockers
 
-RFI-02 (blocks the G1 release, not Phase 1 work). D-03 to D-14 Proposed, awaiting G0.
+D-02 to D-14 Proposed, awaiting G0.
 
 ## Evidence
 
@@ -42,13 +42,13 @@ Review: fresh-context review found no correctness defects; fixed 5 doc gaps (spe
 Proposed version: none (only docs/build/ci/chore commits; first release is 0.1.0 at G1)
 Look at: docs/SPEC.md, docs/PLAN.md, docs/decisions/DECISIONS.md (D-02 to D-14),
   docs/acceptance.json (P1-01 to P4-04 are new and need approval), docs/RFIS.md
-Open decisions or RFIs the next phase depends on: D-03, D-04, D-05, D-07, D-08; RFI-02
-  before the G1 release
+Open decisions or RFIs the next phase depends on: D-03, D-04, D-05, D-07, D-08
+  (RFI-02 answered: repo renamed to azntaiji/unitock)
 
 ## Handoff
 
-- Name `unitock` picked from candidates with no GitHub repo-name matches; module path
-  `github.com/azntaiji/unitock` assumes the repo rename (RFI-02).
+- Name `unitock` picked from candidates with no GitHub repo-name matches; repo and local
+  directory renamed to `unitock` by the human (RFI-02 answered); origin URL updated.
 - docs/APP-IDEA.md is gitignored (internal); SPEC carries everything from it.
 - Timer visual (D-09) was described to the human as a mockup mid-session; there was no
   objection, but it is still Proposed.
