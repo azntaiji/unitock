@@ -2,14 +2,14 @@
 
 Phase: 2
 Phase name: Active screen and alert
-Gate: G2 not requested
+Gate: G2 REQUESTED
 Updated: 2026-11-18
 
 Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Gate G2 routine (docs/process/gates.md); version proposal 0.2.0.
+1. Wait for azntaiji's G2 decision; on approval run the gate close routine.
 
 ## Blockers
 
@@ -20,6 +20,9 @@ None.
 | Check | Command | Result | Raw output |
 |---|---|---|---|
 | make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
+| Gate commands (all 9) | AGENTS.md table + `make release-check` + scaffold | pass | artifacts/phase-2/gate/ |
+| Gate verifies P2-01..08 | each `verify` in acceptance.json | pass | artifacts/phase-2/gate/P2-0*.txt |
+| Fresh-context review | subagent per review.md | no correctness gaps; 1 left (see request) | n/a |
 | make check (lock, size) | `make check` | pass | artifacts/phase-2/check-lock-size.txt |
 | P2-07 lock, size | `go test ./... -count=1 -run 'Lock\|TooSmall' -v` | pass (5); two instances by hand, azntaiji 2026-11-18 | artifacts/phase-2/p2-07-lock-size.txt |
 | make check (alarm) | `make check` | pass | artifacts/phase-2/check-alarm.txt |
@@ -42,7 +45,14 @@ None.
 
 ## Gate request
 
-None.
+Gate: G2, phase 2 (Active screen and alert)
+Approvers: azntaiji
+Exit criteria: P2-01 to P2-08 all passing (artifacts/phase-2/gate/P2-0*.txt)
+Review: no correctness gaps; left: SQLite NOCASE folds ASCII only, so "über" vs "Über"
+  makes two projects (R-25); fixing needs a D-15 amendment, for azntaiji to decide.
+Proposed version: 0.2.0 (minor: feat commits while 0.y.z)
+Look at: artifacts/phase-2/gate/ (all commands and verifies), CHANGELOG [Unreleased]
+Open decisions or RFIs the next phase depends on: D-11, D-14 (Proposed)
 
 ## Handoff
 
