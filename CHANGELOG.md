@@ -7,6 +7,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Stats screen: `s` opens it from the Start button and the Active screen; `tab` cycles
+  7 days, 30 days, and 3 months; scorecards show completed tasks and the average per
+  day against the previous period; `esc` goes back with the timer still running, and
+  the time-up alert appears over it.
+
 ### Fixed
 
 - Project names now match ignoring case for all Unicode letters, so "über" reuses

@@ -174,8 +174,8 @@
       "phase": 3,
       "description": "Scorecards show completed count and average per day with previous-period values, signed change, and percentage ('—' when previous is 0); only completed tasks count (R-41, R-42, R-44).",
       "verify": "go test ./... -count=1 -run 'Scorecard' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18: go test ./... -count=1 -run 'Scorecard' -v: 4 PASS, 0 FAIL (count and per-day formats incl. — for previous 0, store-loaded view counts only completed tasks, load error shown) (artifacts/phase-3/p3-02-scorecard.txt)"
     },
     {
       "id": "P3-03",
@@ -190,8 +190,8 @@
       "phase": 3,
       "description": "Stats opens from Start and Active, tab cycles periods starting at 7 days, esc returns to the previous screen with the timer still running, and the time-up alert appears over Stats (R-24, R-30, R-40, R-46).",
       "verify": "go test ./internal/tui/ -count=1 -run 'Stats' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18: go test ./internal/tui/ -count=1 -run 'Stats' -v: 7 PASS, 0 FAIL (s from Start button only and from Active, tab cycle from 7 days, esc back with timer running, alert over Stats with complete and extend, q quits) (artifacts/phase-3/p3-04-stats-nav.txt)"
     },
     {
       "id": "P3-05",

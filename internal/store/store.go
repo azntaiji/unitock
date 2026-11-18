@@ -345,6 +345,100 @@ func (s *Store) Get(ctx context.Context, id int64) (task.Task, error) {
 	return t, nil
 }
 
+// completedWhere selects the completed tasks that ended in [?, ?); it is shared by the
+// three queries of Completed so they agree on the set.
+const completedWhere = `t.status = 'completed' AND t.ended_at >= ? AND t.ended_at < ?`
+
+// Completed returns the completed tasks that ended in [from, to), with their extensions
+// and pauses, ordered by end time (R-44). It reads everything in three queries, so the
+// Stats screen stays fast with many tasks.
+func (s *Store) Completed(ctx context.Context, from, to time.Time) ([]task.Task, error) {
+	lo, hi := from.UnixMilli(), to.UnixMilli()
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT t.id, t.name, t.started_at, t.ended_at, t.original_estimate_ms, p.name
+		 FROM tasks t LEFT JOIN projects p ON p.id = t.project_id
+		 WHERE `+completedWhere+` ORDER BY t.ended_at, t.id`, lo, hi)
+	if err != nil {
+		return nil, fmt.Errorf("reading completed tasks: %w", err)
+	}
+	var out []task.Task
+	index := map[int64]int{}
+	for rows.Next() {
+		var (
+			t              task.Task
+			started, ended int64
+			estMS          int64
+			project        sql.NullString
+		)
+		if err := rows.Scan(&t.ID, &t.Name, &started, &ended, &estMS, &project); err != nil {
+			_ = rows.Close()
+			return nil, fmt.Errorf("reading completed tasks: %w", err)
+		}
+		t.Status = task.Completed
+		t.Project = project.String
+		t.StartedAt, t.EndedAt = fromMS(started), fromMS(ended)
+		t.OriginalEstimate = time.Duration(estMS) * time.Millisecond
+		index[t.ID] = len(out)
+		out = append(out, t)
+	}
+	err = rows.Err()
+	_ = rows.Close()
+	if err != nil {
+		return nil, fmt.Errorf("reading completed tasks: %w", err)
+	}
+	if len(out) == 0 {
+		return nil, nil
+	}
+
+	err = s.eachRow(ctx, func(r *sql.Rows) error {
+		var id, at, added int64
+		if err := r.Scan(&id, &at, &added); err != nil {
+			return err
+		}
+		t := &out[index[id]]
+		t.Extensions = append(t.Extensions, task.Extension{At: fromMS(at), Added: time.Duration(added) * time.Millisecond})
+		return nil
+	}, `SELECT e.task_id, e.at, e.added_ms FROM extensions e JOIN tasks t ON t.id = e.task_id
+		WHERE `+completedWhere+` ORDER BY e.task_id, e.at, e.id`, lo, hi)
+	if err != nil {
+		return nil, fmt.Errorf("reading extensions: %w", err)
+	}
+	err = s.eachRow(ctx, func(r *sql.Rows) error {
+		var id, started int64
+		var ended sql.NullInt64
+		if err := r.Scan(&id, &started, &ended); err != nil {
+			return err
+		}
+		p := task.Pause{StartedAt: fromMS(started)}
+		if ended.Valid {
+			p.EndedAt = fromMS(ended.Int64)
+		}
+		t := &out[index[id]]
+		t.Pauses = append(t.Pauses, p)
+		return nil
+	}, `SELECT pa.task_id, pa.started_at, pa.ended_at FROM pauses pa JOIN tasks t ON t.id = pa.task_id
+		WHERE `+completedWhere+` ORDER BY pa.task_id, pa.started_at, pa.id`, lo, hi)
+	if err != nil {
+		return nil, fmt.Errorf("reading pauses: %w", err)
+	}
+	return out, nil
+}
+
+// eachRow runs query and calls fn for every row.
+func (s *Store) eachRow(ctx context.Context, fn func(*sql.Rows) error, query string, args ...any) error {
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		if err := fn(rows); err != nil {
+			return err
+		}
+	}
+	return rows.Err()
+}
+
 func (s *Store) extensions(ctx context.Context, id int64) ([]task.Extension, error) {
 	rows, err := s.db.QueryContext(ctx, `SELECT at, added_ms FROM extensions WHERE task_id = ? ORDER BY at, id`, id)
 	if err != nil {

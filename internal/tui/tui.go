@@ -29,6 +29,7 @@ type Store interface {
 	Pause(ctx context.Context, id int64, at time.Time) (task.Task, error)
 	AddExtension(ctx context.Context, id int64, at time.Time, added time.Duration) (task.Task, error)
 	Resume(ctx context.Context, id int64, at time.Time) (task.Task, error)
+	Completed(ctx context.Context, from, to time.Time) ([]task.Task, error)
 }
 
 // Deps are the UI's collaborators.
@@ -49,6 +50,7 @@ const (
 	screenStart screen = iota
 	screenActive
 	screenDone
+	screenStats
 )
 
 // Model is the root Bubble Tea model.
@@ -58,10 +60,13 @@ type Model struct {
 	start  startModel
 	active activeModel
 	done   doneModel
-	gen    int // tick loop generation; bumped for each Active screen
-	width  int
-	height int
-	theme  theme
+	stats  statsModel
+	// statsFrom is the screen Stats was opened from; esc returns to it unchanged (R-46).
+	statsFrom screen
+	gen       int // tick loop generation; bumped for each Active screen
+	width     int
+	height    int
+	theme     theme
 }
 
 // New returns the root model. If a task is active it opens on the Active screen with the
@@ -135,6 +140,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.tooSmall() { // the screen is hidden, so its keys are too (R-08)
 			return m, nil
 		}
+		if msg.String() == "s" && m.canOpenStats() {
+			return m.openStats()
+		}
 	case taskStartedMsg:
 		m.deps.Log.Info("task started", "id", msg.task.ID)
 		m.start = newStartModel()
@@ -157,6 +165,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.start, cmd = m.start.update(msg, m.deps)
 	case screenActive:
 		m.active, cmd = m.active.update(msg, m.deps)
+	case screenStats:
+		return m.updateStats(msg)
 	case screenDone:
 		if k, ok := msg.(tea.KeyPressMsg); ok { // any key opens Start (R-23)
 			if k.String() == "q" { // except q, which quits from any screen (R-06)
@@ -168,6 +178,63 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return m, cmd
+}
+
+// canOpenStats reports whether `s` opens Stats now: from Start only with the button
+// focused (R-14), and from Active only when no input, confirmation, or alert is open
+// (R-24).
+func (m Model) canOpenStats() bool {
+	switch m.screen {
+	case screenStart:
+		return !m.start.inputFocused()
+	case screenActive:
+		return !m.active.ext.open && !m.active.conf.open && !m.active.alert.open
+	}
+	return false
+}
+
+// openStats shows the Stats screen on 7 days (R-40) and loads its data. The screen it
+// was opened from keeps its state, and an active task's tick loop keeps running (R-24).
+func (m Model) openStats() (Model, tea.Cmd) {
+	m.statsFrom = m.screen
+	m.screen = screenStats
+	m.stats = statsModel{}
+	return m, loadStats(m.deps)
+}
+
+// overActive reports whether Stats is open over an active task, whose timer and alert
+// carry on underneath (R-24, R-30).
+func (m Model) overActive() bool { return m.screen == screenStats && m.statsFrom == screenActive }
+
+// updateStats handles a message while Stats is open. The active task's ticks and store
+// results still go to it, so the alert can fire over Stats; while the alert is open it
+// takes the keys (R-31). Choosing Extend switches to Active, where the duration input is.
+func (m Model) updateStats(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	switch msg := msg.(type) {
+	case tickMsg, taskUpdatedMsg, saveErrMsg:
+		if m.overActive() {
+			m.active, cmd = m.active.update(msg, m.deps)
+		}
+		return m, cmd
+	case tea.KeyPressMsg:
+		if m.overActive() && m.active.alert.open {
+			m.active, cmd = m.active.update(msg, m.deps)
+			if m.active.ext.open {
+				m.screen = screenActive
+			}
+			return m, cmd
+		}
+		switch msg.String() {
+		case "esc":
+			m.screen = m.statsFrom
+			return m, nil
+		case "q":
+			return m, tea.Quit
+		}
+	}
+	m.stats = m.stats.update(msg, m.deps)
+	return m, nil
 }
 
 // openActive shows t on the Active screen and starts its tick loop.
@@ -194,6 +261,12 @@ func (m Model) View() tea.View {
 		body, hints = m.active.view(m.deps.Clock.Now(), m.width, m.theme), m.active.hints()
 	case m.screen == screenDone:
 		body, hints = m.done.view(), m.done.hints()
+	case m.screen == screenStats:
+		body, hints = m.stats.view(m.deps.Clock.Now(), m.theme), m.stats.hints()
+		if m.overActive() && m.active.alert.open {
+			body = overlay(body, m.active.alertView(m.theme, lipgloss.Width(body)))
+			hints = m.active.hints()
+		}
 	}
 	v := tea.NewView(lipgloss.JoinVertical(lipgloss.Left, body, "", renderHints(hints)))
 	v.AltScreen = true

@@ -306,9 +306,9 @@ func (m activeModel) hints() string {
 		return "y yes · n/esc no · ←/→ choose · enter select · q quit"
 	}
 	if m.task.Paused() {
-		return "p resume · d add time · n cancel · e complete · q quit"
+		return "p resume · d add time · n cancel · e complete · s stats · q quit"
 	}
-	return "p pause · d add time · n cancel · e complete · q quit"
+	return "p pause · d add time · n cancel · e complete · s stats · q quit"
 }
 
 // timerText is the remaining time, or +overtime once the estimate is used up (R-17, R-18).
