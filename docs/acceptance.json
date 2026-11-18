@@ -166,8 +166,8 @@
       "phase": 3,
       "description": "Period ranges, buckets, previous periods, and averages match D-11, including a DST change week, a month end, and a 3-month window crossing a year boundary.",
       "verify": "go test ./internal/stats/ -count=1 -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18: go test ./internal/stats/ -count=1 -v: 15 PASS, 0 FAIL (DST fall back and spring forward weeks, 30 days ending Mar 1 and Nov 30, 3 months Nov 2026..Jan 2027 and on a month end, local-date attribution, averages) (artifacts/phase-3/p3-01-stats.txt)"
     },
     {
       "id": "P3-02",

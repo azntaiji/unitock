@@ -9,9 +9,9 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. `internal/stats`: periods, buckets, previous period, averages per D-11 as pure
-   functions; table tests with DST, month end, year boundary (R-40 to R-44, P3-01).
-2. Then scorecards, chart, navigation, export, in docs/PLAN.md order.
+1. Scorecards (R-41, R-42, P3-02): store query for completed tasks by `ended_at` range
+   (no N+1; 10k tasks under 100 ms), Stats screen scorecards from `stats.Compute`.
+2. Then chart, navigation, export, in docs/PLAN.md order.
 
 ## Blockers
 
@@ -21,6 +21,8 @@ None.
 
 | Check | Command | Result | Raw output |
 |---|---|---|---|
+| P3-01 | `go test ./internal/stats/ -count=1 -v` | 15 PASS, 0 FAIL | artifacts/phase-3/p3-01-stats.txt |
+| check | `make check` | pass (lint 0 issues) | — |
 
 ## Gate request
 

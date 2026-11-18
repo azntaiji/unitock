@@ -13,10 +13,10 @@ looping alarm at zero, and review actual vs estimated time. "Done" is 1.0.0 with
 
 Packages (keep current):
 
-- `cmd/unitock`: main; flags, wiring, exit codes. Version via `-ldflags`. Owns data-dir
-  default (XDG) and `unitock.log`.
+- `cmd/unitock`: main; flags, wiring, exit codes, `-ldflags` version, XDG data dir, log.
 - `internal/duration`: parses natural-language durations (D-08) into whole seconds.
 - `internal/task`: task model and timer maths from stored timestamps; `Clock` (system, fake).
+- `internal/stats`: Stats periods, buckets, scorecards (D-11) as pure functions of now.
 - `internal/store`: SQLite persistence (modernc), embedded migrations, tasks and projects.
 - `internal/tui`: Bubble Tea UI; root model routes to screens (Start, Active, Done).
 - `internal/alarm`: time-up notification and looping chime via OS tools (D-13).
