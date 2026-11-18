@@ -11,6 +11,8 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 1. Time-up alert modal (R-30 to R-32, R-05; P2-05): its Extend opens activeModel.openExtend(true)
    (D-10 path already built and tested); mark P2-03 once the alert drives it.
+2. Notifier and alarm player (R-33, R-34, D-13; P2-06), then lock and minimum size
+   (R-08, R-09, D-12; P2-07).
 3. Before G2: azntaiji to review the Active golden files in internal/tui/testdata
    (`cat` them in a terminal to see colours). P2-01 stays `passes: false` until then.
 
