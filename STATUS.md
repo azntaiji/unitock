@@ -9,10 +9,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. By hand, azntaiji: P2-05 on macOS. Run `./bin/unitock --data-dir <scratch>`, start
-   a 1m task, confirm the chime loops and a notification shows; choose Extend or
-   Complete and confirm the sound stops. Then mark P2-05.
-2. Lock and minimum size (R-08, R-09, D-12; P2-07).
+1. Lock and minimum size (R-08, R-09, D-12; P2-07).
 
 ## Blockers
 
@@ -27,7 +24,7 @@ None.
 | P2-06 alarm | `go test ./internal/alarm/ -count=1 -v` | pass (13) | artifacts/phase-2/p2-06-alarm.txt |
 | make check (overlay) | `make check` | pass | artifacts/phase-2/check-overlay.txt |
 | make check (alert) | `make check` | pass | artifacts/phase-2/check-alert.txt |
-| P2-05 alert (fakes) | `go test ./... -count=1 -run 'Alert' -v` | pass; by-hand pending | artifacts/phase-2/p2-05-alert.txt |
+| P2-05 alert | `go test ./... -count=1 -run 'Alert' -v` + by hand (macOS) | pass; heard and seen by azntaiji 2026-11-18 | artifacts/phase-2/p2-05-alert.txt |
 | make check (cancel) | `make check` | pass | artifacts/phase-2/check-cancel.txt |
 | P2-04 cancel | `go test ./internal/tui/ -count=1 -run 'Cancel' -v` | pass | artifacts/phase-2/p2-04-cancel.txt |
 | make check (extend) | `make check` | pass | artifacts/phase-2/check-extend.txt |
@@ -60,7 +57,7 @@ None.
 - Alert: alert.go (timeUpAlert, checkTimeUp on tick/update/open); drawn over the
   screen with `overlay` (lipgloss Compositor) in active.go, spanning its width.
 - internal/alarm implements tui.Alarm; main wires it with the bell sent as tea.RawMsg
-  and defers Close (waits for tools). Notification and chime not yet heard by a human.
+  and defers Close (waits for tools). Heard and seen on macOS 2026-11-18; Ubuntu untested.
 - Store has Create/Active/Get/Complete/Cancel/Pause/Resume/Projects/AddExtension; add extension and cancel operations
   (with tests in internal/store) as their screens need them.
 - Active writes go through activeModel.save (one in flight, `busy`); results arrive as

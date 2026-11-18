@@ -134,8 +134,8 @@
       "phase": 2,
       "description": "At zero the alert modal appears, one notification is sent, and the alarm plays until Extend or Complete is chosen; on relaunch in overtime the alert fires at once (R-30, R-31, R-05). Verified with fakes in tests and once by hand on macOS with audible sound and a visible notification.",
       "verify": "go test ./... -count=1 -run 'Alert' -v; then by hand with a 1m task.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18: Alert tests pass with fakes (artifacts/phase-2/p2-05-alert.txt); by hand on macOS, azntaiji heard the chime loop, saw the notification, and d/e stopped the sound."
     },
     {
       "id": "P2-06",
