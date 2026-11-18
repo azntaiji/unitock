@@ -26,25 +26,12 @@ Shipped the duration parser, timer maths, SQLite store with migrations, CLI flag
 the Start, Active (countdown), and Done screens with resume on relaunch; teatest flows
 and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
 
-## Phase 2 — Active screen and alert
+## Phase 2 — Active screen and alert (done, G2 approved 2026-11-18, v0.2.0)
 
-- **Goal:** the full Active screen: visuals, pause, extend, cancel, and the time-up alert
-  with notification and looping sound.
-- **Depends on:** D-09, D-10, D-12, D-13.
-- **Tasks:**
-  - [x] Block-digit timer, progress bar, colour bands, PAUSED and overtime display,
-        `NO_COLOR` (R-17, R-18, D-09); golden-file view tests per band.
-  - [x] Pause/resume stored as pause rows (R-20).
-  - [x] Project input with suggestions (R-12, R-13, R-25, R-26, D-15).
-  - [x] Extend with the duration input (R-21).
-  - [x] Cancel confirmation (R-22).
-  - [x] Time-up alert modal with Extend / Mark as completed and the D-10 rule (R-30 to
-        R-32); fires immediately when relaunched in overtime (R-05).
-  - [x] Notifier and alarm player behind interfaces, with the OS implementations and
-        fallbacks (R-33, R-34, D-13).
-  - [x] Single-instance lock (R-09, D-12) and minimum terminal size (R-08).
-- **Exit criteria:** P2-01 to P2-08.
-- **Gate G2:** azntaiji. Expected version 0.2.0.
+Shipped the full Active screen (block-digit timer, progress bar, ANSI colour bands and
+badges, `NO_COLOR`), optional projects with suggestions (D-15), pause, extend, cancel,
+the time-up alert with notification and looping chime, the single-instance lock, and the
+minimum terminal size. Detail: `docs/archive/phase-2.md`.
 
 ## Phase 3 — Stats and export
 

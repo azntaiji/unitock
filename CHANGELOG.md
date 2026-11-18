@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-18
+
 ### Added
 
 - Active screen shows a status badge (`● RUNNING`, `◐ ENDING`, `▲ OVERTIME`,
@@ -36,6 +38,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   screen; only `ctrl+c` works until it is resized. Timers and the alarm keep running.
 - `p` pauses and resumes the active task. Paused time does not count, and a task paused
   at quit is still paused at the next launch.
+
+### Changed
+
+- The database moves to schema 2 (projects) automatically on first launch.
 
 ## [0.1.0] - 2026-11-17
 
