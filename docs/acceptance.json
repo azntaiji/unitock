@@ -150,8 +150,8 @@
       "phase": 2,
       "description": "A second instance on the same data directory exits 1 naming the lock file (R-09), and a terminal smaller than 60x20 shows the too-small message (R-08).",
       "verify": "go test ./... -count=1 -run 'Lock|TooSmall' -v; then by hand: run two instances.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18: 5 tests pass (artifacts/phase-2/p2-07-lock-size.txt); by hand, azntaiji ran two instances on one data dir: the second printed the lock message and exited 1."
     },
     {
       "id": "P2-08",

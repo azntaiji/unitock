@@ -9,10 +9,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. By hand, azntaiji: P2-07, run two instances on one scratch data dir; the second
-   must exit 1 naming unitock.lock. Then mark P2-07.
-2. Ask azntaiji: SPEC "Data directory" omits `alarm.wav` (written there per D-13).
-3. Gate G2 routine (docs/process/gates.md); version proposal 0.2.0.
+1. Gate G2 routine (docs/process/gates.md); version proposal 0.2.0.
 
 ## Blockers
 
@@ -24,7 +21,7 @@ None.
 |---|---|---|---|
 | make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
 | make check (lock, size) | `make check` | pass | artifacts/phase-2/check-lock-size.txt |
-| P2-07 lock, size | `go test ./... -count=1 -run 'Lock\|TooSmall' -v` | pass (5); cross-process flock checked; two-instance by hand pending | artifacts/phase-2/p2-07-lock-size.txt |
+| P2-07 lock, size | `go test ./... -count=1 -run 'Lock\|TooSmall' -v` | pass (5); two instances by hand, azntaiji 2026-11-18 | artifacts/phase-2/p2-07-lock-size.txt |
 | make check (alarm) | `make check` | pass | artifacts/phase-2/check-alarm.txt |
 | P2-06 alarm | `go test ./internal/alarm/ -count=1 -v` | pass (13) | artifacts/phase-2/p2-06-alarm.txt |
 | make check (overlay) | `make check` | pass | artifacts/phase-2/check-overlay.txt |

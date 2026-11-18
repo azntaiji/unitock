@@ -179,7 +179,8 @@ unitock [--data-dir DIR] [--version]
   another instance running).
 
 **Data directory:** `unitock.db` (SQLite, schema per D-07, migrated on startup),
-`unitock.lock` (instance lock), `unitock.log` (diagnostic log). The database schema is
+`unitock.lock` (instance lock), `unitock.log` (diagnostic log), `alarm.wav` (alarm
+chime, D-13). The database schema is
 internal; the export format is the stable way to read data.
 
 **Export JSON, schema version 1** (D-14). Times are RFC 3339 with offset; durations are
