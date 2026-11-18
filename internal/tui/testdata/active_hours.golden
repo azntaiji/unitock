@@ -1,5 +1,6 @@
 [46m [m[1;30;46m● RUNNING[m[46m [m                                  
-[1munitock[m [2mWrite report[m                         
+[1munitock[m                                      
+[2mWrite report[m                                 
                                              
 [1m   █    █████ █████   █████ █████[m            
 [1m  ██  █ █     █   █ █ █   █ █   █[m            
@@ -8,4 +9,5 @@
 [1m  ███   █████ █████   █████ █████[m            
                                              
 ███[2m░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░[m   8%
-Remaining 1:50:00 · Estimate 2:00:00         
+                                             
+[2mRemaining 1:50:00 · Estimate 2:00:00[m         

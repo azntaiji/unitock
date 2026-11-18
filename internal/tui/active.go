@@ -119,15 +119,15 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 	if b == bandOvertime {
 		left = "Overtime " + clock
 	}
-	lines := []string{
-		badge(m.task, b, th),
-		heading(m.task),
+	lines := append([]string{badge(m.task, b, th)}, heading(m.task)...)
+	lines = append(lines,
 		"",
 		timer,
 		"",
 		progressBar(m.task, now, fg),
-		left + " · Estimate " + formatClock(m.task.Estimate()),
-	}
+		"",
+		dimStyle.Render(left+" · Estimate "+formatClock(m.task.Estimate())),
+	)
 	if m.err != "" {
 		lines = append(lines, "", errStyle.Render(m.err))
 	}

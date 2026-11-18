@@ -17,18 +17,16 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Blockers
 
-- Checkpoint (asked 2026-11-17): R-26/P2-08 wording says tab fills the top suggestion
-  when it differs from the input; as built, tab on an EMPTY Project input moves focus
-  (the design shown to azntaiji). Awaiting confirmation of the clarifying sentence.
-  P2-08 stays `passes: false` until then.
+None.
 
 ## Evidence
 
 | Check | Command | Result | Raw output |
 |---|---|---|---|
 | make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
+| make check (layout) | `make check` | pass | artifacts/phase-2/check-layout.txt |
 | make check (projects) | `make check` | pass | artifacts/phase-2/check-projects.txt |
-| P2-08 projects | `go test ./... -count=1 -run 'Project' -v` | pass (11), wording check pending | artifacts/phase-2/p2-08-project.txt |
+| P2-08 projects | `go test ./... -count=1 -run 'Project' -v` | pass (11) | artifacts/phase-2/p2-08-project.txt |
 | P1-04 regression | `go test ./internal/tui/ -count=1 -run 'Start' -v` | pass | artifacts/phase-2/p1-04-regression.txt |
 | make check (badges) | `make check` | pass | artifacts/phase-2/check-badges.txt |
 | make check (pause) | `make check` | pass | artifacts/phase-2/check-pause.txt |

@@ -145,12 +145,14 @@ func badge(t task.Task, b band, th theme) string {
 	return st.Foreground(lipgloss.Black).Background(bg).Render(text)
 }
 
-// heading is the project in bold and the task name dimmed beneath the badge, or the
-// task name alone in bold when there is no project (R-17).
-func heading(t task.Task) string {
+// heading is the lines beneath the badge: the project in bold, then the task name
+// dimmed; or the task name alone in bold when there is no project (R-17).
+func heading(t task.Task) []string {
 	if t.Project == "" {
-		return lipgloss.NewStyle().Bold(true).Render(t.Name)
+		return []string{lipgloss.NewStyle().Bold(true).Render(t.Name)}
 	}
-	return lipgloss.NewStyle().Bold(true).Render(t.Project) + " " +
-		lipgloss.NewStyle().Faint(true).Render(t.Name)
+	return []string{
+		lipgloss.NewStyle().Bold(true).Render(t.Project),
+		lipgloss.NewStyle().Faint(true).Render(t.Name),
+	}
 }

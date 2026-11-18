@@ -96,7 +96,8 @@ estimate minus elapsed; below zero it is **overtime**.
   text (case-insensitive), prefix matches first, then by most recent use. The top match
   shows as dimmed ghost text when it extends the typed text. `↑`/`↓` move a highlight;
   `tab` fills in the highlighted (or else the top) suggestion when it differs from the
-  input, and otherwise moves focus; `enter` on a highlighted suggestion fills it in;
+  input, and otherwise moves focus (with the input empty and nothing highlighted, `tab`
+  moves focus); `enter` on a highlighted suggestion fills it in;
   `esc` closes the dropdown, and a second `esc` moves focus to the button.
 
 ### Active screen

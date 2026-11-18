@@ -158,8 +158,8 @@
       "phase": 2,
       "description": "The Start screen has an optional Project input that suggests existing projects as you type; tab accepts the top or highlighted suggestion when it differs from the input and otherwise moves focus; ↑/↓ and esc work the dropdown before focus; the task is stored with the existing project matched case-insensitively (R-12, R-13, R-25, R-26, D-15).",
       "verify": "go test ./... -count=1 -run 'Project' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test ./... -count=1 -run 'Project' -v: 11 PASS (store reuse/listing/upgrade, dropdown, tab, arrows, esc, enter, length); R-26 empty-input tab clarification approved by azntaiji (artifacts/phase-2/p2-08-project.txt)"
     },
     {
       "id": "P3-01",
