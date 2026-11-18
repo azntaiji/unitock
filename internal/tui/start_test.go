@@ -21,8 +21,20 @@ type harness struct {
 	m     Model
 	store *store.Store
 	clock *task.FakeClock
+	alarm *fakeAlarm
 	quit  bool
 }
+
+// fakeAlarm records Alarm calls; playing is whether the sound is on.
+type fakeAlarm struct {
+	notified []string
+	starts   int
+	playing  bool
+}
+
+func (a *fakeAlarm) Notify(name string) { a.notified = append(a.notified, name) }
+func (a *fakeAlarm) Start()             { a.starts++; a.playing = true }
+func (a *fakeAlarm) Stop()              { a.playing = false }
 
 func newHarness(t *testing.T) *harness {
 	t.Helper()
@@ -32,11 +44,12 @@ func newHarness(t *testing.T) *harness {
 	}
 	t.Cleanup(func() { _ = st.Close() })
 	clk := task.NewFakeClock(t0)
-	m, err := New(Deps{Store: st, Clock: clk})
+	alarm := &fakeAlarm{}
+	m, err := New(Deps{Store: st, Clock: clk, Alarm: alarm})
 	if err != nil {
 		t.Fatal(err)
 	}
-	h := &harness{t: t, m: m, store: st, clock: clk}
+	h := &harness{t: t, m: m, store: st, clock: clk, alarm: alarm}
 	h.run(loadProjects(m.deps)) // what Init does for the Start screen
 	return h
 }

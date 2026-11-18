@@ -9,9 +9,10 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Time-up alert modal (R-30 to R-32, R-05; P2-05): its Extend opens activeModel.openExtend(true)
-   (D-10 path already built and tested); mark P2-03 once the alert drives it.
-2. Notifier and alarm player (R-33, R-34, D-13; P2-06), then lock and minimum size
+1. Notifier and alarm player (R-33, R-34, D-13; P2-06) in internal/alarm, satisfying
+   tui.Alarm (Notify/Start/Stop, non-blocking); wire in main, defer Stop. Then the
+   by-hand P2-05 check on macOS (sound + notification) to mark P2-05.
+2. Lock and minimum size
    (R-08, R-09, D-12; P2-07).
 3. Before G2: azntaiji to review the Active golden files in internal/tui/testdata
    (`cat` them in a terminal to see colours). P2-01 stays `passes: false` until then.
@@ -25,10 +26,12 @@ None.
 | Check | Command | Result | Raw output |
 |---|---|---|---|
 | make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
+| make check (alert) | `make check` | pass | artifacts/phase-2/check-alert.txt |
+| P2-05 alert (fakes) | `go test ./... -count=1 -run 'Alert' -v` | pass; by-hand pending | artifacts/phase-2/p2-05-alert.txt |
 | make check (cancel) | `make check` | pass | artifacts/phase-2/check-cancel.txt |
 | P2-04 cancel | `go test ./internal/tui/ -count=1 -run 'Cancel' -v` | pass | artifacts/phase-2/p2-04-cancel.txt |
 | make check (extend) | `make check` | pass | artifacts/phase-2/check-extend.txt |
-| P2-03 extend | `go test ./... -count=1 -run 'Extend' -v` | 7 pass; alert path pending | artifacts/phase-2/p2-03-extend.txt |
+| P2-03 extend | `go test ./... -count=1 -run 'Extend' -v` | pass | artifacts/phase-2/p2-03-extend.txt |
 | make check (green badge) | `make check` | pass | artifacts/phase-2/check-green.txt |
 | make check (projects) | `make check` | pass | artifacts/phase-2/check-projects.txt |
 | P2-08 projects | `go test ./... -count=1 -run 'Project' -v` | pass (11) | artifacts/phase-2/p2-08-project.txt |
@@ -54,6 +57,8 @@ None.
   lists names most recent first; Start screen filters/ranks in Go (start.go).
 - Start focus begins on Project; tests press tab first (harness.startTask does).
 - Extend: activeModel.ext (extendInput); task.ExtensionFor does D-10 maths.
+- Alert: alert.go (timeUpAlert, checkTimeUp on tick/update/open). Deps.Alarm defaults
+  to nopAlarm, so the binary has no sound until internal/alarm is wired in main.
 - Store has Create/Active/Get/Complete/Cancel/Pause/Resume/Projects/AddExtension; add extension and cancel operations
   (with tests in internal/store) as their screens need them.
 - Active writes go through activeModel.save (one in flight, `busy`); results arrive as

@@ -74,13 +74,19 @@ func TestExtendInvalidShowsError(t *testing.T) {
 	}
 }
 
-// From the alert (D-10), the overtime is added too so remaining equals the entry. The
-// alert itself comes in a later task; this drives the input it will open.
+// From the alert (D-10, R-32), the overtime is added too so remaining equals the entry.
 func TestExtendFromAlertSetsRemaining(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "25m")
 	h.clock.Advance(28 * time.Minute) // 3m overtime
-	h.m.active, _ = h.m.active.openExtend(true)
+	h.tick()
+	if !h.m.active.alert.open {
+		t.Fatal("alert did not open")
+	}
+	h.press("enter") // Extend is selected first
+	if !h.m.active.ext.open || !h.m.active.ext.fromAlert {
+		t.Fatalf("extend input not open from the alert")
+	}
 	h.typeText("10m")
 	h.press("enter")
 	tk := h.m.active.task

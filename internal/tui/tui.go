@@ -39,6 +39,8 @@ type Deps struct {
 	Log   *slog.Logger
 	// Rand returns a number in [0, n). Defaults to math/rand/v2.IntN.
 	Rand func(n int) int
+	// Alarm notifies and sounds at time up. Defaults to doing nothing.
+	Alarm Alarm
 }
 
 type screen int
@@ -73,6 +75,9 @@ func New(d Deps) (Model, error) {
 	}
 	if d.Rand == nil {
 		d.Rand = rand.IntN
+	}
+	if d.Alarm == nil {
+		d.Alarm = nopAlarm{}
 	}
 	m := Model{deps: d, screen: screenStart, start: newStartModel(), theme: theme{}}
 	t, err := d.Store.Active(d.Ctx)
@@ -111,7 +116,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.theme.noColor = msg.Profile <= colorprofile.ASCII
 		return m, nil
 	case tea.KeyPressMsg:
-		if msg.String() == "ctrl+c" { // always quits (R-06)
+		if msg.String() == "ctrl+c" { // always quits (R-06), silencing any alarm (R-31)
+			m.deps.Alarm.Stop()
 			return m, tea.Quit
 		}
 	case taskStartedMsg:
@@ -153,7 +159,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) openActive(t task.Task) (Model, tea.Cmd) {
 	m.gen++
 	m.screen = screenActive
-	m.active = newActiveModel(t, m.gen)
+	m.active = newActiveModel(t, m.gen).checkTimeUp(m.deps.Clock.Now(), m.deps)
 	return m, m.active.tick()
 }
 

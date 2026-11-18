@@ -118,8 +118,8 @@
       "phase": 2,
       "description": "Extend adds the entered amount; extend from the alert sets remaining to the entered amount per D-10; both are stored as extension rows (R-21, R-32).",
       "verify": "go test ./... -count=1 -run 'Extend' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test ./... -count=1 -run 'Extend' -v: 9 PASS (d adds entered amount; alert Extend adds overtime + amount so remaining = entry; rows stored) (artifacts/phase-2/p2-03-extend.txt)"
     },
     {
       "id": "P2-04",

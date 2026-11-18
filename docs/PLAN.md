@@ -38,7 +38,7 @@ and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
   - [x] Project input with suggestions (R-12, R-13, R-25, R-26, D-15).
   - [x] Extend with the duration input (R-21).
   - [x] Cancel confirmation (R-22).
-  - [ ] Time-up alert modal with Extend / Mark as completed and the D-10 rule (R-30 to
+  - [x] Time-up alert modal with Extend / Mark as completed and the D-10 rule (R-30 to
         R-32); fires immediately when relaunched in overtime (R-05).
   - [ ] Notifier and alarm player behind interfaces, with the OS implementations and
         fallbacks (R-33, R-34, D-13).

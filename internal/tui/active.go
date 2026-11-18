@@ -34,12 +34,13 @@ type saveErrMsg struct {
 
 // activeModel is the Active screen.
 type activeModel struct {
-	task task.Task
-	gen  int
-	busy bool // a store write is in flight; further writes wait for it
-	err  string
-	ext  extendInput
-	conf confirmCancel
+	task  task.Task
+	gen   int
+	busy  bool // a store write is in flight; further writes wait for it
+	err   string
+	ext   extendInput
+	conf  confirmCancel
+	alert timeUpAlert
 }
 
 // confirmCancel is the cancel confirmation that `n` opens (R-22). No is selected first,
@@ -75,6 +76,9 @@ func (m activeModel) openExtend(fromAlert bool) (activeModel, tea.Cmd) {
 func (m activeModel) extendKey(msg tea.KeyPressMsg, d Deps) (activeModel, tea.Cmd) {
 	switch msg.String() {
 	case "esc":
+		if m.ext.fromAlert {
+			return m.backToAlert(d), nil
+		}
 		m.ext = extendInput{}
 		return m, nil
 	case "enter":
@@ -112,11 +116,13 @@ func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {
 		if msg.gen != m.gen {
 			return m, nil
 		}
+		m = m.checkTimeUp(d.Clock.Now(), d)
 		return m, m.tick()
 	case taskUpdatedMsg:
 		m.busy = false
 		m.task = msg.task
-		m.ext = extendInput{} // a stored extension closes the input
+		m.ext = extendInput{}               // a stored extension closes the input
+		m = m.checkTimeUp(d.Clock.Now(), d) // e.g. resumed in overtime
 		return m, nil
 	case saveErrMsg:
 		m.busy = false
@@ -127,6 +133,9 @@ func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {
 	case tea.KeyPressMsg:
 		if m.ext.open {
 			return m.extendKey(msg, d)
+		}
+		if m.alert.open {
+			return m.alertKey(msg, d)
 		}
 		if m.conf.open {
 			return m.confirmKey(msg, d)
@@ -153,13 +162,7 @@ func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {
 				return taskUpdatedMsg{t}
 			})
 		case "e":
-			return m.save(d, func(t task.Task, now time.Time) tea.Msg {
-				if err := d.Store.Complete(d.Ctx, t.ID, now); err != nil {
-					return saveErrMsg{"complete", err}
-				}
-				t.Status, t.EndedAt = task.Completed, now
-				return taskCompletedMsg{t}
-			})
+			return m.complete(d)
 		}
 		return m, nil
 	}
@@ -192,6 +195,17 @@ func (m activeModel) confirmKey(msg tea.KeyPressMsg, d Deps) (activeModel, tea.C
 		return m, tea.Quit
 	}
 	return m, nil
+}
+
+// complete stores the task as completed; the root model then shows the Done screen.
+func (m activeModel) complete(d Deps) (activeModel, tea.Cmd) {
+	return m.save(d, func(t task.Task, now time.Time) tea.Msg {
+		if err := d.Store.Complete(d.Ctx, t.ID, now); err != nil {
+			return saveErrMsg{"complete", err}
+		}
+		t.Status, t.EndedAt = task.Completed, now
+		return taskCompletedMsg{t}
+	})
 }
 
 // cancel stores the task as cancelled; the root model then opens the Start screen.
@@ -248,6 +262,9 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 			lines = append(lines, errStyle.Render("  "+m.ext.err))
 		}
 	}
+	if m.alert.open {
+		lines = append(lines, "", m.alertView(th))
+	}
 	if m.conf.open {
 		yes, no := "  Yes  ", "  No  "
 		if m.conf.yes {
@@ -264,8 +281,14 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 }
 
 func (m activeModel) hints() string {
+	if m.ext.open && m.ext.fromAlert {
+		return "enter add · esc back · ctrl+c quit"
+	}
 	if m.ext.open {
 		return "enter add · esc cancel · ctrl+c quit"
+	}
+	if m.alert.open {
+		return "←/→ choose · enter select · d extend · e complete · q quit"
 	}
 	if m.conf.open {
 		return "y yes · n/esc no · ←/→ choose · enter select · q quit"
