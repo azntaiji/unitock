@@ -9,8 +9,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Ask azntaiji to decide D-11 (stats periods and buckets) and D-14 (export format),
-   both Proposed; Phase 3 builds on them.
+1. D-11 and D-14 Approved 2026-11-18.
 2. Ask azntaiji: fix or accept non-ASCII case matching of project names (SQLite NOCASE
    is ASCII only; "über" vs "Über" makes two projects; R-25). A fix amends D-15.
 3. Then Phase 3 tasks in docs/PLAN.md, starting with `internal/stats`.

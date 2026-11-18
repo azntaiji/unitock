@@ -132,7 +132,7 @@ long the alarm rang.
 **Consequences:** time spent ignoring the alarm counts toward the estimate in stats.
 
 ## D-11 — Stats periods and buckets
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-18
 **Decision:** all dates local. 7 days = today and the 6 days before, 7 daily buckets.
 30 days = today and the 29 days before, buckets of 7 days starting at the period's first
 day (the last bucket has 2 days), labelled by bucket start. 3 months = from the 1st of
@@ -163,7 +163,7 @@ fatal. Behind an interface so tests use a fake.
 **Alternatives:** an audio library such as `oto` (needs cgo on Linux, breaks D-05/D-06).
 
 ## D-14 — Export format
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-18
 **Decision:** JSON schema version 1 exactly as in `docs/SPEC.md` Interfaces. Fields are
 only ever added in later 1.x versions; renames or removals bump `schema_version` and are
 breaking changes.
