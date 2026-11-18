@@ -30,6 +30,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a looping chime (`afplay`; `paplay` or `aplay`) until you choose. With no working
   player, the terminal bell rings every 2 seconds instead. The chime is written to
   `alarm.wav` in the data directory.
+- Only one unitock runs per data directory: a second exits with status 1 and names the
+  lock file (`unitock.lock`).
+- Below 60×20 the app shows "Terminal too small" with the current size instead of the
+  screen; only `ctrl+c` works until it is resized. Timers and the alarm keep running.
 - `p` pauses and resumes the active task. Paused time does not count, and a task paused
   at quit is still paused at the next launch.
 

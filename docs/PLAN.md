@@ -42,7 +42,7 @@ and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
         R-32); fires immediately when relaunched in overtime (R-05).
   - [x] Notifier and alarm player behind interfaces, with the OS implementations and
         fallbacks (R-33, R-34, D-13).
-  - [ ] Single-instance lock (R-09, D-12) and minimum terminal size (R-08).
+  - [x] Single-instance lock (R-09, D-12) and minimum terminal size (R-08).
 - **Exit criteria:** P2-01 to P2-08.
 - **Gate G2:** azntaiji. Expected version 0.2.0.
 

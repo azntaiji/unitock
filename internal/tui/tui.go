@@ -106,6 +106,18 @@ func (m Model) startCmds() tea.Cmd {
 	return tea.Batch(m.start.focusCmd(), loadProjects(m.deps))
 }
 
+// MinWidth and MinHeight are the smallest terminal the screens fit (R-08).
+const (
+	MinWidth  = 60
+	MinHeight = 20
+)
+
+// tooSmall reports whether the terminal is below the minimum size. Before the first
+// size message arrives the size is unknown, and the screen is shown.
+func (m Model) tooSmall() bool {
+	return m.width > 0 && m.height > 0 && (m.width < MinWidth || m.height < MinHeight)
+}
+
 // Update implements tea.Model.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -119,6 +131,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.String() == "ctrl+c" { // always quits (R-06), silencing any alarm (R-31)
 			m.deps.Alarm.Stop()
 			return m, tea.Quit
+		}
+		if m.tooSmall() { // the screen is hidden, so its keys are too (R-08)
+			return m, nil
 		}
 	case taskStartedMsg:
 		m.deps.Log.Info("task started", "id", msg.task.ID)
@@ -166,12 +181,18 @@ func (m Model) openActive(t task.Task) (Model, tea.Cmd) {
 // View implements tea.Model.
 func (m Model) View() tea.View {
 	var body, hints string
-	switch m.screen {
-	case screenStart:
+	switch {
+	case m.tooSmall():
+		body = lipgloss.JoinVertical(lipgloss.Left,
+			titleStyle.Render("Terminal too small"),
+			fmt.Sprintf("Resize to at least %d×%d (now %d×%d).", MinWidth, MinHeight, m.width, m.height),
+		)
+		hints = "ctrl+c quit"
+	case m.screen == screenStart:
 		body, hints = m.start.view(), m.start.hints()
-	case screenActive:
+	case m.screen == screenActive:
 		body, hints = m.active.view(m.deps.Clock.Now(), m.width, m.theme), m.active.hints()
-	case screenDone:
+	case m.screen == screenDone:
 		body, hints = m.done.view(), m.done.hints()
 	}
 	v := tea.NewView(lipgloss.JoinVertical(lipgloss.Left, body, "", renderHints(hints)))

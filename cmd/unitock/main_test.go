@@ -144,3 +144,46 @@ func TestDefaultDataDir(t *testing.T) {
 		})
 	}
 }
+
+// A second instance on the same data directory exits 1 naming the lock file (R-09).
+func TestLockSecondInstanceExitsOne(t *testing.T) {
+	dir := t.TempDir()
+	stubUI(t, func(_ context.Context, d deps) error {
+		var out, errb bytes.Buffer
+		if code := run(context.Background(), []string{"--data-dir", dir}, &out, &errb, noEnv); code != 1 {
+			t.Errorf("second instance exit = %d, want 1", code)
+		}
+		lock := filepath.Join(dir, LockFile)
+		if msg := errb.String(); !strings.Contains(msg, lock) || !strings.Contains(msg, "already running") {
+			t.Errorf("stderr %q, want it to name %s", msg, lock)
+		}
+		return nil
+	})
+	var out, errb bytes.Buffer
+	if code := run(context.Background(), []string{"--data-dir", dir}, &out, &errb, noEnv); code != 0 {
+		t.Fatalf("first instance exit = %d, stderr %q", code, errb.String())
+	}
+	// Released at exit: a later run starts normally.
+	stubUI(t, func(context.Context, deps) error { return nil })
+	if code := run(context.Background(), []string{"--data-dir", dir}, &out, &errb, noEnv); code != 0 {
+		t.Errorf("run after release exit = %d, stderr %q", code, errb.String())
+	}
+}
+
+// Other data directories are independent.
+func TestLockIsPerDataDir(t *testing.T) {
+	a, b := t.TempDir(), t.TempDir()
+	release, err := acquireLock(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer release()
+	if _, err := acquireLock(a); !errors.Is(err, errLocked) {
+		t.Errorf("same dir: err %v, want errLocked", err)
+	}
+	other, err := acquireLock(b)
+	if err != nil {
+		t.Fatalf("other dir: %v", err)
+	}
+	other()
+}

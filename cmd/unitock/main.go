@@ -127,6 +127,13 @@ func start(ctx context.Context, dataDir string, getenv func(string) string) erro
 	log := slog.New(slog.NewTextHandler(logf, nil))
 	log.Info("start", "version", version, "commit", commit, "data_dir", dataDir)
 
+	release, err := acquireLock(dataDir)
+	if err != nil {
+		log.Warn("lock", "err", err)
+		return err
+	}
+	defer release()
+
 	st, err := store.Open(ctx, dataDir)
 	if err != nil {
 		log.Error("open store", "err", err)
