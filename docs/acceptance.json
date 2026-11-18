@@ -126,8 +126,8 @@
       "phase": 2,
       "description": "Cancel asks for confirmation, and on 'y' stores the task as cancelled and shows the Start screen; 'n' and esc leave it running (R-22).",
       "verify": "go test ./internal/tui/ -count=1 -run 'Cancel' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test ./internal/tui/ -count=1 -run 'Cancel' -v: PASS (y, enter on Yes, n/esc/enter on No/tab back, other keys inactive, project reload, save error) (artifacts/phase-2/p2-04-cancel.txt)"
     },
     {
       "id": "P2-05",

@@ -37,7 +37,7 @@ and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
   - [x] Pause/resume stored as pause rows (R-20).
   - [x] Project input with suggestions (R-12, R-13, R-25, R-26, D-15).
   - [x] Extend with the duration input (R-21).
-  - [ ] Cancel confirmation (R-22).
+  - [x] Cancel confirmation (R-22).
   - [ ] Time-up alert modal with Extend / Mark as completed and the D-10 rule (R-30 to
         R-32); fires immediately when relaunched in overtime (R-05).
   - [ ] Notifier and alarm player behind interfaces, with the OS implementations and

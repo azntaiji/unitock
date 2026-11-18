@@ -21,6 +21,8 @@ type tickMsg struct{ gen int }
 
 type taskCompletedMsg struct{ task task.Task }
 
+type taskCancelledMsg struct{ task task.Task }
+
 // taskUpdatedMsg carries the active task after a stored change, such as a pause.
 type taskUpdatedMsg struct{ task task.Task }
 
@@ -37,6 +39,14 @@ type activeModel struct {
 	busy bool // a store write is in flight; further writes wait for it
 	err  string
 	ext  extendInput
+	conf confirmCancel
+}
+
+// confirmCancel is the cancel confirmation that `n` opens (R-22). No is selected first,
+// so a stray enter does not cancel.
+type confirmCancel struct {
+	open bool
+	yes  bool // Yes is selected
 }
 
 // extendInput is the duration input that `d` opens to add time (R-21).
@@ -110,6 +120,7 @@ func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {
 		return m, nil
 	case saveErrMsg:
 		m.busy = false
+		m.conf = confirmCancel{}
 		d.Log.Error(msg.op+" task", "id", m.task.ID, "err", msg.err)
 		m.err = "Could not save: " + msg.err.Error()
 		return m, nil
@@ -117,11 +128,18 @@ func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {
 		if m.ext.open {
 			return m.extendKey(msg, d)
 		}
+		if m.conf.open {
+			return m.confirmKey(msg, d)
+		}
 		switch msg.String() {
 		case "q":
 			return m, tea.Quit
 		case "d":
 			return m.openExtend(false)
+		case "n":
+			m.conf = confirmCancel{open: true}
+			m.err = ""
+			return m, nil
 		case "p":
 			return m.save(d, func(t task.Task, now time.Time) tea.Msg {
 				op, fn := "pause", d.Store.Pause
@@ -151,6 +169,40 @@ func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {
 		return m, cmd
 	}
 	return m, nil
+}
+
+// confirmKey handles a key while the cancel confirmation is open (R-22): y, or enter on
+// Yes, cancels the task; n, esc, or enter on No closes it unchanged; ←/→/tab choose.
+// q still quits (R-06); other Active keys are inactive.
+func (m activeModel) confirmKey(msg tea.KeyPressMsg, d Deps) (activeModel, tea.Cmd) {
+	switch msg.String() {
+	case "left", "right", "tab", "shift+tab":
+		m.conf.yes = !m.conf.yes
+	case "n", "esc":
+		m.conf = confirmCancel{}
+	case "enter":
+		if !m.conf.yes {
+			m.conf = confirmCancel{}
+			return m, nil
+		}
+		return m.cancel(d)
+	case "y":
+		return m.cancel(d)
+	case "q":
+		return m, tea.Quit
+	}
+	return m, nil
+}
+
+// cancel stores the task as cancelled; the root model then opens the Start screen.
+func (m activeModel) cancel(d Deps) (activeModel, tea.Cmd) {
+	return m.save(d, func(t task.Task, now time.Time) tea.Msg {
+		if err := d.Store.Cancel(d.Ctx, t.ID, now); err != nil {
+			return saveErrMsg{"cancel", err}
+		}
+		t.Status, t.EndedAt = task.Cancelled, now
+		return taskCancelledMsg{t}
+	})
 }
 
 // save runs one store write for the task at the clock's current time, unless another
@@ -196,6 +248,15 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 			lines = append(lines, errStyle.Render("  "+m.ext.err))
 		}
 	}
+	if m.conf.open {
+		yes, no := "  Yes  ", "  No  "
+		if m.conf.yes {
+			yes = pickStyle.Render(yes)
+		} else {
+			no = pickStyle.Render(no)
+		}
+		lines = append(lines, "", errStyle.Render("Cancel this task?")+"  "+yes+" "+no)
+	}
 	if m.err != "" {
 		lines = append(lines, "", errStyle.Render(m.err))
 	}
@@ -206,10 +267,13 @@ func (m activeModel) hints() string {
 	if m.ext.open {
 		return "enter add · esc cancel · ctrl+c quit"
 	}
-	if m.task.Paused() {
-		return "p resume · d add time · e complete · q quit"
+	if m.conf.open {
+		return "y yes · n/esc no · ←/→ choose · enter select · q quit"
 	}
-	return "p pause · d add time · e complete · q quit"
+	if m.task.Paused() {
+		return "p resume · d add time · n cancel · e complete · q quit"
+	}
+	return "p pause · d add time · n cancel · e complete · q quit"
 }
 
 // timerText is the remaining time, or +overtime once the estimate is used up (R-17, R-18).

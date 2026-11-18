@@ -20,6 +20,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   above the task name.
 - `d` adds time to the active task, running or paused, using the same duration forms as
   the Start screen.
+- `n` cancels the active task after a Yes/No confirmation (No is selected first; `y`
+  confirms at once) and returns to the Start screen.
 - `p` pauses and resumes the active task. Paused time does not count, and a task paused
   at quit is still paused at the next launch.
 

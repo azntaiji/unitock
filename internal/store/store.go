@@ -412,6 +412,12 @@ func (s *Store) setPaused(ctx context.Context, id int64, at time.Time, pause boo
 	return s.Get(ctx, id)
 }
 
+// Cancel marks an active task cancelled at endedAt, closing any open pause at the same
+// instant (R-22). It returns ErrNotActive if the task is not active.
+func (s *Store) Cancel(ctx context.Context, id int64, endedAt time.Time) error {
+	return s.end(ctx, id, task.Cancelled, endedAt)
+}
+
 func (s *Store) end(ctx context.Context, id int64, status task.Status, endedAt time.Time) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {

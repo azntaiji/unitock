@@ -9,9 +9,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Cancel confirmation (R-22; P2-04). Reopen Start with Model.startCmds() so projects
-   reload.
-2. Then the time-up alert (R-30 to R-32): its Extend opens activeModel.openExtend(true)
+1. Time-up alert modal (R-30 to R-32, R-05; P2-05): its Extend opens activeModel.openExtend(true)
    (D-10 path already built and tested); mark P2-03 once the alert drives it.
 3. Before G2: azntaiji to review the Active golden files in internal/tui/testdata
    (`cat` them in a terminal to see colours). P2-01 stays `passes: false` until then.
@@ -25,6 +23,8 @@ None.
 | Check | Command | Result | Raw output |
 |---|---|---|---|
 | make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
+| make check (cancel) | `make check` | pass | artifacts/phase-2/check-cancel.txt |
+| P2-04 cancel | `go test ./internal/tui/ -count=1 -run 'Cancel' -v` | pass | artifacts/phase-2/p2-04-cancel.txt |
 | make check (extend) | `make check` | pass | artifacts/phase-2/check-extend.txt |
 | P2-03 extend | `go test ./... -count=1 -run 'Extend' -v` | 7 pass; alert path pending | artifacts/phase-2/p2-03-extend.txt |
 | make check (green badge) | `make check` | pass | artifacts/phase-2/check-green.txt |
@@ -52,7 +52,7 @@ None.
   lists names most recent first; Start screen filters/ranks in Go (start.go).
 - Start focus begins on Project; tests press tab first (harness.startTask does).
 - Extend: activeModel.ext (extendInput); task.ExtensionFor does D-10 maths.
-- Store has Create/Active/Get/Complete/Pause/Resume/Projects/AddExtension; add extension and cancel operations
+- Store has Create/Active/Get/Complete/Cancel/Pause/Resume/Projects/AddExtension; add extension and cancel operations
   (with tests in internal/store) as their screens need them.
 - Active writes go through activeModel.save (one in flight, `busy`); results arrive as
   taskUpdatedMsg / taskCompletedMsg / saveErrMsg. Harness runs commands for `p` too.

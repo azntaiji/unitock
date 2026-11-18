@@ -442,3 +442,31 @@ func TestExtendStoresExtensionRows(t *testing.T) {
 		t.Errorf("extend completed task: %v, want ErrNotActive", err)
 	}
 }
+
+func TestCancelMarksTaskCancelled(t *testing.T) {
+	ctx := context.Background()
+	s, _ := openTemp(t)
+	tk, err := s.Create(ctx, "", "write", 25*time.Minute, t0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Pause(ctx, tk.ID, t0.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Cancel(ctx, tk.ID, t0.Add(3*time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.Get(ctx, tk.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Status != task.Cancelled || !got.EndedAt.Equal(t0.Add(3*time.Minute)) || got.Paused() {
+		t.Errorf("cancelled task = %+v", got)
+	}
+	if _, err := s.Active(ctx); !errors.Is(err, ErrNoActive) {
+		t.Errorf("Active after cancel: %v, want ErrNoActive", err)
+	}
+	if err := s.Cancel(ctx, tk.ID, t0.Add(4*time.Minute)); !errors.Is(err, ErrNotActive) {
+		t.Errorf("second Cancel: %v, want ErrNotActive", err)
+	}
+}
