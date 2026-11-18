@@ -231,6 +231,17 @@ func (m activeModel) save(d Deps, write func(t task.Task, now time.Time) tea.Msg
 	return m, func() tea.Msg { return write(t, d.Clock.Now()) }
 }
 
+// overlay draws box on top of screen, centred both ways, so the alert floats over the
+// screen beneath it (R-30). The result is as wide and tall as the larger of the two.
+func overlay(screen, box string) string {
+	x := max(0, (lipgloss.Width(screen)-lipgloss.Width(box))/2)
+	y := max(0, (lipgloss.Height(screen)-lipgloss.Height(box))/2)
+	return lipgloss.NewCompositor(
+		lipgloss.NewLayer(screen),
+		lipgloss.NewLayer(box).X(x).Y(y).Z(1),
+	).Render()
+}
+
 // view draws the Active screen (R-17, R-18, D-09): name, status badge, timer in block
 // digits (plain bold when narrower than blockMinWidth), progress bar, and the remaining
 // and estimate as text. Paused dims the digits.
@@ -262,9 +273,6 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 			lines = append(lines, errStyle.Render("  "+m.ext.err))
 		}
 	}
-	if m.alert.open {
-		lines = append(lines, "", m.alertView(th))
-	}
 	if m.conf.open {
 		yes, no := "  Yes  ", "  No  "
 		if m.conf.yes {
@@ -277,7 +285,11 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 	if m.err != "" {
 		lines = append(lines, "", errStyle.Render(m.err))
 	}
-	return lipgloss.JoinVertical(lipgloss.Left, lines...)
+	screen := lipgloss.JoinVertical(lipgloss.Left, lines...)
+	if m.alert.open {
+		return overlay(screen, m.alertView(th, lipgloss.Width(screen)))
+	}
+	return screen
 }
 
 func (m activeModel) hints() string {

@@ -3,7 +3,7 @@
 Phase: 2
 Phase name: Active screen and alert
 Gate: G2 not requested
-Updated: 2026-11-17
+Updated: 2026-11-18
 
 Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
@@ -14,8 +14,6 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
    by-hand P2-05 check on macOS (sound + notification) to mark P2-05.
 2. Lock and minimum size
    (R-08, R-09, D-12; P2-07).
-3. Before G2: azntaiji to review the Active golden files in internal/tui/testdata
-   (`cat` them in a terminal to see colours). P2-01 stays `passes: false` until then.
 
 ## Blockers
 
@@ -26,6 +24,7 @@ None.
 | Check | Command | Result | Raw output |
 |---|---|---|---|
 | make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
+| make check (overlay) | `make check` | pass | artifacts/phase-2/check-overlay.txt |
 | make check (alert) | `make check` | pass | artifacts/phase-2/check-alert.txt |
 | P2-05 alert (fakes) | `go test ./... -count=1 -run 'Alert' -v` | pass; by-hand pending | artifacts/phase-2/p2-05-alert.txt |
 | make check (cancel) | `make check` | pass | artifacts/phase-2/check-cancel.txt |
@@ -39,7 +38,7 @@ None.
 | make check (badges) | `make check` | pass | artifacts/phase-2/check-badges.txt |
 | make check (pause) | `make check` | pass | artifacts/phase-2/check-pause.txt |
 | P2-02 pause | `go test ./... -count=1 -run 'Pause' -v` | pass | artifacts/phase-2/p2-02-pause.txt |
-| P2-01 view goldens | `go test ./internal/tui/ -count=1 -run 'View' -v` | pass, awaiting golden review | artifacts/phase-2/p2-01-view.txt |
+| P2-01 view goldens | `go test ./internal/tui/ -count=1 -run 'View' -v` | pass; goldens approved by azntaiji 2026-11-18 | artifacts/phase-2/p2-01-view.txt |
 
 ## Gate request
 
@@ -57,7 +56,8 @@ None.
   lists names most recent first; Start screen filters/ranks in Go (start.go).
 - Start focus begins on Project; tests press tab first (harness.startTask does).
 - Extend: activeModel.ext (extendInput); task.ExtensionFor does D-10 maths.
-- Alert: alert.go (timeUpAlert, checkTimeUp on tick/update/open). Deps.Alarm defaults
+- Alert: alert.go (timeUpAlert, checkTimeUp on tick/update/open); drawn over the
+  screen with `overlay` (lipgloss Compositor) in active.go, spanning its width. Deps.Alarm defaults
   to nopAlarm, so the binary has no sound until internal/alarm is wired in main.
 - Store has Create/Active/Get/Complete/Cancel/Pause/Resume/Projects/AddExtension; add extension and cancel operations
   (with tests in internal/store) as their screens need them.

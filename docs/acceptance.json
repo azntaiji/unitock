@@ -102,8 +102,8 @@
       "phase": 2,
       "description": "The Active screen shows the D-09 badge (RUNNING, ENDING, OVERTIME, PAUSED) with the project and task name beneath it, and renders the timer in block digits with a progress bar in the colour band for >50%, <=50%, <=25%, <=10%, paused, overtime, and NO_COLOR, matching reviewed golden files (R-17, R-18, D-09).",
       "verify": "go test ./internal/tui/ -count=1 -run 'View' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18: verify passes (artifacts/phase-2/p2-01-view.txt); golden files reviewed and approved by azntaiji 2026-11-18."
     },
     {
       "id": "P2-02",

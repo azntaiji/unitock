@@ -85,8 +85,9 @@ func (m activeModel) backToAlert(d Deps) activeModel {
 
 var alertBoxStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(0, 2)
 
-// alertView is the modal box: a heading, the task, and the two choices (R-31).
-func (m activeModel) alertView(th theme) string {
+// alertView is the modal box: a heading, the task, and the two choices (R-31). It is at
+// least minWidth wide, so it can cover the whole screen width beneath it.
+func (m activeModel) alertView(th theme, minWidth int) string {
 	extend, complete := "  Extend  ", "  Mark as completed  "
 	if m.alert.complete {
 		complete = pickStyle.Render(complete)
@@ -94,10 +95,8 @@ func (m activeModel) alertView(th theme) string {
 		extend = pickStyle.Render(extend)
 	}
 	title := lipgloss.NewStyle().Bold(true).Foreground(bandOvertime.color(th)).Render("▲ Time's up")
-	return alertBoxStyle.BorderForeground(bandOvertime.color(th)).Render(lipgloss.JoinVertical(lipgloss.Left,
-		title,
-		m.task.Name,
-		"",
-		extend+" "+complete,
-	))
+	body := lipgloss.JoinVertical(lipgloss.Left, title, m.task.Name, "", extend+" "+complete)
+	// Width counts the padding and border.
+	w := max(lipgloss.Width(body)+alertBoxStyle.GetHorizontalFrameSize(), minWidth)
+	return alertBoxStyle.Width(w).BorderForeground(bandOvertime.color(th)).Render(body)
 }
