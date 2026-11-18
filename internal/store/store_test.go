@@ -2,9 +2,11 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -68,7 +70,7 @@ func TestReopenIsIdempotentAndKeepsData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	created, err := s.Create(ctx, "write report", 30*time.Minute, t0)
+	created, err := s.Create(ctx, "", "write report", 30*time.Minute, t0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,7 +109,7 @@ func TestCreatePersistsStartedTask(t *testing.T) {
 	s, _ := openTemp(t)
 	started := t0.Add(1234 * time.Millisecond)
 
-	got, err := s.Create(ctx, "Deep work", 90*time.Minute, started)
+	got, err := s.Create(ctx, "", "Deep work", 90*time.Minute, started)
 	if err != nil {
 		t.Fatalf("Create: %v", err)
 	}
@@ -148,11 +150,11 @@ func TestCreatePersistsStartedTask(t *testing.T) {
 func TestSecondActiveTaskRejected(t *testing.T) {
 	ctx := context.Background()
 	s, _ := openTemp(t)
-	first, err := s.Create(ctx, "one", time.Hour, t0)
+	first, err := s.Create(ctx, "", "one", time.Hour, t0)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Create(ctx, "two", time.Hour, t0.Add(time.Minute)); !errors.Is(err, ErrActiveExists) {
+	if _, err := s.Create(ctx, "", "two", time.Hour, t0.Add(time.Minute)); !errors.Is(err, ErrActiveExists) {
 		t.Fatalf("second Create = %v, want ErrActiveExists", err)
 	}
 	var n int
@@ -167,7 +169,7 @@ func TestSecondActiveTaskRejected(t *testing.T) {
 	if err := s.Complete(ctx, first.ID, t0.Add(30*time.Minute)); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Create(ctx, "two", time.Hour, t0.Add(31*time.Minute)); err != nil {
+	if _, err := s.Create(ctx, "", "two", time.Hour, t0.Add(31*time.Minute)); err != nil {
 		t.Fatalf("Create after Complete: %v", err)
 	}
 }
@@ -175,7 +177,7 @@ func TestSecondActiveTaskRejected(t *testing.T) {
 func TestCompleteMarksTaskCompleted(t *testing.T) {
 	ctx := context.Background()
 	s, _ := openTemp(t)
-	tk, err := s.Create(ctx, "focus", 25*time.Minute, t0)
+	tk, err := s.Create(ctx, "", "focus", 25*time.Minute, t0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -213,7 +215,7 @@ func TestCompleteMarksTaskCompleted(t *testing.T) {
 func TestGetLoadsExtensionsAndPauses(t *testing.T) {
 	ctx := context.Background()
 	s, _ := openTemp(t)
-	tk, err := s.Create(ctx, "x", 30*time.Minute, t0)
+	tk, err := s.Create(ctx, "", "x", 30*time.Minute, t0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -256,10 +258,10 @@ func TestErrors(t *testing.T) {
 	if err := s.Complete(ctx, 42, t0); !errors.Is(err, ErrNotActive) {
 		t.Errorf("Complete(42) = %v, want ErrNotActive", err)
 	}
-	if _, err := s.Create(ctx, "", time.Hour, t0); err == nil {
+	if _, err := s.Create(ctx, "", "", time.Hour, t0); err == nil {
 		t.Error("Create with empty name succeeded")
 	}
-	if _, err := s.Create(ctx, "x", 0, t0); err == nil {
+	if _, err := s.Create(ctx, "", "x", 0, t0); err == nil {
 		t.Error("Create with zero estimate succeeded")
 	}
 }
@@ -267,7 +269,7 @@ func TestErrors(t *testing.T) {
 func TestPauseResumeStoresPauseRows(t *testing.T) {
 	ctx := context.Background()
 	s, dir := openTemp(t)
-	tk, err := s.Create(ctx, "write", 25*time.Minute, t0)
+	tk, err := s.Create(ctx, "", "write", 25*time.Minute, t0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -320,5 +322,94 @@ func TestPauseResumeStoresPauseRows(t *testing.T) {
 	}
 	if _, err := s2.Pause(ctx, 999, t0); !errors.Is(err, ErrNotFound) {
 		t.Errorf("Pause unknown: %v, want ErrNotFound", err)
+	}
+}
+
+func TestProjectCreateReusesCaseInsensitiveMatch(t *testing.T) {
+	ctx := context.Background()
+	s, _ := openTemp(t)
+	first, err := s.Create(ctx, "unitock", "a", time.Hour, t0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first.Project != "unitock" {
+		t.Errorf("project = %q, want unitock", first.Project)
+	}
+	if err := s.Complete(ctx, first.ID, t0.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	second, err := s.Create(ctx, "UNITOCK", "b", time.Hour, t0.Add(time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if second.Project != "unitock" {
+		t.Errorf("project = %q, want the stored spelling unitock", second.Project)
+	}
+	var n int
+	if err := s.db.QueryRowContext(ctx, `SELECT count(*) FROM projects`).Scan(&n); err != nil || n != 1 {
+		t.Errorf("projects rows = %d (%v), want 1", n, err)
+	}
+}
+
+func TestProjectNoneAndListingOrder(t *testing.T) {
+	ctx := context.Background()
+	s, _ := openTemp(t)
+	if ps, err := s.Projects(ctx); err != nil || len(ps) != 0 {
+		t.Fatalf("Projects on empty db = %v, %v", ps, err)
+	}
+	start := t0
+	for _, p := range []string{"alpha", "", "beta", "alpha", "gamma"} {
+		tk, err := s.Create(ctx, p, "x", time.Hour, start)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if tk.Project != p {
+			t.Errorf("project = %q, want %q", tk.Project, p)
+		}
+		if err := s.Complete(ctx, tk.ID, start.Add(time.Minute)); err != nil {
+			t.Fatal(err)
+		}
+		start = start.Add(time.Hour)
+	}
+	got, err := s.Projects(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"gamma", "alpha", "beta"}; !slices.Equal(got, want) {
+		t.Errorf("Projects = %v, want %v (most recently used first)", got, want)
+	}
+}
+
+// A v0.1.0 database (schema 1) with tasks upgrades to projects without losing them.
+func TestProjectMigrationUpgradesSchemaOne(t *testing.T) {
+	ctx := context.Background()
+	dir := t.TempDir()
+	db, err := sql.Open("sqlite", "file:"+filepath.Join(dir, DBFile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	v1, err := migrationFS.ReadFile("migrations/0001_init.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, q := range []string{string(v1), "PRAGMA user_version = 1",
+		`INSERT INTO tasks (name, status, started_at, original_estimate_ms) VALUES ('old', 'active', 0, 60000)`} {
+		if _, err := db.ExecContext(ctx, q); err != nil {
+			t.Fatal(err)
+		}
+	}
+	_ = db.Close()
+
+	s, err := Open(ctx, dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = s.Close() })
+	got, err := s.Active(ctx)
+	if err != nil || got.Name != "old" || got.Project != "" {
+		t.Errorf("after upgrade: %+v, %v", got, err)
+	}
+	if v, _ := s.SchemaVersion(ctx); v != 2 {
+		t.Errorf("schema version = %d, want 2", v)
 	}
 }

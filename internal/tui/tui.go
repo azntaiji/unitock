@@ -21,7 +21,8 @@ import (
 
 // Store is the persistence the UI needs. *store.Store satisfies it.
 type Store interface {
-	Create(ctx context.Context, name string, estimate time.Duration, startedAt time.Time) (task.Task, error)
+	Create(ctx context.Context, project, name string, estimate time.Duration, startedAt time.Time) (task.Task, error)
+	Projects(ctx context.Context) ([]string, error)
 	Active(ctx context.Context) (task.Task, error)
 	Complete(ctx context.Context, id int64, endedAt time.Time) error
 	Pause(ctx context.Context, id int64, at time.Time) (task.Task, error)
@@ -89,7 +90,13 @@ func (m Model) Init() tea.Cmd {
 	if m.screen == screenActive {
 		return m.active.tick()
 	}
-	return m.start.focusCmd()
+	return m.startCmds()
+}
+
+// startCmds are the Start screen's opening commands: cursor blink and loading the
+// projects for suggestions (R-26).
+func (m Model) startCmds() tea.Cmd {
+	return tea.Batch(m.start.focusCmd(), loadProjects(m.deps))
 }
 
 // Update implements tea.Model.
@@ -129,7 +136,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.screen = screenStart
 			m.start = newStartModel()
-			cmd = m.start.focusCmd()
+			cmd = m.startCmds()
 		}
 	}
 	return m, cmd

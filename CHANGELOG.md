@@ -14,6 +14,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   progress bar with the elapsed percentage, coloured by how much time is left (blue at
   half, yellow at a quarter, red at a tenth and in overtime). Colours come from the
   terminal's own palette; under `NO_COLOR` the badge shows in reverse video.
+- Optional project for each task. The Start screen's new Project input suggests existing
+  projects as you type (tab completes, ↑/↓ choose, esc closes), and a project typed in
+  different case reuses the existing one. The Active screen shows the project in bold
+  above the task name.
 - `p` pauses and resumes the active task. Paused time does not count, and a task paused
   at quit is still paused at the next launch.
 

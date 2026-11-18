@@ -65,7 +65,7 @@ func TestResumeWithoutActiveTaskOpensStart(t *testing.T) {
 	}
 
 	// A completed task is not resumed.
-	tk, err := st.Create(context.Background(), "old", time.Hour, t0)
+	tk, err := st.Create(context.Background(), "", "old", time.Hour, t0)
 	if err != nil {
 		t.Fatal(err)
 	}

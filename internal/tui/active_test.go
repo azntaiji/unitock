@@ -13,6 +13,7 @@ import (
 // startTask drives the Start screen to begin a task.
 func (h *harness) startTask(name, dur string) task.Task {
 	h.t.Helper()
+	h.press("tab") // past the empty Project input
 	h.typeText(name)
 	h.press("tab")
 	h.typeText(dur)

@@ -107,6 +107,8 @@ func TestFlowStartCountdownComplete(t *testing.T) {
 		return bytes.Contains(b, []byte("Task name")) && bytes.Contains(b, []byte("Start task"))
 	}, teatest.WithDuration(3*time.Second))
 
+	a.tm.Type("unitock")
+	a.press(tea.KeyTab) // no stored projects to complete: tab moves on
 	a.tm.Type("Write report")
 	a.press(tea.KeyTab)
 	a.tm.Type("25m")
@@ -130,7 +132,7 @@ func TestFlowStartCountdownComplete(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.Name != "Write report" || got.Status != task.Completed ||
+	if got.Name != "Write report" || got.Project != "unitock" || got.Status != task.Completed ||
 		!got.EndedAt.Equal(t0.Add(5*time.Minute+10*time.Second)) || got.OriginalEstimate != 25*time.Minute {
 		t.Errorf("stored task = %+v", got)
 	}
@@ -141,6 +143,7 @@ func TestResumeTeatestQuitAndRelaunch(t *testing.T) {
 	clk := task.NewFakeClock(t0)
 
 	a := launch(t, dir, clk, nil)
+	a.press(tea.KeyTab) // skip the project
 	a.tm.Type("Deep work")
 	a.press(tea.KeyTab)
 	a.tm.Type("2m")

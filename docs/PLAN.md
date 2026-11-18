@@ -35,7 +35,7 @@ and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
   - [x] Block-digit timer, progress bar, colour bands, PAUSED and overtime display,
         `NO_COLOR` (R-17, R-18, D-09); golden-file view tests per band.
   - [x] Pause/resume stored as pause rows (R-20).
-  - [ ] Project input with suggestions (R-12, R-13, R-25, R-26, D-15).
+  - [x] Project input with suggestions (R-12, R-13, R-25, R-26, D-15).
   - [ ] Extend with the duration input (R-21).
   - [ ] Cancel confirmation (R-22).
   - [ ] Time-up alert modal with Extend / Mark as completed and the D-10 rule (R-30 to

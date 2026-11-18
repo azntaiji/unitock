@@ -149,12 +149,27 @@ func (s *Store) migrate(ctx context.Context) error {
 	return nil
 }
 
-// Create stores a new active task and returns it. It returns ErrActiveExists if a task
-// is already active (R-03).
-func (s *Store) Create(ctx context.Context, name string, estimate time.Duration, startedAt time.Time) (task.Task, error) {
-	res, err := s.db.ExecContext(ctx,
-		`INSERT INTO tasks (name, status, started_at, original_estimate_ms) VALUES (?, ?, ?, ?)`,
-		name, string(task.Active), startedAt.UnixMilli(), estimate.Milliseconds())
+// Create stores a new active task and returns it. project may be empty for none; a
+// project matching an existing one case-insensitively reuses it, otherwise it is
+// created in the same transaction (R-25, D-15). It returns ErrActiveExists if a task is
+// already active (R-03).
+func (s *Store) Create(ctx context.Context, project, name string, estimate time.Duration, startedAt time.Time) (task.Task, error) {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return task.Task{}, fmt.Errorf("creating task: %w", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var projectID sql.NullInt64
+	if project != "" {
+		if projectID.Int64, err = projectIDFor(ctx, tx, project, startedAt); err != nil {
+			return task.Task{}, err
+		}
+		projectID.Valid = true
+	}
+	res, err := tx.ExecContext(ctx,
+		`INSERT INTO tasks (name, status, started_at, original_estimate_ms, project_id) VALUES (?, ?, ?, ?, ?)`,
+		name, string(task.Active), startedAt.UnixMilli(), estimate.Milliseconds(), projectID)
 	if err != nil {
 		if isUniqueViolation(err) {
 			return task.Task{}, ErrActiveExists
@@ -165,7 +180,56 @@ func (s *Store) Create(ctx context.Context, name string, estimate time.Duration,
 	if err != nil {
 		return task.Task{}, fmt.Errorf("creating task: %w", err)
 	}
+	if err := tx.Commit(); err != nil {
+		return task.Task{}, fmt.Errorf("creating task: %w", err)
+	}
 	return s.Get(ctx, id)
+}
+
+// projectIDFor returns the id of the project named name, ignoring case, creating it if
+// there is none.
+func projectIDFor(ctx context.Context, tx *sql.Tx, name string, at time.Time) (int64, error) {
+	var id int64
+	err := tx.QueryRowContext(ctx, `SELECT id FROM projects WHERE name = ?`, name).Scan(&id)
+	if err == nil {
+		return id, nil
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return 0, fmt.Errorf("finding project: %w", err)
+	}
+	res, err := tx.ExecContext(ctx, `INSERT INTO projects (name, created_at) VALUES (?, ?)`, name, at.UnixMilli())
+	if err != nil {
+		return 0, fmt.Errorf("creating project: %w", err)
+	}
+	if id, err = res.LastInsertId(); err != nil {
+		return 0, fmt.Errorf("creating project: %w", err)
+	}
+	return id, nil
+}
+
+// Projects returns every project name, most recently used first: by the latest start of
+// its tasks, or its creation for a project with none (R-26, D-15).
+func (s *Store) Projects(ctx context.Context) ([]string, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT p.name FROM projects p LEFT JOIN tasks t ON t.project_id = p.id
+		GROUP BY p.id
+		ORDER BY coalesce(max(t.started_at), p.created_at) DESC, p.id DESC`)
+	if err != nil {
+		return nil, fmt.Errorf("listing projects: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+	var out []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, fmt.Errorf("listing projects: %w", err)
+		}
+		out = append(out, name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("listing projects: %w", err)
+	}
+	return out, nil
 }
 
 // Active returns the active task, or ErrNoActive.
@@ -189,10 +253,12 @@ func (s *Store) Get(ctx context.Context, id int64) (task.Task, error) {
 		started int64
 		ended   sql.NullInt64
 		estMS   int64
+		project sql.NullString
 	)
 	err := s.db.QueryRowContext(ctx,
-		`SELECT id, name, status, started_at, ended_at, original_estimate_ms FROM tasks WHERE id = ?`, id).
-		Scan(&t.ID, &t.Name, &status, &started, &ended, &estMS)
+		`SELECT t.id, t.name, t.status, t.started_at, t.ended_at, t.original_estimate_ms, p.name
+		 FROM tasks t LEFT JOIN projects p ON p.id = t.project_id WHERE t.id = ?`, id).
+		Scan(&t.ID, &t.Name, &status, &started, &ended, &estMS, &project)
 	if errors.Is(err, sql.ErrNoRows) {
 		return task.Task{}, ErrNotFound
 	}
@@ -200,6 +266,7 @@ func (s *Store) Get(ctx context.Context, id int64) (task.Task, error) {
 		return task.Task{}, fmt.Errorf("reading task %d: %w", id, err)
 	}
 	t.Status = task.Status(status)
+	t.Project = project.String
 	t.StartedAt = fromMS(started)
 	if ended.Valid {
 		t.EndedAt = fromMS(ended.Int64)

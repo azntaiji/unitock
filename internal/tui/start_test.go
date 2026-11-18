@@ -36,7 +36,9 @@ func newHarness(t *testing.T) *harness {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &harness{t: t, m: m, store: st, clock: clk}
+	h := &harness{t: t, m: m, store: st, clock: clk}
+	h.run(loadProjects(m.deps)) // what Init does for the Start screen
+	return h
 }
 
 // key builds a key press from a Bubble Tea key name ("tab", "shift+tab", "esc", ...)
@@ -88,7 +90,7 @@ func (h *harness) run(cmd tea.Cmd) {
 	switch msg := cmd().(type) {
 	case tea.QuitMsg:
 		h.quit = true
-	case taskStartedMsg, startErrMsg, taskCompletedMsg, taskUpdatedMsg, saveErrMsg:
+	case taskStartedMsg, startErrMsg, taskCompletedMsg, taskUpdatedMsg, saveErrMsg, projectsMsg:
 		h.send(msg)
 	case tea.BatchMsg:
 		for _, c := range msg {
@@ -151,27 +153,35 @@ func TestStartFocusCycle(t *testing.T) {
 		if h.m.start.focus != f {
 			t.Fatalf("focus = %d, want %d", h.m.start.focus, f)
 		}
-		if h.m.start.name.Focused() != (f == focusName) || h.m.start.duration.Focused() != (f == focusDuration) {
+		if h.m.start.project.Focused() != (f == focusProject) || h.m.start.name.Focused() != (f == focusName) ||
+			h.m.start.duration.Focused() != (f == focusDuration) {
 			t.Fatalf("input focus out of sync with focus %d", f)
 		}
 	}
+	want(focusProject) // no projects stored: no dropdown, so keys move focus
+	h.press("tab")
 	want(focusName)
 	h.press("tab")
 	want(focusDuration)
 	h.press("tab")
 	want(focusButton)
 	h.press("tab")
-	want(focusName)
-	h.press("down", "down")
+	want(focusProject)
+	h.press("down", "down", "down")
 	want(focusButton)
 	h.press("up")
 	want(focusDuration)
 	h.press("shift+tab", "up")
-	want(focusButton)
+	want(focusProject)
 }
 
 func TestStartTypingQAndSDoesNotQuitOrLeave(t *testing.T) {
 	h := newHarness(t)
+	h.typeText("qs")
+	if h.quit || h.m.start.project.Value() != "qs" {
+		t.Fatalf("project field: quit=%v value=%q", h.quit, h.m.start.project.Value())
+	}
+	h.press("tab")
 	h.typeText("quick sums")
 	if h.quit {
 		t.Fatal("typing q in the name field quit")
@@ -244,6 +254,7 @@ func TestStartValidation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name+"/"+tt.dur, func(t *testing.T) {
 			h := newHarness(t)
+			h.press("tab")
 			h.typeText(tt.name)
 			h.press("tab")
 			h.typeText(tt.dur)
@@ -264,6 +275,7 @@ func TestStartValidation(t *testing.T) {
 func TestStartCreatesTaskAndOpensActive(t *testing.T) {
 	h := newHarness(t)
 	name := "  " + strings.Repeat("n", MaxNameLen) + "  "
+	h.press("tab")
 	h.typeText(name)
 	h.press("tab")
 	h.typeText("1h 30m")
@@ -287,6 +299,7 @@ func TestStartCreatesTaskAndOpensActive(t *testing.T) {
 
 func TestStartFromButton(t *testing.T) {
 	h := newHarness(t)
+	h.press("tab")
 	h.typeText("plan")
 	h.press("tab")
 	h.typeText("25")
@@ -298,9 +311,10 @@ func TestStartFromButton(t *testing.T) {
 
 func TestStartWithActiveTaskShowsError(t *testing.T) {
 	h := newHarness(t)
-	if _, err := h.store.Create(context.Background(), "other", time.Hour, t0); err != nil {
+	if _, err := h.store.Create(context.Background(), "", "other", time.Hour, t0); err != nil {
 		t.Fatal(err)
 	}
+	h.press("tab")
 	h.typeText("second")
 	h.press("tab")
 	h.typeText("10m")
