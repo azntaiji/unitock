@@ -19,7 +19,6 @@ None.
 
 | Check | Command | Result | Raw output |
 |---|---|---|---|
-| make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
 | Gate commands (all 9) | AGENTS.md table + `make release-check` + scaffold | pass | artifacts/phase-2/gate/ |
 | Gate verifies P2-01..08 | each `verify` in acceptance.json | pass | artifacts/phase-2/gate/P2-0*.txt |
 | Fresh-context review | subagent per review.md | no correctness gaps; 1 left (see request) | n/a |
@@ -34,11 +33,9 @@ None.
 | P2-04 cancel | `go test ./internal/tui/ -count=1 -run 'Cancel' -v` | pass | artifacts/phase-2/p2-04-cancel.txt |
 | make check (extend) | `make check` | pass | artifacts/phase-2/check-extend.txt |
 | P2-03 extend | `go test ./... -count=1 -run 'Extend' -v` | pass | artifacts/phase-2/p2-03-extend.txt |
-| make check (green badge) | `make check` | pass | artifacts/phase-2/check-green.txt |
 | make check (projects) | `make check` | pass | artifacts/phase-2/check-projects.txt |
 | P2-08 projects | `go test ./... -count=1 -run 'Project' -v` | pass (11) | artifacts/phase-2/p2-08-project.txt |
 | P1-04 regression | `go test ./internal/tui/ -count=1 -run 'Start' -v` | pass | artifacts/phase-2/p1-04-regression.txt |
-| make check (badges) | `make check` | pass | artifacts/phase-2/check-badges.txt |
 | make check (pause) | `make check` | pass | artifacts/phase-2/check-pause.txt |
 | P2-02 pause | `go test ./... -count=1 -run 'Pause' -v` | pass | artifacts/phase-2/p2-02-pause.txt |
 | P2-01 view goldens | `go test ./internal/tui/ -count=1 -run 'View' -v` | pass; goldens approved by azntaiji 2026-11-18 | artifacts/phase-2/p2-01-view.txt |
