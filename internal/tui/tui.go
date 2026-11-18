@@ -71,7 +71,7 @@ func New(d Deps) (Model, error) {
 	if d.Rand == nil {
 		d.Rand = rand.IntN
 	}
-	m := Model{deps: d, screen: screenStart, start: newStartModel(), theme: theme{dark: true}}
+	m := Model{deps: d, screen: screenStart, start: newStartModel(), theme: theme{}}
 	t, err := d.Store.Active(d.Ctx)
 	switch {
 	case errors.Is(err, store.ErrNoActive):
@@ -86,11 +86,10 @@ func New(d Deps) (Model, error) {
 
 // Init implements tea.Model.
 func (m Model) Init() tea.Cmd {
-	cmd := m.start.focusCmd()
 	if m.screen == screenActive {
-		cmd = m.active.tick()
+		return m.active.tick()
 	}
-	return tea.Batch(tea.RequestBackgroundColor, cmd)
+	return m.start.focusCmd()
 }
 
 // Update implements tea.Model.
@@ -98,9 +97,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
-		return m, nil
-	case tea.BackgroundColorMsg: // picks the light or dark colour pairs (D-09)
-		m.theme.dark = msg.IsDark()
 		return m, nil
 	case tea.ColorProfileMsg: // NO_COLOR or no colour support (D-09)
 		m.theme.noColor = msg.Profile <= colorprofile.ASCII

@@ -49,6 +49,7 @@ func (p Pause) Open() bool { return p.EndedAt.IsZero() }
 type Task struct {
 	ID               int64
 	Name             string
+	Project          string // empty when the task has no project (R-25)
 	Status           Status
 	StartedAt        time.Time
 	EndedAt          time.Time

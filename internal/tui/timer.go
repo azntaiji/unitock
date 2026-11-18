@@ -12,9 +12,9 @@ import (
 )
 
 // theme is what the view needs to know about the terminal to pick colours (D-09).
+// Colours are the terminal's own ANSI palette, so they follow its light or dark theme.
 type theme struct {
-	dark    bool // background is dark; picks the dark half of each adaptive pair
-	noColor bool // NO_COLOR or a terminal without colour: no colours, text badge instead
+	noColor bool // NO_COLOR or a terminal without colour: no colours, reverse-video badge
 }
 
 // band is the colour band for the remaining fraction of the estimate (R-18, D-09).
@@ -28,11 +28,6 @@ const (
 	bandOvertime             // estimate used up; error colour
 )
 
-// label names the band in the NO_COLOR text badge (D-09).
-func (b band) label() string {
-	return [...]string{"on track", "half left", "quarter left", "almost out", "overtime"}[b]
-}
-
 // bandAt is t's band at now. A task with no time left but not yet past its estimate is
 // in the error band, not overtime.
 func bandAt(t task.Task, now time.Time) band {
@@ -43,7 +38,7 @@ func bandAt(t task.Task, now time.Time) band {
 	if est <= 0 {
 		return bandError
 	}
-	// Compare remaining*100 against est*pct in integer nanoseconds to avoid float edges.
+	// Integer comparisons avoid float edges at exactly 10%, 25%, and 50%.
 	rem := t.Remaining(now)
 	switch {
 	case rem*10 <= est:
@@ -56,20 +51,19 @@ func bandAt(t task.Task, now time.Time) band {
 	return bandNeutral
 }
 
-// color is the band's foreground, or no colour for neutral and under NO_COLOR. Each
-// colour is a light/dark pair chosen by the terminal background (D-09).
+// color is the band's ANSI foreground for the digits and bar, or none for neutral and
+// under NO_COLOR (D-09).
 func (b band) color(th theme) color.Color {
 	if th.noColor {
 		return lipgloss.NoColor{}
 	}
-	ld := lipgloss.LightDark(th.dark)
 	switch b {
 	case bandInfo:
-		return ld(lipgloss.Color("#0969DA"), lipgloss.Color("#58A6FF"))
+		return lipgloss.Blue
 	case bandWarning:
-		return ld(lipgloss.Color("#9A6700"), lipgloss.Color("#D29922"))
+		return lipgloss.Yellow
 	case bandError, bandOvertime:
-		return ld(lipgloss.Color("#CF222E"), lipgloss.Color("#F85149"))
+		return lipgloss.Red
 	}
 	return lipgloss.NoColor{}
 }
@@ -131,15 +125,32 @@ func progressBar(t task.Task, now time.Time, fg color.Color) string {
 	return fmt.Sprintf("%s %3d%%", bar, pct)
 }
 
-// badge is the status badge: RUNNING or PAUSED, plus the band's name under NO_COLOR
-// (R-17, D-09).
+// badge is the status badge (R-17, D-09): bold black text on an ANSI background, or
+// reverse video under NO_COLOR. PAUSED overrides the others; ENDING covers 25% or less
+// left (the warning and error bands).
 func badge(t task.Task, b band, th theme) string {
-	s := "● RUNNING"
-	if t.Paused() {
-		s = "|| PAUSED"
+	text, bg := "● RUNNING", color.Color(lipgloss.Cyan)
+	switch {
+	case t.Paused():
+		text, bg = "❚❚ PAUSED", lipgloss.White
+	case b == bandOvertime:
+		text, bg = "▲ OVERTIME", lipgloss.Red
+	case b >= bandWarning:
+		text, bg = "◐ ENDING", lipgloss.Yellow
 	}
+	st := lipgloss.NewStyle().Bold(true).Padding(0, 1)
 	if th.noColor {
-		return "[" + s + " · " + strings.ToUpper(b.label()) + "]"
+		return st.Reverse(true).Render(text)
 	}
-	return lipgloss.NewStyle().Bold(true).Foreground(b.color(th)).Render(s)
+	return st.Foreground(lipgloss.Black).Background(bg).Render(text)
+}
+
+// heading is the project in bold and the task name dimmed beneath the badge, or the
+// task name alone in bold when there is no project (R-17).
+func heading(t task.Task) string {
+	if t.Project == "" {
+		return lipgloss.NewStyle().Bold(true).Render(t.Name)
+	}
+	return lipgloss.NewStyle().Bold(true).Render(t.Project) + " " +
+		lipgloss.NewStyle().Faint(true).Render(t.Name)
 }

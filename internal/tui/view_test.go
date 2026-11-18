@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"image/color"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -50,12 +49,14 @@ func quoteLines(s string) string {
 // TestActiveView renders the Active screen in each D-09 band and state and compares it
 // with reviewed golden files (P2-01). The task is 25 minutes from t0.
 func TestActiveView(t *testing.T) {
-	dark := theme{dark: true}
-	base := task.Task{ID: 1, Name: "Write report", Status: task.Active, StartedAt: t0, OriginalEstimate: 25 * time.Minute}
+	var col theme
+	base := task.Task{ID: 1, Name: "Write report", Project: "unitock", Status: task.Active, StartedAt: t0, OriginalEstimate: 25 * time.Minute}
 	paused := base
 	paused.Pauses = []task.Pause{{StartedAt: t0.Add(5 * time.Minute)}}
 	long := base
 	long.OriginalEstimate = 2 * time.Hour
+	noProject := base
+	noProject.Project = ""
 
 	tests := []struct {
 		name  string
@@ -64,23 +65,48 @@ func TestActiveView(t *testing.T) {
 		width int
 		theme theme
 	}{
-		{"neutral", base, 5 * time.Minute, 80, dark},              // 80% left
-		{"info", base, 12*time.Minute + 30*time.Second, 80, dark}, // exactly 50% left
-		{"warning", base, 19 * time.Minute, 80, dark},             // 24% left
-		{"error", base, 23 * time.Minute, 80, dark},               // 8% left
-		{"overtime", base, 26*time.Minute + 5*time.Second, 80, dark},
-		{"paused", paused, 10 * time.Minute, 80, dark}, // frozen at 20:00 left
-		{"light", base, 19 * time.Minute, 80, theme{}},
+		{"neutral", base, 5 * time.Minute, 80, col},              // 80% left, RUNNING
+		{"info", base, 12*time.Minute + 30*time.Second, 80, col}, // exactly 50% left, RUNNING
+		{"warning", base, 19 * time.Minute, 80, col},             // 24% left, ENDING
+		{"error", base, 23 * time.Minute, 80, col},               // 8% left, ENDING
+		{"overtime", base, 26*time.Minute + 5*time.Second, 80, col},
+		{"paused", paused, 10 * time.Minute, 80, col}, // frozen at 20:00 left
+		{"no_project", noProject, 5 * time.Minute, 80, col},
 		{"no_color_warning", base, 19 * time.Minute, 80, theme{noColor: true}},
 		{"no_color_paused", paused, 10 * time.Minute, 80, theme{noColor: true}},
-		{"hours", long, 10 * time.Minute, 80, dark},
-		{"narrow", base, 5 * time.Minute, 50, dark},
+		{"hours", long, 10 * time.Minute, 80, col},
+		{"narrow", base, 5 * time.Minute, 50, col},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := newActiveModel(tt.task, 1)
 			requireGolden(t, "active_"+tt.name, m.view(t0.Add(tt.after), tt.width, tt.theme))
 		})
+	}
+}
+
+// The badge follows D-09: PAUSED overrides, OVERTIME past the estimate, ENDING at 25%
+// or less left, otherwise RUNNING.
+func TestActiveViewBadge(t *testing.T) {
+	tk := task.Task{StartedAt: t0, OriginalEstimate: 100 * time.Second}
+	paused := tk
+	paused.Pauses = []task.Pause{{StartedAt: t0.Add(99 * time.Second)}}
+	for _, tt := range []struct {
+		t     task.Task
+		after time.Duration
+		want  string
+	}{
+		{tk, 0, "● RUNNING"},
+		{tk, 74 * time.Second, "● RUNNING"},
+		{tk, 75 * time.Second, "◐ ENDING"},
+		{tk, 100 * time.Second, "◐ ENDING"},
+		{tk, 101 * time.Second, "▲ OVERTIME"},
+		{paused, 200 * time.Second, "❚❚ PAUSED"},
+	} {
+		now := t0.Add(tt.after)
+		if got := badge(tt.t, bandAt(tt.t, now), theme{}); !strings.Contains(got, tt.want) {
+			t.Errorf("+%v: badge %q, want %q", tt.after, got, tt.want)
+		}
 	}
 }
 
@@ -126,18 +152,16 @@ func TestActiveViewProgressBar(t *testing.T) {
 	}
 }
 
-// The root model learns NO_COLOR from the colour profile and the background from the
-// terminal, and passes both to the Active view.
+// The root model learns NO_COLOR from the colour profile and passes it to the view.
 func TestActiveViewTheme(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "25m")
 	h.send(tea.ColorProfileMsg{Profile: colorprofile.ASCII})
-	if !strings.Contains(h.view(), "[● RUNNING · ON TRACK]") {
-		t.Errorf("NO_COLOR view lacks text badge:\n%s", h.view())
+	if !h.m.theme.noColor || strings.Contains(h.view(), "\x1b[1;30;46m") {
+		t.Errorf("NO_COLOR not applied: %q", h.view())
 	}
-	h.send(tea.ColorProfileMsg{Profile: colorprofile.TrueColor})
-	h.send(tea.BackgroundColorMsg{Color: color.White})
-	if h.m.theme != (theme{dark: false}) {
-		t.Errorf("theme = %+v, want light with colour", h.m.theme)
+	h.send(tea.ColorProfileMsg{Profile: colorprofile.ANSI256})
+	if h.m.theme.noColor {
+		t.Error("colour profile did not restore colour")
 	}
 }

@@ -120,8 +120,8 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 		left = "Overtime " + clock
 	}
 	lines := []string{
-		titleStyle.Render(m.task.Name),
 		badge(m.task, b, th),
+		heading(m.task),
 		"",
 		timer,
 		"",

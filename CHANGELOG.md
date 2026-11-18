@@ -9,10 +9,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Active screen shows the remaining time in large block digits, a status badge, and a
+- Active screen shows a status badge (`● RUNNING`, `◐ ENDING`, `▲ OVERTIME`,
+  `❚❚ PAUSED`) above the task name, the remaining time in large block digits, and a
   progress bar with the elapsed percentage, coloured by how much time is left (blue at
-  half, amber at a quarter, red at a tenth and in overtime). Colours adapt to light and
-  dark terminals; under `NO_COLOR` the badge names the band instead.
+  half, yellow at a quarter, red at a tenth and in overtime). Colours come from the
+  terminal's own palette; under `NO_COLOR` the badge shows in reverse video.
 - `p` pauses and resumes the active task. Paused time does not count, and a task paused
   at quit is still paused at the next launch.
 
