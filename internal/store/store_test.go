@@ -413,3 +413,32 @@ func TestProjectMigrationUpgradesSchemaOne(t *testing.T) {
 		t.Errorf("schema version = %d, want 2", v)
 	}
 }
+
+func TestExtendStoresExtensionRows(t *testing.T) {
+	ctx := context.Background()
+	s, _ := openTemp(t)
+	tk, err := s.Create(ctx, "", "write", 25*time.Minute, t0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.AddExtension(ctx, tk.ID, t0.Add(time.Minute), 10*time.Minute); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.AddExtension(ctx, tk.ID, t0.Add(2*time.Minute), 5*time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []task.Extension{{At: t0.Add(time.Minute), Added: 10 * time.Minute}, {At: t0.Add(2 * time.Minute), Added: 5 * time.Minute}}
+	if !slices.Equal(got.Extensions, want) || got.Estimate() != 40*time.Minute {
+		t.Errorf("extensions = %+v estimate %v", got.Extensions, got.Estimate())
+	}
+	if _, err := s.AddExtension(ctx, tk.ID, t0, 0); err == nil {
+		t.Error("zero extension accepted")
+	}
+	if err := s.Complete(ctx, tk.ID, t0.Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.AddExtension(ctx, tk.ID, t0.Add(time.Hour), time.Minute); !errors.Is(err, ErrNotActive) {
+		t.Errorf("extend completed task: %v, want ErrNotActive", err)
+	}
+}

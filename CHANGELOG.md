@@ -18,6 +18,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   projects as you type (tab completes, ↑/↓ choose, esc closes), and a project typed in
   different case reuses the existing one. The Active screen shows the project in bold
   above the task name.
+- `d` adds time to the active task, running or paused, using the same duration forms as
+  the Start screen.
 - `p` pauses and resumes the active task. Paused time does not count, and a task paused
   at quit is still paused at the next launch.
 

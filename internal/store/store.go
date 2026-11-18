@@ -333,6 +333,30 @@ func (s *Store) Complete(ctx context.Context, id int64, endedAt time.Time) error
 	return s.end(ctx, id, task.Completed, endedAt)
 }
 
+// AddExtension adds added to an active task's estimate at at, stored as its own row
+// (R-21, D-10), and returns the updated task. It returns ErrNotActive if the task is not
+// active.
+func (s *Store) AddExtension(ctx context.Context, id int64, at time.Time, added time.Duration) (task.Task, error) {
+	if added <= 0 {
+		return task.Task{}, fmt.Errorf("extending task %d: amount %v is not positive", id, added)
+	}
+	res, err := s.db.ExecContext(ctx,
+		`INSERT INTO extensions (task_id, at, added_ms)
+		 SELECT id, ?, ? FROM tasks WHERE id = ? AND status = ?`,
+		at.UnixMilli(), added.Milliseconds(), id, string(task.Active))
+	if err != nil {
+		return task.Task{}, fmt.Errorf("extending task %d: %w", id, err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return task.Task{}, fmt.Errorf("extending task %d: %w", id, err)
+	}
+	if n == 0 {
+		return task.Task{}, ErrNotActive
+	}
+	return s.Get(ctx, id)
+}
+
 // Pause opens a pause on an active, running task at at and returns the updated task
 // (R-20). It returns ErrNotActive or ErrPaused.
 func (s *Store) Pause(ctx context.Context, id int64, at time.Time) (task.Task, error) {

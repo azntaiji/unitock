@@ -9,9 +9,10 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Extend with the duration input (R-21): store AddExtension plus `d` on Active.
-2. Then the remaining Phase 2 tasks in docs/PLAN.md in order. Cancel must reopen Start
-   with Model.startCmds() so projects reload.
+1. Cancel confirmation (R-22; P2-04). Reopen Start with Model.startCmds() so projects
+   reload.
+2. Then the time-up alert (R-30 to R-32): its Extend opens activeModel.openExtend(true)
+   (D-10 path already built and tested); mark P2-03 once the alert drives it.
 3. Before G2: azntaiji to review the Active golden files in internal/tui/testdata
    (`cat` them in a terminal to see colours). P2-01 stays `passes: false` until then.
 
@@ -24,6 +25,8 @@ None.
 | Check | Command | Result | Raw output |
 |---|---|---|---|
 | make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
+| make check (extend) | `make check` | pass | artifacts/phase-2/check-extend.txt |
+| P2-03 extend | `go test ./... -count=1 -run 'Extend' -v` | 7 pass; alert path pending | artifacts/phase-2/p2-03-extend.txt |
 | make check (green badge) | `make check` | pass | artifacts/phase-2/check-green.txt |
 | make check (projects) | `make check` | pass | artifacts/phase-2/check-projects.txt |
 | P2-08 projects | `go test ./... -count=1 -run 'Project' -v` | pass (11) | artifacts/phase-2/p2-08-project.txt |
@@ -48,7 +51,8 @@ None.
 - Schema 2 (projects, D-15). Store.Create takes a project (may be ""); Store.Projects
   lists names most recent first; Start screen filters/ranks in Go (start.go).
 - Start focus begins on Project; tests press tab first (harness.startTask does).
-- Store has Create/Active/Get/Complete/Pause/Resume/Projects; add extension and cancel operations
+- Extend: activeModel.ext (extendInput); task.ExtensionFor does D-10 maths.
+- Store has Create/Active/Get/Complete/Pause/Resume/Projects/AddExtension; add extension and cancel operations
   (with tests in internal/store) as their screens need them.
 - Active writes go through activeModel.save (one in flight, `busy`); results arrive as
   taskUpdatedMsg / taskCompletedMsg / saveErrMsg. Harness runs commands for `p` too.

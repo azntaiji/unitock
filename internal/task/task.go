@@ -99,6 +99,17 @@ func (t Task) Overtime(now time.Time) time.Duration {
 	return max(t.Elapsed(now)-t.Estimate(), 0)
 }
 
+// ExtensionFor is the amount to add to the estimate when the user enters entered at now
+// (D-10). Before time is up, or from the `d` key, it is exactly entered. From the
+// time-up alert it also covers the overtime so far, so remaining becomes entered,
+// counted from now.
+func (t Task) ExtensionFor(now time.Time, entered time.Duration, fromAlert bool) time.Duration {
+	if fromAlert {
+		return t.Overtime(now) + entered
+	}
+	return entered
+}
+
 // TimeUp reports whether elapsed time has reached the estimate.
 func (t Task) TimeUp(now time.Time) bool {
 	return t.Elapsed(now) >= t.Estimate()

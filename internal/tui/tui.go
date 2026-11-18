@@ -26,6 +26,7 @@ type Store interface {
 	Active(ctx context.Context) (task.Task, error)
 	Complete(ctx context.Context, id int64, endedAt time.Time) error
 	Pause(ctx context.Context, id int64, at time.Time) (task.Task, error)
+	AddExtension(ctx context.Context, id int64, at time.Time, added time.Duration) (task.Task, error)
 	Resume(ctx context.Context, id int64, at time.Time) (task.Task, error)
 }
 

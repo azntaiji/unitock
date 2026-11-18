@@ -198,3 +198,29 @@ func TestFakeClockConcurrent(t *testing.T) {
 		t.Error("Set did not move the clock")
 	}
 }
+
+// D-10: extending from the alert covers the overtime so far; otherwise exactly entered.
+func TestExtendExtensionFor(t *testing.T) {
+	t0 := time.Date(2026, 11, 17, 9, 0, 0, 0, time.UTC)
+	tk := Task{StartedAt: t0, OriginalEstimate: 25 * time.Minute}
+	early, late := t0.Add(10*time.Minute), t0.Add(28*time.Minute) // 3m overtime at late
+	for _, tt := range []struct {
+		now       time.Time
+		fromAlert bool
+		want      time.Duration
+	}{
+		{early, false, 10 * time.Minute},
+		{early, true, 10 * time.Minute}, // no overtime yet
+		{late, false, 10 * time.Minute},
+		{late, true, 13 * time.Minute},
+	} {
+		if got := tk.ExtensionFor(tt.now, 10*time.Minute, tt.fromAlert); got != tt.want {
+			t.Errorf("ExtensionFor(%v, alert=%v) = %v, want %v", tt.now.Sub(t0), tt.fromAlert, got, tt.want)
+		}
+	}
+	ext := tk
+	ext.Extensions = []Extension{{At: late, Added: tk.ExtensionFor(late, 10*time.Minute, true)}}
+	if r := ext.Remaining(late); r != 10*time.Minute {
+		t.Errorf("remaining after alert extend = %v, want 10m from now", r)
+	}
+}
