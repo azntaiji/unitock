@@ -67,8 +67,9 @@ func (m statsModel) update(msg tea.Msg, d Deps) statsModel {
 
 var cardStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(0, 1).Width(28)
 
-// view draws the period selector, the two scorecards (R-41, R-42), and the chart.
-func (m statsModel) view(now time.Time, th theme) string {
+// view draws the period selector, the two scorecards (R-41, R-42), and the chart
+// (R-43, R-45) sized to the terminal.
+func (m statsModel) view(now time.Time, width, height int, th theme) string {
 	s := stats.Compute(m.period, now, m.tasks)
 	lines := []string{titleStyle.Render("Stats") + "  " + periodTabs(m.period), ""}
 	if m.err != "" {
@@ -80,6 +81,8 @@ func (m statsModel) view(now time.Time, th theme) string {
 			" ",
 			scorecard("Average per day", perDayCard(s.PerDay), th),
 		),
+		"",
+		renderChart(s, width, height, th),
 	)
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
 }

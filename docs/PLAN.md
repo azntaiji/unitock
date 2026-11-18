@@ -43,7 +43,7 @@ minimum terminal size. Detail: `docs/archive/phase-2.md`.
   - [x] `internal/stats`: periods, buckets, previous-period comparison, per D-11, as
         pure functions with table tests including DST and month-end dates (R-40 to R-44).
   - [x] Scorecards (R-41, R-42).
-  - [ ] Vertical bar chart with legend, y-axis, and per-period labels (R-43, R-45).
+  - [x] Vertical bar chart with legend, y-axis, and per-period labels (R-43, R-45).
   - [x] Navigation: `s` from Start and Active, `esc` back, alert overlay on Stats
         (R-24, R-30, R-46).
   - [ ] Export to JSON schema v1 (R-47, R-50, D-14) with a golden-file test.

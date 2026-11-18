@@ -262,7 +262,7 @@ func (m Model) View() tea.View {
 	case m.screen == screenDone:
 		body, hints = m.done.view(), m.done.hints()
 	case m.screen == screenStats:
-		body, hints = m.stats.view(m.deps.Clock.Now(), m.theme), m.stats.hints()
+		body, hints = m.stats.view(m.deps.Clock.Now(), m.width, m.height, m.theme), m.stats.hints()
 		if m.overActive() && m.active.alert.open {
 			body = overlay(body, m.active.alertView(m.theme, lipgloss.Width(body)))
 			hints = m.active.hints()

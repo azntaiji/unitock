@@ -13,6 +13,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   7 days, 30 days, and 3 months; scorecards show completed tasks and the average per
   day against the previous period; `esc` goes back with the timer still running, and
   the time-up alert appears over it.
+- Stats chart: estimated and actual time per day, week, or month as vertical bars, with
+  a legend and a y-axis in hours and minutes; a message when nothing was completed.
 
 ### Fixed
 

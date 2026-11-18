@@ -9,15 +9,14 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Chart (R-43, R-45, P3-03): vertical estimated/actual bars per bucket, legend, y-axis
-   in hours and minutes, R-43 labels (`Period.Label`), empty state; goldens per period
-   in internal/tui/testdata, reviewed by azntaiji before P3-03 is marked.
-2. Export (R-47, R-50, D-14, P3-05): `e` on Stats; schema v1 golden; never overwrite;
+1. Export (R-47, R-50, D-14, P3-05): `e` on Stats; schema v1 golden; never overwrite;
    add `e export` to Stats hints then.
 
 ## Blockers
 
-None.
+- Checkpoint: P3-03 golden review by azntaiji. Files: internal/tui/testdata/stats_*.golden
+  (7days, 30days, 3months, 7days_wide, 7days_no_color, empty). Verify passes; mark P3-03
+  only after approval.
 
 ## Evidence
 
@@ -25,6 +24,7 @@ None.
 |---|---|---|---|
 | P3-01 | `go test ./internal/stats/ -count=1 -v` | 15 PASS, 0 FAIL | artifacts/phase-3/p3-01-stats.txt |
 | P3-02 | `go test ./... -count=1 -run 'Scorecard' -v` | 4 PASS, 0 FAIL | artifacts/phase-3/p3-02-scorecard.txt |
+| P3-03 | `go test ./internal/tui/ -count=1 -run 'Chart' -v` | 12 PASS, 0 FAIL; goldens await review | artifacts/phase-3/p3-03-chart.txt |
 | P3-04 | `go test ./internal/tui/ -count=1 -run 'Stats' -v` | 7 PASS, 0 FAIL | artifacts/phase-3/p3-04-stats-nav.txt |
 | perf | one-off test, 10k tasks (deleted) | Completed 44 ms, 3× Compute 1 ms | — |
 | check | `make check` | pass (lint 0 issues) | — |
@@ -47,6 +47,9 @@ None.
 - Navigation in tui.go `updateStats`: ticks and save results still reach activeModel
   while Stats is open over Active; the alert overlays Stats and takes keys. Choosing
   Extend there switches to Active (where the input is) — a judgement call, R-32 silent.
+- Chart: tui/chart.go. Plot rows = terminal height − 14 (4..16); slot per bucket from
+  width (4..16); 7-day labels split onto two lines when they do not fit. Estimated `▒`
+  faint, actual `█` blue, so NO_COLOR still reads.
 - Alarm heard and notification seen on macOS only; Ubuntu untested (Phase 4 E2E).
 - internal/alarm implements tui.Alarm; main wires it (bell via tea.RawMsg, Close deferred).
 - Lock: cmd/unitock/lock.go. Too small: tui.go `tooSmall` (keys except ctrl+c ignored).

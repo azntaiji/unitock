@@ -90,7 +90,7 @@ func TestScorecardOnlyCompletedCount(t *testing.T) {
 	if s.Completed != (stats.Comparison{Current: 2, Previous: 1}) {
 		t.Errorf("completed = %+v, want {2 1}", s.Completed)
 	}
-	v := ansi.Strip(m.view(t0, theme{noColor: true}))
+	v := ansi.Strip(m.view(t0, 60, 20, theme{noColor: true}))
 	for _, want := range []string{"Completed", "+1 (+100%) vs 1", "Average per day", "0.3", "+0.2 (+100%) vs 0.1"} {
 		if !strings.Contains(v, want) {
 			t.Errorf("view lacks %q:\n%s", want, v)
@@ -102,7 +102,7 @@ func TestScorecardLoadError(t *testing.T) {
 	var m statsModel
 	h := newHarness(t)
 	m = m.update(statsLoadedMsg{err: context.Canceled}, h.m.deps)
-	if v := m.view(t0, theme{}); !strings.Contains(v, "Could not load stats") {
+	if v := m.view(t0, 60, 20, theme{}); !strings.Contains(v, "Could not load stats") {
 		t.Errorf("view lacks the load error:\n%s", v)
 	}
 }
