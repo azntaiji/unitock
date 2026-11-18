@@ -7,6 +7,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Project names now match ignoring case for all Unicode letters, so "über" reuses
+  "Über". Upgrading merges existing projects that differ only by case into the oldest.
+
 ## [0.2.0] - 2026-11-18
 
 ### Added

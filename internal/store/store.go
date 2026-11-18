@@ -112,6 +112,63 @@ func migrations() ([]migration, error) {
 	return out, nil
 }
 
+// goSteps holds work a migration needs beyond its SQL file, keyed by migration version.
+// A step runs right after its SQL, in the same transaction.
+var goSteps = map[int]func(context.Context, *sql.Tx) error{
+	3: fillProjectKeys,
+}
+
+// fillProjectKeys sets name_key for every project, merges projects whose keys collide
+// into the oldest (moving their tasks to it), and then makes name_key unique (amended
+// D-15).
+func fillProjectKeys(ctx context.Context, tx *sql.Tx) error {
+	type project struct {
+		id   int64
+		name string
+	}
+	rows, err := tx.QueryContext(ctx, `SELECT id, name FROM projects ORDER BY created_at, id`)
+	if err != nil {
+		return fmt.Errorf("reading projects: %w", err)
+	}
+	var ps []project
+	for rows.Next() {
+		var p project
+		if err := rows.Scan(&p.id, &p.name); err != nil {
+			_ = rows.Close()
+			return fmt.Errorf("reading projects: %w", err)
+		}
+		ps = append(ps, p)
+	}
+	if err := rows.Err(); err != nil {
+		_ = rows.Close()
+		return fmt.Errorf("reading projects: %w", err)
+	}
+	_ = rows.Close()
+
+	kept := map[string]int64{} // key -> oldest project id
+	for _, p := range ps {
+		key := foldKey(p.name)
+		keep, dup := kept[key]
+		if !dup {
+			kept[key] = p.id
+			if _, err := tx.ExecContext(ctx, `UPDATE projects SET name_key = ? WHERE id = ?`, key, p.id); err != nil {
+				return fmt.Errorf("keying project %d: %w", p.id, err)
+			}
+			continue
+		}
+		if _, err := tx.ExecContext(ctx, `UPDATE tasks SET project_id = ? WHERE project_id = ?`, keep, p.id); err != nil {
+			return fmt.Errorf("merging project %d: %w", p.id, err)
+		}
+		if _, err := tx.ExecContext(ctx, `DELETE FROM projects WHERE id = ?`, p.id); err != nil {
+			return fmt.Errorf("merging project %d: %w", p.id, err)
+		}
+	}
+	if _, err := tx.ExecContext(ctx, `CREATE UNIQUE INDEX projects_name_key ON projects (name_key)`); err != nil {
+		return fmt.Errorf("indexing project keys: %w", err)
+	}
+	return nil
+}
+
 func (s *Store) migrate(ctx context.Context) error {
 	ms, err := migrations()
 	if err != nil {
@@ -137,6 +194,11 @@ func (s *Store) migrate(ctx context.Context) error {
 		}
 		if _, err := tx.ExecContext(ctx, string(body)); err != nil {
 			return fmt.Errorf("applying migration %s: %w", m.name, err)
+		}
+		if step := goSteps[m.version]; step != nil {
+			if err := step(ctx, tx); err != nil {
+				return fmt.Errorf("applying migration %s: %w", m.name, err)
+			}
 		}
 		// PRAGMA does not take bound parameters; the value is an integer we control.
 		if _, err := tx.ExecContext(ctx, fmt.Sprintf("PRAGMA user_version = %d", m.version)); err != nil {
@@ -186,18 +248,19 @@ func (s *Store) Create(ctx context.Context, project, name string, estimate time.
 	return s.Get(ctx, id)
 }
 
-// projectIDFor returns the id of the project named name, ignoring case, creating it if
-// there is none.
+// projectIDFor returns the id of the project whose name matches name under Unicode case
+// folding (amended D-15), creating it if there is none.
 func projectIDFor(ctx context.Context, tx *sql.Tx, name string, at time.Time) (int64, error) {
 	var id int64
-	err := tx.QueryRowContext(ctx, `SELECT id FROM projects WHERE name = ?`, name).Scan(&id)
+	key := foldKey(name)
+	err := tx.QueryRowContext(ctx, `SELECT id FROM projects WHERE name_key = ?`, key).Scan(&id)
 	if err == nil {
 		return id, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return 0, fmt.Errorf("finding project: %w", err)
 	}
-	res, err := tx.ExecContext(ctx, `INSERT INTO projects (name, created_at) VALUES (?, ?)`, name, at.UnixMilli())
+	res, err := tx.ExecContext(ctx, `INSERT INTO projects (name, name_key, created_at) VALUES (?, ?, ?)`, name, key, at.UnixMilli())
 	if err != nil {
 		return 0, fmt.Errorf("creating project: %w", err)
 	}

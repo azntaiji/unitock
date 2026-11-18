@@ -9,10 +9,9 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Unicode project matching per amended D-15 (R-25): migration 0003 `name_key`, fold
-   in Go, backfill and merge duplicates on upgrade; test "über" reuses "Über".
-2. Then the other Phase 3 tasks in docs/PLAN.md, starting with `internal/stats`
-   (D-11 and D-14 Approved 2026-11-18).
+1. `internal/stats`: periods, buckets, previous period, averages per D-11 as pure
+   functions; table tests with DST, month end, year boundary (R-40 to R-44, P3-01).
+2. Then scorecards, chart, navigation, export, in docs/PLAN.md order.
 
 ## Blockers
 
@@ -30,7 +29,11 @@ None.
 ## Handoff
 
 - Phase 2 closed 2026-11-18 as v0.2.0; detail in docs/archive/phase-2.md.
-- Start Phase 3 in a new session.
+- Phase 3 work is on branch `phase-3` (worktree .claude/worktrees/phase-3, from local
+  main ea98a8d); fast-forward main to it (`git merge --ff-only phase-3`) per D-03.
+- D-15 done: migration 0003 + Go step `fillProjectKeys` (store.go `goSteps`), key from
+  `foldKey` (fold.go). Store matches on `name_key`; the old NOCASE UNIQUE stays (harmless,
+  stricter key subsumes it).
 - Carried over: `s` (stats) on Start and Active is not handled or hinted until Stats
   exists (R-24). The alert must also overlay Stats (R-30): reuse `overlay` in active.go.
 - Alarm heard and notification seen on macOS only; Ubuntu untested (Phase 4 E2E).

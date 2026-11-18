@@ -409,8 +409,12 @@ func TestProjectMigrationUpgradesSchemaOne(t *testing.T) {
 	if err != nil || got.Name != "old" || got.Project != "" {
 		t.Errorf("after upgrade: %+v, %v", got, err)
 	}
-	if v, _ := s.SchemaVersion(ctx); v != 2 {
-		t.Errorf("schema version = %d, want 2", v)
+	ms, err := migrations()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v, _ := s.SchemaVersion(ctx); v != len(ms) {
+		t.Errorf("schema version = %d, want %d", v, len(ms))
 	}
 }
 
