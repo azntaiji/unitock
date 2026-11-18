@@ -179,3 +179,9 @@ latest `started_at` of the project's tasks (projects with no tasks by `created_a
 **Alternatives:** a free-text `tasks.project` column with `SELECT DISTINCT` (case
 variants drift apart).
 **Consequences:** amends D-07's table list; export emits the project name or null.
+**Amended:** azntaiji, 2026-11-18. SQLite `NOCASE` folds ASCII only, so "über" and
+"Über" became two projects. Migration 0003 adds `projects.name_key`, the name with full
+Unicode simple case folding applied in Go (the same rule as `strings.EqualFold`), with a
+unique index; the store matches on it instead of `NOCASE`. On upgrade the store fills
+the keys for existing rows; where two existing projects share a key, the older one is
+kept and the other's tasks move to it.

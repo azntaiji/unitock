@@ -9,10 +9,10 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. D-11 and D-14 Approved 2026-11-18.
-2. Ask azntaiji: fix or accept non-ASCII case matching of project names (SQLite NOCASE
-   is ASCII only; "über" vs "Über" makes two projects; R-25). A fix amends D-15.
-3. Then Phase 3 tasks in docs/PLAN.md, starting with `internal/stats`.
+1. Unicode project matching per amended D-15 (R-25): migration 0003 `name_key`, fold
+   in Go, backfill and merge duplicates on upgrade; test "über" reuses "Über".
+2. Then the other Phase 3 tasks in docs/PLAN.md, starting with `internal/stats`
+   (D-11 and D-14 Approved 2026-11-18).
 
 ## Blockers
 
