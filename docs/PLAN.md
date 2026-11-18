@@ -35,6 +35,7 @@ and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
   - [x] Block-digit timer, progress bar, colour bands, PAUSED and overtime display,
         `NO_COLOR` (R-17, R-18, D-09); golden-file view tests per band.
   - [x] Pause/resume stored as pause rows (R-20).
+  - [ ] Project input with suggestions (R-12, R-13, R-25, R-26, D-15).
   - [ ] Extend with the duration input (R-21).
   - [ ] Cancel confirmation (R-22).
   - [ ] Time-up alert modal with Extend / Mark as completed and the D-10 rule (R-30 to
@@ -42,7 +43,7 @@ and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
   - [ ] Notifier and alarm player behind interfaces, with the OS implementations and
         fallbacks (R-33, R-34, D-13).
   - [ ] Single-instance lock (R-09, D-12) and minimum terminal size (R-08).
-- **Exit criteria:** P2-01 to P2-07.
+- **Exit criteria:** P2-01 to P2-08.
 - **Gate G2:** azntaiji. Expected version 0.2.0.
 
 ## Phase 3 — Stats and export

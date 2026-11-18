@@ -33,7 +33,8 @@ One person working in a terminal on macOS or Ubuntu. They:
 
 ## Non-goals
 
-- More than one task at a time, task lists, projects, tags, or priorities.
+- More than one task at a time, task lists, projects beyond an optional project label per
+  task, tags, or priorities.
 - Editing or deleting past tasks from the UI.
 - Pomodoro cycles, breaks, or recurring tasks.
 - Sync, accounts, cloud storage, or any network access.
@@ -48,7 +49,7 @@ estimate minus elapsed; below zero it is **overtime**.
 ### General
 
 - R-01 The app is a full-screen terminal UI named `unitock`, built with Go and Bubble Tea.
-- R-02 All data (task names, estimates, extensions, pauses, start and end times, status)
+- R-02 All data (task names, projects, estimates, extensions, pauses, start and end times, status)
   is stored in one SQLite database. Every state change is written before the UI shows it.
 - R-03 At most one task is active at a time. A task is `active`, `completed`, or `cancelled`.
 - R-04 Time is wall-clock based (D-07). Time while the app is closed or the machine sleeps
@@ -74,9 +75,10 @@ estimate minus elapsed; below zero it is **overtime**.
 
 ### Start screen
 
-- R-12 Two inputs, Task name and Task duration, then a Start task button.
-- R-13 `tab` cycles focus name → duration → button → name; `↑`/`↓` move focus.
-  `enter` starts the task from any focus.
+- R-12 Three inputs, Project, Task name, and Task duration, then a Start task button.
+- R-13 `tab` cycles focus project → name → duration → button → project; `↑`/`↓` move
+  focus. `enter` starts the task from any focus. While the project suggestions (R-26) are
+  open, `tab`, `↑`/`↓`, `enter`, and `esc` work them first.
 - R-14 While a text input has focus, printable keys type into it. `s` (stats) and `q`
   (quit) work only when the button has focus; `esc` moves focus to the button. The key
   hints change with focus.
@@ -84,12 +86,26 @@ estimate minus elapsed; below zero it is **overtime**.
   name or invalid duration shows an inline error and does not start.
 - R-16 Starting creates the task and opens the Active screen.
 
+### Projects
+
+- R-25 A task has an optional project: trimmed, at most 50 characters, blank for none. A
+  project matching an existing one case-insensitively uses the existing project and its
+  stored spelling (D-15). Projects are not renamed or deleted from the UI.
+- R-26 While the Project input has focus, a dropdown suggests up to 5 existing projects:
+  the most recently used when the input is empty, otherwise those containing the typed
+  text (case-insensitive), prefix matches first, then by most recent use. The top match
+  shows as dimmed ghost text when it extends the typed text. `↑`/`↓` move a highlight;
+  `tab` fills in the highlighted (or else the top) suggestion when it differs from the
+  input, and otherwise moves focus; `enter` on a highlighted suggestion fills it in;
+  `esc` closes the dropdown, and a second `esc` moves focus to the button.
+
 ### Active screen
 
-- R-17 Shows the task name, the remaining time in large block digits as `H:MM:SS` (or
-  `MM:SS` under an hour; plain bold text when the terminal is too narrow), the remaining
-  and estimate as text, a status badge (running / PAUSED), and a progress bar of
-  elapsed / estimate with the elapsed percentage.
+- R-17 Shows a status badge (D-09: RUNNING, ENDING, OVERTIME, or PAUSED); beneath it the
+  project in bold and the task name in regular dimmed text (with no project, the task
+  name alone in bold); the remaining time in large block digits as `H:MM:SS` (or `MM:SS`
+  under an hour; plain bold text when the terminal is too narrow); the remaining and
+  estimate as text; and a progress bar of elapsed / estimate with the elapsed percentage.
 - R-18 The timer and bar change colour by remaining fraction of the estimate (D-09):
   neutral, then info, then warning, then error. Overtime shows `+MM:SS` counting up in
   the error colour with a full bar.
@@ -177,6 +193,7 @@ whole seconds.
     {
       "id": 1,
       "name": "Write spec",
+      "project": "unitock",
       "status": "completed",
       "started_at": "2026-11-17T13:00:00-08:00",
       "ended_at": "2026-11-17T13:52:10-08:00",
@@ -192,7 +209,7 @@ whole seconds.
 }
 ```
 
-`ended_at` is null for an active task; `actual_seconds` is elapsed at export time.
+`project` is null for a task without one; `ended_at` is null for an active task; `actual_seconds` is elapsed at export time.
 
 ## Constraints
 

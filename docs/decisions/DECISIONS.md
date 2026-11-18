@@ -106,12 +106,18 @@ second; valid range 1 minute to 24 hours inclusive. Fuzz-tested.
 **Alternatives:** Go's `time.ParseDuration` only (rejects "45 minutes", "1hr").
 
 ## D-09 — Timer visuals and colour thresholds
-**Status:** Approved — azntaiji, 2026-11-17
+**Status:** Approved — azntaiji, 2026-11-17 (amended and re-approved the same day)
 **Decision:** large 5-row block digits (plain bold below 60 columns of free width), a
-horizontal progress bar with elapsed percentage, and a status badge. Colour by remaining
-fraction of the estimate: > 50% neutral; ≤ 50% info (blue); ≤ 25% warning (amber);
-≤ 10% and overtime error (red). Paused dims the digits. Under `NO_COLOR` a text badge
-names the band. Colours use Lip Gloss adaptive light/dark pairs.
+horizontal progress bar with elapsed percentage, and a status badge. All colours are the
+terminal theme's 16-colour ANSI palette, never fixed RGB values. Digits and bar colour by
+remaining fraction of the estimate: > 50% default foreground; ≤ 50% blue; ≤ 25% yellow;
+≤ 10% and overtime red. Paused dims the digits. The badge is bold, black text on a
+coloured background, one of: `● RUNNING` (cyan) above 25% left; `◐ ENDING` (yellow) at
+25% or less; `▲ OVERTIME` (red) past the estimate; `❚❚ PAUSED` (white, ANSI 7) whenever
+paused, overriding the others. Under `NO_COLOR` the badge renders in reverse video with
+the same text.
+**Why:** ANSI colours follow the user's theme; cyan and light grey keep black text
+readable where ANSI blue and bright black are dark in many themes.
 **Alternatives:** a ring drawn with braille characters (harder to read at small sizes).
 
 ## D-10 — Extending in overtime
@@ -161,3 +167,15 @@ fatal. Behind an interface so tests use a fake.
 **Decision:** JSON schema version 1 exactly as in `docs/SPEC.md` Interfaces. Fields are
 only ever added in later 1.x versions; renames or removals bump `schema_version` and are
 breaking changes.
+
+## D-15 — Projects
+**Status:** Approved — azntaiji, 2026-11-17
+**Decision:** migration 0002 adds `projects(id, name UNIQUE COLLATE NOCASE, created_at)`
+and a nullable `tasks.project_id` referencing it. Starting a task with a project name
+reuses the case-insensitive match or creates the project, in the same transaction as the
+task. Suggestions (R-26) rank prefix matches before other substring matches, then by the
+latest `started_at` of the project's tasks (projects with no tasks by `created_at`).
+**Why:** one row per project keeps spellings consistent and suggestions cheap.
+**Alternatives:** a free-text `tasks.project` column with `SELECT DISTINCT` (case
+variants drift apart).
+**Consequences:** amends D-07's table list; export emits the project name or null.

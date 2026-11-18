@@ -100,7 +100,7 @@
     {
       "id": "P2-01",
       "phase": 2,
-      "description": "The timer renders in block digits with a progress bar and the colour band for >50%, <=50%, <=25%, <=10%, paused, overtime, and NO_COLOR, matching reviewed golden files (R-17, R-18, D-09).",
+      "description": "The Active screen shows the D-09 badge (RUNNING, ENDING, OVERTIME, PAUSED) with the project and task name beneath it, and renders the timer in block digits with a progress bar in the colour band for >50%, <=50%, <=25%, <=10%, paused, overtime, and NO_COLOR, matching reviewed golden files (R-17, R-18, D-09).",
       "verify": "go test ./internal/tui/ -count=1 -run 'View' -v",
       "passes": false,
       "evidence": ""
@@ -150,6 +150,14 @@
       "phase": 2,
       "description": "A second instance on the same data directory exits 1 naming the lock file (R-09), and a terminal smaller than 60x20 shows the too-small message (R-08).",
       "verify": "go test ./... -count=1 -run 'Lock|TooSmall' -v; then by hand: run two instances.",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P2-08",
+      "phase": 2,
+      "description": "The Start screen has an optional Project input that suggests existing projects as you type; tab accepts the top or highlighted suggestion when it differs from the input and otherwise moves focus; ↑/↓ and esc work the dropdown before focus; the task is stored with the existing project matched case-insensitively (R-12, R-13, R-25, R-26, D-15).",
+      "verify": "go test ./... -count=1 -run 'Project' -v",
       "passes": false,
       "evidence": ""
     },
