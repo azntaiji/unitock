@@ -110,8 +110,8 @@
       "phase": 2,
       "description": "Pause/resume excludes paused time from elapsed and survives a relaunch while paused (R-20, R-05).",
       "verify": "go test ./... -count=1 -run 'Pause' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-17: go test ./... -count=1 -run 'Pause' -v: 6 PASS (store rows + reopen, TUI freeze/resume, relaunch while paused) (artifacts/phase-2/p2-02-pause.txt)"
     },
     {
       "id": "P2-03",

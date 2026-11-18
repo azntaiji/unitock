@@ -148,7 +148,7 @@ func TestActiveCompleteErrorStays(t *testing.T) {
 	if h.m.screen != screenActive || !strings.Contains(h.m.active.err, "Could not save") {
 		t.Errorf("screen %d err %q", h.m.screen, h.m.active.err)
 	}
-	if h.m.active.completing {
+	if h.m.active.busy {
 		t.Error("still completing after the error")
 	}
 }

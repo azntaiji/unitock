@@ -19,14 +19,21 @@ type tickMsg struct{ gen int }
 
 type taskCompletedMsg struct{ task task.Task }
 
-type completeErrMsg struct{ err error }
+// taskUpdatedMsg carries the active task after a stored change, such as a pause.
+type taskUpdatedMsg struct{ task task.Task }
+
+// saveErrMsg reports a failed store write from the Active screen.
+type saveErrMsg struct {
+	op  string
+	err error
+}
 
 // activeModel is the Active screen.
 type activeModel struct {
-	task       task.Task
-	gen        int
-	completing bool
-	err        string
+	task task.Task
+	gen  int
+	busy bool // a store write is in flight; further writes wait for it
+	err  string
 }
 
 func newActiveModel(t task.Task, gen int) activeModel { return activeModel{task: t, gen: gen} }
@@ -46,33 +53,54 @@ func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {
 			return m, nil
 		}
 		return m, m.tick()
-	case completeErrMsg:
-		m.completing = false
-		d.Log.Error("complete task", "id", m.task.ID, "err", msg.err)
+	case taskUpdatedMsg:
+		m.busy = false
+		m.task = msg.task
+		return m, nil
+	case saveErrMsg:
+		m.busy = false
+		d.Log.Error(msg.op+" task", "id", m.task.ID, "err", msg.err)
 		m.err = "Could not save: " + msg.err.Error()
 		return m, nil
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "q":
 			return m, tea.Quit
-		case "e":
-			if m.completing {
-				return m, nil
-			}
-			m.completing = true
-			m.err = ""
-			t := m.task
-			return m, func() tea.Msg {
-				end := d.Clock.Now()
-				if err := d.Store.Complete(d.Ctx, t.ID, end); err != nil {
-					return completeErrMsg{err}
+		case "p":
+			return m.save(d, func(t task.Task, now time.Time) tea.Msg {
+				op, fn := "pause", d.Store.Pause
+				if t.Paused() {
+					op, fn = "resume", d.Store.Resume
 				}
-				t.Status, t.EndedAt = task.Completed, end
+				t, err := fn(d.Ctx, t.ID, now)
+				if err != nil {
+					return saveErrMsg{op, err}
+				}
+				return taskUpdatedMsg{t}
+			})
+		case "e":
+			return m.save(d, func(t task.Task, now time.Time) tea.Msg {
+				if err := d.Store.Complete(d.Ctx, t.ID, now); err != nil {
+					return saveErrMsg{"complete", err}
+				}
+				t.Status, t.EndedAt = task.Completed, now
 				return taskCompletedMsg{t}
-			}
+			})
 		}
 	}
 	return m, nil
+}
+
+// save runs one store write for the task at the clock's current time, unless another
+// is in flight. The UI changes only when the write's result message arrives (R-02).
+func (m activeModel) save(d Deps, write func(t task.Task, now time.Time) tea.Msg) (activeModel, tea.Cmd) {
+	if m.busy {
+		return m, nil
+	}
+	m.busy = true
+	m.err = ""
+	t := m.task
+	return m, func() tea.Msg { return write(t, d.Clock.Now()) }
 }
 
 // view draws the Active screen (R-17, R-18, D-09): name, status badge, timer in block
@@ -106,7 +134,12 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
 }
 
-func (m activeModel) hints() string { return "e complete · q quit" }
+func (m activeModel) hints() string {
+	if m.task.Paused() {
+		return "p resume · e complete · q quit"
+	}
+	return "p pause · e complete · q quit"
+}
 
 // timerText is the remaining time, or +overtime once the estimate is used up (R-17, R-18).
 // Remaining rounds up so the display reads the full estimate at the start and 00:00

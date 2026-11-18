@@ -65,9 +65,9 @@ func key(s string) tea.KeyPressMsg {
 	return tea.KeyPressMsg{Code: r[0], Text: s}
 }
 
-// send delivers msg. For action keys (enter submits, e completes, q and ctrl+c quit)
-// it runs the resulting command synchronously and feeds its message back in, the way
-// the Bubble Tea runtime would. Other commands, such as cursor blinks and the Active
+// send delivers msg. For action keys (enter submits, e completes, p pauses, q and
+// ctrl+c quit) it runs the resulting command synchronously and feeds its message back
+// in, the way the Bubble Tea runtime would. Other commands, such as cursor blinks and the Active
 // screen's tick, wait on a timer and are dropped; tests send tickMsg themselves.
 func (h *harness) send(msg tea.Msg) {
 	h.t.Helper()
@@ -75,7 +75,7 @@ func (h *harness) send(msg tea.Msg) {
 	h.m = next.(Model)
 	if k, ok := msg.(tea.KeyPressMsg); ok {
 		switch k.String() {
-		case "enter", "e", "q", "ctrl+c":
+		case "enter", "e", "p", "q", "ctrl+c":
 			h.run(cmd)
 		}
 	}
@@ -88,7 +88,7 @@ func (h *harness) run(cmd tea.Cmd) {
 	switch msg := cmd().(type) {
 	case tea.QuitMsg:
 		h.quit = true
-	case taskStartedMsg, startErrMsg, taskCompletedMsg, completeErrMsg:
+	case taskStartedMsg, startErrMsg, taskCompletedMsg, taskUpdatedMsg, saveErrMsg:
 		h.send(msg)
 	case tea.BatchMsg:
 		for _, c := range msg {

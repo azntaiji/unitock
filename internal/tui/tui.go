@@ -24,6 +24,8 @@ type Store interface {
 	Create(ctx context.Context, name string, estimate time.Duration, startedAt time.Time) (task.Task, error)
 	Active(ctx context.Context) (task.Task, error)
 	Complete(ctx context.Context, id int64, endedAt time.Time) error
+	Pause(ctx context.Context, id int64, at time.Time) (task.Task, error)
+	Resume(ctx context.Context, id int64, at time.Time) (task.Task, error)
 }
 
 // Deps are the UI's collaborators.

@@ -33,6 +33,8 @@ var (
 	ErrNoActive     = errors.New("no active task")
 	ErrNotActive    = errors.New("task is not active")
 	ErrNotFound     = errors.New("task not found")
+	ErrPaused       = errors.New("task is already paused")
+	ErrNotPaused    = errors.New("task is not paused")
 	ErrNewerSchema  = errors.New("database was written by a newer unitock")
 )
 
@@ -262,6 +264,61 @@ func (s *Store) pauses(ctx context.Context, id int64) ([]task.Pause, error) {
 // same instant. It returns ErrNotActive if the task is not active.
 func (s *Store) Complete(ctx context.Context, id int64, endedAt time.Time) error {
 	return s.end(ctx, id, task.Completed, endedAt)
+}
+
+// Pause opens a pause on an active, running task at at and returns the updated task
+// (R-20). It returns ErrNotActive or ErrPaused.
+func (s *Store) Pause(ctx context.Context, id int64, at time.Time) (task.Task, error) {
+	return s.setPaused(ctx, id, at, true)
+}
+
+// Resume closes the open pause of an active task at at and returns the updated task
+// (R-20). It returns ErrNotActive or ErrNotPaused.
+func (s *Store) Resume(ctx context.Context, id int64, at time.Time) (task.Task, error) {
+	return s.setPaused(ctx, id, at, false)
+}
+
+func (s *Store) setPaused(ctx context.Context, id int64, at time.Time, pause bool) (task.Task, error) {
+	verb := "resuming"
+	if pause {
+		verb = "pausing"
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return task.Task{}, fmt.Errorf("%s task %d: %w", verb, id, err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var status string
+	var open int
+	err = tx.QueryRowContext(ctx,
+		`SELECT status, (SELECT count(*) FROM pauses WHERE task_id = tasks.id AND ended_at IS NULL)
+		 FROM tasks WHERE id = ?`, id).Scan(&status, &open)
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return task.Task{}, ErrNotFound
+	case err != nil:
+		return task.Task{}, fmt.Errorf("%s task %d: %w", verb, id, err)
+	case status != string(task.Active):
+		return task.Task{}, ErrNotActive
+	case pause && open > 0:
+		return task.Task{}, ErrPaused
+	case !pause && open == 0:
+		return task.Task{}, ErrNotPaused
+	}
+	ms := at.UnixMilli()
+	if pause {
+		_, err = tx.ExecContext(ctx, `INSERT INTO pauses (task_id, started_at) VALUES (?, ?)`, id, ms)
+	} else {
+		_, err = tx.ExecContext(ctx, `UPDATE pauses SET ended_at = ? WHERE task_id = ? AND ended_at IS NULL`, ms, id)
+	}
+	if err != nil {
+		return task.Task{}, fmt.Errorf("%s task %d: %w", verb, id, err)
+	}
+	if err := tx.Commit(); err != nil {
+		return task.Task{}, fmt.Errorf("%s task %d: %w", verb, id, err)
+	}
+	return s.Get(ctx, id)
 }
 
 func (s *Store) end(ctx context.Context, id int64, status task.Status, endedAt time.Time) error {

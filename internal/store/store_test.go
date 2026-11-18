@@ -263,3 +263,62 @@ func TestErrors(t *testing.T) {
 		t.Error("Create with zero estimate succeeded")
 	}
 }
+
+func TestPauseResumeStoresPauseRows(t *testing.T) {
+	ctx := context.Background()
+	s, dir := openTemp(t)
+	tk, err := s.Create(ctx, "write", 25*time.Minute, t0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Resume(ctx, tk.ID, t0); !errors.Is(err, ErrNotPaused) {
+		t.Errorf("Resume while running: %v, want ErrNotPaused", err)
+	}
+	got, err := s.Pause(ctx, tk.ID, t0.Add(5*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.Paused() {
+		t.Error("task not paused after Pause")
+	}
+	if _, err := s.Pause(ctx, tk.ID, t0.Add(6*time.Minute)); !errors.Is(err, ErrPaused) {
+		t.Errorf("second Pause: %v, want ErrPaused", err)
+	}
+
+	// The pause survives a reopen (relaunch while paused, R-05).
+	_ = s.Close()
+	s2, err := Open(ctx, dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = s2.Close() })
+	act, err := s2.Active(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !act.Paused() || act.Elapsed(t0.Add(time.Hour)) != 5*time.Minute {
+		t.Errorf("after reopen: paused=%v elapsed=%v, want paused, 5m", act.Paused(), act.Elapsed(t0.Add(time.Hour)))
+	}
+
+	got, err = s2.Resume(ctx, tk.ID, t0.Add(15*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []task.Pause{{StartedAt: t0.Add(5 * time.Minute), EndedAt: t0.Add(15 * time.Minute)}}
+	if got.Paused() || len(got.Pauses) != 1 || got.Pauses[0] != want[0] {
+		t.Errorf("pauses = %+v, want %+v", got.Pauses, want)
+	}
+	if e := got.Elapsed(t0.Add(20 * time.Minute)); e != 10*time.Minute {
+		t.Errorf("elapsed = %v, want 10m (paused time excluded)", e)
+	}
+
+	if err := s2.Complete(ctx, tk.ID, t0.Add(30*time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s2.Pause(ctx, tk.ID, t0.Add(31*time.Minute)); !errors.Is(err, ErrNotActive) {
+		t.Errorf("Pause after complete: %v, want ErrNotActive", err)
+	}
+	if _, err := s2.Pause(ctx, 999, t0); !errors.Is(err, ErrNotFound) {
+		t.Errorf("Pause unknown: %v, want ErrNotFound", err)
+	}
+}

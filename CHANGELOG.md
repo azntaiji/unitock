@@ -13,6 +13,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   progress bar with the elapsed percentage, coloured by how much time is left (blue at
   half, amber at a quarter, red at a tenth and in overtime). Colours adapt to light and
   dark terminals; under `NO_COLOR` the badge names the band instead.
+- `p` pauses and resumes the active task. Paused time does not count, and a task paused
+  at quit is still paused at the next launch.
 
 ## [0.1.0] - 2026-11-17
 
