@@ -21,8 +21,7 @@ type taskCompletedMsg struct{ task task.Task }
 
 type completeErrMsg struct{ err error }
 
-// activeModel is the Active screen. Phase 1 shows the name and a countdown; pause,
-// extend, cancel, and the big digits come in Phase 2.
+// activeModel is the Active screen.
 type activeModel struct {
 	task       task.Task
 	gen        int
@@ -76,14 +75,30 @@ func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {
 	return m, nil
 }
 
-var timerStyle = lipgloss.NewStyle().Bold(true)
-
-func (m activeModel) view(now time.Time) string {
+// view draws the Active screen (R-17, R-18, D-09): name, status badge, timer in block
+// digits (plain bold when narrower than blockMinWidth), progress bar, and the remaining
+// and estimate as text. Paused dims the digits.
+func (m activeModel) view(now time.Time, width int, th theme) string {
+	b := bandAt(m.task, now)
+	fg := b.color(th)
+	digits := lipgloss.NewStyle().Bold(true).Foreground(fg).Faint(m.task.Paused())
+	clock := timerText(m.task, now)
+	timer := digits.Render(clock)
+	if width == 0 || width >= blockMinWidth {
+		timer = digits.Render(blockText(clock))
+	}
+	left := "Remaining " + clock
+	if b == bandOvertime {
+		left = "Overtime " + clock
+	}
 	lines := []string{
 		titleStyle.Render(m.task.Name),
+		badge(m.task, b, th),
 		"",
-		timerStyle.Render(timerText(m.task, now)),
-		fmt.Sprintf("Estimate %s", formatClock(m.task.Estimate())),
+		timer,
+		"",
+		progressBar(m.task, now, fg),
+		left + " · Estimate " + formatClock(m.task.Estimate()),
 	}
 	if m.err != "" {
 		lines = append(lines, "", errStyle.Render(m.err))

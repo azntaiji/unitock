@@ -13,6 +13,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/colorprofile"
 
 	"github.com/azntaiji/unitock/internal/store"
 	"github.com/azntaiji/unitock/internal/task"
@@ -53,6 +54,7 @@ type Model struct {
 	gen    int // tick loop generation; bumped for each Active screen
 	width  int
 	height int
+	theme  theme
 }
 
 // New returns the root model. If a task is active it opens on the Active screen with the
@@ -67,7 +69,7 @@ func New(d Deps) (Model, error) {
 	if d.Rand == nil {
 		d.Rand = rand.IntN
 	}
-	m := Model{deps: d, screen: screenStart, start: newStartModel()}
+	m := Model{deps: d, screen: screenStart, start: newStartModel(), theme: theme{dark: true}}
 	t, err := d.Store.Active(d.Ctx)
 	switch {
 	case errors.Is(err, store.ErrNoActive):
@@ -82,10 +84,11 @@ func New(d Deps) (Model, error) {
 
 // Init implements tea.Model.
 func (m Model) Init() tea.Cmd {
+	cmd := m.start.focusCmd()
 	if m.screen == screenActive {
-		return m.active.tick()
+		cmd = m.active.tick()
 	}
-	return m.start.focusCmd()
+	return tea.Batch(tea.RequestBackgroundColor, cmd)
 }
 
 // Update implements tea.Model.
@@ -93,6 +96,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
+		return m, nil
+	case tea.BackgroundColorMsg: // picks the light or dark colour pairs (D-09)
+		m.theme.dark = msg.IsDark()
+		return m, nil
+	case tea.ColorProfileMsg: // NO_COLOR or no colour support (D-09)
+		m.theme.noColor = msg.Profile <= colorprofile.ASCII
 		return m, nil
 	case tea.KeyPressMsg:
 		if msg.String() == "ctrl+c" { // always quits (R-06)
@@ -143,7 +152,7 @@ func (m Model) View() tea.View {
 	case screenStart:
 		body, hints = m.start.view(), m.start.hints()
 	case screenActive:
-		body, hints = m.active.view(m.deps.Clock.Now()), m.active.hints()
+		body, hints = m.active.view(m.deps.Clock.Now(), m.width, m.theme), m.active.hints()
 	case screenDone:
 		body, hints = m.done.view(), m.done.hints()
 	}

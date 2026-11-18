@@ -9,8 +9,10 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Phase 2 tasks in docs/PLAN.md in order, starting with the Active screen visuals
-   (R-17, R-18, D-09) and golden-file view tests per band.
+1. Pause/resume stored as pause rows (R-20): store operations plus `p` on Active.
+2. Then the remaining Phase 2 tasks in docs/PLAN.md in order.
+3. Before G2: azntaiji to review the Active golden files in internal/tui/testdata
+   (`cat` them in a terminal to see colours). P2-01 stays `passes: false` until then.
 
 ## Blockers
 
@@ -20,6 +22,8 @@ None. D-09, D-10, D-12, D-13 approved by azntaiji 2026-11-17.
 
 | Check | Command | Result | Raw output |
 |---|---|---|---|
+| make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
+| P2-01 view goldens | `go test ./internal/tui/ -count=1 -run 'View' -v` | pass, awaiting golden review | artifacts/phase-2/p2-01-view.txt |
 
 ## Gate request
 
@@ -30,7 +34,10 @@ None.
 - Phase 1 closed 2026-11-17 as v0.1.0; detail in docs/archive/phase-1.md.
 - Start Phase 2 in a new session.
 - Carried over: `s` (stats) on the Start button is not handled or hinted until Stats
-  exists (Phase 3). Overtime shows plain `+MM:SS`; colours come with D-09.
+  exists (Phase 3).
+- Visuals: internal/tui/timer.go (bands, block font, bar, badge). Root Model holds a
+  `theme` from tea.BackgroundColorMsg and tea.ColorProfileMsg (ASCII or lower = no
+  colour). Golden helper `requireGolden` in view_test.go; `make golden` rewrites.
 - Store has Create/Active/Get/Complete only; add pause, extension, and cancel operations
   (with tests in internal/store) as their screens need them.
 - TUI tests: Update-level tests in internal/tui run commands only for enter/e/q/ctrl+c

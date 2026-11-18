@@ -7,6 +7,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Active screen shows the remaining time in large block digits, a status badge, and a
+  progress bar with the elapsed percentage, coloured by how much time is left (blue at
+  half, amber at a quarter, red at a tenth and in overtime). Colours adapt to light and
+  dark terminals; under `NO_COLOR` the badge names the band instead.
+
 ## [0.1.0] - 2026-11-17
 
 ### Added

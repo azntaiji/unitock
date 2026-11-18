@@ -32,7 +32,7 @@ and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
   with notification and looping sound.
 - **Depends on:** D-09, D-10, D-12, D-13.
 - **Tasks:**
-  - [ ] Block-digit timer, progress bar, colour bands, PAUSED and overtime display,
+  - [x] Block-digit timer, progress bar, colour bands, PAUSED and overtime display,
         `NO_COLOR` (R-17, R-18, D-09); golden-file view tests per band.
   - [ ] Pause/resume stored as pause rows (R-20).
   - [ ] Extend with the duration input (R-21).
