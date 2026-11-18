@@ -24,7 +24,7 @@ None.
 | Check | Command | Result | Raw output |
 |---|---|---|---|
 | make check (visuals) | `make check` | pass | artifacts/phase-2/check-visuals.txt |
-| make check (layout) | `make check` | pass | artifacts/phase-2/check-layout.txt |
+| make check (green badge) | `make check` | pass | artifacts/phase-2/check-green.txt |
 | make check (projects) | `make check` | pass | artifacts/phase-2/check-projects.txt |
 | P2-08 projects | `go test ./... -count=1 -run 'Project' -v` | pass (11) | artifacts/phase-2/p2-08-project.txt |
 | P1-04 regression | `go test ./internal/tui/ -count=1 -run 'Start' -v` | pass | artifacts/phase-2/p1-04-regression.txt |

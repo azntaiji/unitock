@@ -157,7 +157,7 @@ func TestActiveViewTheme(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "25m")
 	h.send(tea.ColorProfileMsg{Profile: colorprofile.ASCII})
-	if !h.m.theme.noColor || strings.Contains(h.view(), "\x1b[1;30;46m") {
+	if !h.m.theme.noColor || strings.Contains(h.view(), "\x1b[1;30;42m") {
 		t.Errorf("NO_COLOR not applied: %q", h.view())
 	}
 	h.send(tea.ColorProfileMsg{Profile: colorprofile.ANSI256})

@@ -112,11 +112,11 @@ horizontal progress bar with elapsed percentage, and a status badge. All colours
 terminal theme's 16-colour ANSI palette, never fixed RGB values. Digits and bar colour by
 remaining fraction of the estimate: > 50% default foreground; ≤ 50% blue; ≤ 25% yellow;
 ≤ 10% and overtime red. Paused dims the digits. The badge is bold, black text on a
-coloured background, one of: `● RUNNING` (cyan) above 25% left; `◐ ENDING` (yellow) at
+coloured background, one of: `● RUNNING` (green) above 25% left; `◐ ENDING` (yellow) at
 25% or less; `▲ OVERTIME` (red) past the estimate; `❚❚ PAUSED` (white, ANSI 7) whenever
 paused, overriding the others. Under `NO_COLOR` the badge renders in reverse video with
 the same text.
-**Why:** ANSI colours follow the user's theme; cyan and light grey keep black text
+**Why:** ANSI colours follow the user's theme; green and light grey keep black text
 readable where ANSI blue and bright black are dark in many themes.
 **Alternatives:** a ring drawn with braille characters (harder to read at small sizes).
 

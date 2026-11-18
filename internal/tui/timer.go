@@ -129,7 +129,7 @@ func progressBar(t task.Task, now time.Time, fg color.Color) string {
 // reverse video under NO_COLOR. PAUSED overrides the others; ENDING covers 25% or less
 // left (the warning and error bands).
 func badge(t task.Task, b band, th theme) string {
-	text, bg := "● RUNNING", color.Color(lipgloss.Cyan)
+	text, bg := "● RUNNING", color.Color(lipgloss.Green)
 	switch {
 	case t.Paused():
 		text, bg = "❚❚ PAUSED", lipgloss.White
