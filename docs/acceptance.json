@@ -142,8 +142,8 @@
       "phase": 2,
       "description": "Notifier and player pick the right tool per OS, pass the task name as an argument rather than through a shell, and fall back to the terminal bell when no player exists (R-33, R-34).",
       "verify": "go test ./internal/alarm/ -count=1 -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18: 13 tests pass (artifacts/phase-2/p2-06-alarm.txt): osascript/notify-send get the task name as its own argv item after `--`; afplay on macOS, paplay then aplay on Linux; bell every interval with no player, a failing player, or an unwritable chime."
     },
     {
       "id": "P2-07",

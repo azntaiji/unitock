@@ -10,9 +10,11 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/azntaiji/unitock/internal/alarm"
 	"github.com/azntaiji/unitock/internal/store"
 	"github.com/azntaiji/unitock/internal/task"
 	"github.com/azntaiji/unitock/internal/tui"
@@ -36,18 +38,35 @@ func main() {
 
 // deps is what the UI needs from startup.
 type deps struct {
-	store *store.Store
-	clock task.Clock
-	log   *slog.Logger
+	store   *store.Store
+	clock   task.Clock
+	log     *slog.Logger
+	dataDir string
 }
 
 // runUI runs the terminal UI until the user quits. Tests replace it.
 var runUI = func(ctx context.Context, d deps) error {
-	m, err := tui.New(tui.Deps{Ctx: ctx, Store: d.store, Clock: d.clock, Log: d.log})
+	// The fallback bell goes through the program, so it never lands inside a frame. The
+	// alarm can start in tui.New (a relaunch in overtime, R-05), before the program
+	// exists; rings until then are skipped.
+	var prog atomic.Pointer[tea.Program]
+	al := alarm.New(alarm.Config{
+		Dir: d.dataDir,
+		Log: d.log,
+		Bell: func() {
+			if p := prog.Load(); p != nil {
+				p.Send(tea.RawMsg{Msg: "\a"})
+			}
+		},
+	})
+	defer al.Close() // no player or notifier outlives the app (R-31)
+	m, err := tui.New(tui.Deps{Ctx: ctx, Store: d.store, Clock: d.clock, Log: d.log, Alarm: al})
 	if err != nil {
 		return err
 	}
-	_, err = tea.NewProgram(m, tea.WithContext(ctx)).Run()
+	p := tea.NewProgram(m, tea.WithContext(ctx))
+	prog.Store(p)
+	_, err = p.Run()
 	return err
 }
 
@@ -115,7 +134,7 @@ func start(ctx context.Context, dataDir string, getenv func(string) string) erro
 	}
 	defer func() { _ = st.Close() }()
 
-	if err := runUI(ctx, deps{store: st, clock: task.SystemClock{}, log: log}); err != nil {
+	if err := runUI(ctx, deps{store: st, clock: task.SystemClock{}, log: log, dataDir: dataDir}); err != nil {
 		log.Error("ui", "err", err)
 		return err
 	}

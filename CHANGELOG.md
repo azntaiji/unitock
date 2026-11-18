@@ -22,10 +22,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the Start screen.
 - `n` cancels the active task after a Yes/No confirmation (No is selected first; `y`
   confirms at once) and returns to the Start screen.
-- Time-up alert: when a running task reaches zero, a modal offers Extend or Mark as
-  completed (`←`/`→`/`tab`, `enter`, or `d`/`e`), floating over the timer. Extending from the alert makes the
-  entered amount the new remaining time. A task that ran out while the app was closed
-  alerts at launch. (Sound and notifications arrive with the alarm player.)
+- Time-up alert: when a running task reaches zero, a box floating over the timer offers
+  Extend or Mark as completed (`←`/`→`/`tab`, `enter`, or `d`/`e`). Extending from the
+  alert makes the entered amount the new remaining time. A task that ran out while the
+  app was closed alerts at launch.
+- At time up, a system notification (`osascript` on macOS, `notify-send` on Ubuntu) and
+  a looping chime (`afplay`; `paplay` or `aplay`) until you choose. With no working
+  player, the terminal bell rings every 2 seconds instead. The chime is written to
+  `alarm.wav` in the data directory.
 - `p` pauses and resumes the active task. Paused time does not count, and a task paused
   at quit is still paused at the next launch.
 

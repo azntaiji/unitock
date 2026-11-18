@@ -40,7 +40,7 @@ and CI green on macOS and Ubuntu. Detail: `docs/archive/phase-1.md`.
   - [x] Cancel confirmation (R-22).
   - [x] Time-up alert modal with Extend / Mark as completed and the D-10 rule (R-30 to
         R-32); fires immediately when relaunched in overtime (R-05).
-  - [ ] Notifier and alarm player behind interfaces, with the OS implementations and
+  - [x] Notifier and alarm player behind interfaces, with the OS implementations and
         fallbacks (R-33, R-34, D-13).
   - [ ] Single-instance lock (R-09, D-12) and minimum terminal size (R-08).
 - **Exit criteria:** P2-01 to P2-08.
