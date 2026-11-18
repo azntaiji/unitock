@@ -9,15 +9,12 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Checkpoint: ask azntaiji to decide D-09 (timer visuals), D-10 (extend in overtime),
-   D-12 (single-instance lock), and D-13 (alarm sound and notifications). All Proposed.
-2. Once each is approved, the Phase 2 tasks in docs/PLAN.md in order. Tasks blocked only
-   by a later decision can proceed: pause (R-20) and cancel (R-22) need none of them.
+1. Phase 2 tasks in docs/PLAN.md in order, starting with the Active screen visuals
+   (R-17, R-18, D-09) and golden-file view tests per band.
 
 ## Blockers
 
-- D-09, D-10, D-12, D-13 are Proposed; Phase 2 depends on all four. Do not build on them
-  until approved.
+None. D-09, D-10, D-12, D-13 approved by azntaiji 2026-11-17.
 
 ## Evidence
 

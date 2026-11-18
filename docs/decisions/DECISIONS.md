@@ -106,7 +106,7 @@ second; valid range 1 minute to 24 hours inclusive. Fuzz-tested.
 **Alternatives:** Go's `time.ParseDuration` only (rejects "45 minutes", "1hr").
 
 ## D-09 — Timer visuals and colour thresholds
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-17
 **Decision:** large 5-row block digits (plain bold below 60 columns of free width), a
 horizontal progress bar with elapsed percentage, and a status badge. Colour by remaining
 fraction of the estimate: > 50% neutral; ≤ 50% info (blue); ≤ 25% warning (amber);
@@ -115,7 +115,7 @@ names the band. Colours use Lip Gloss adaptive light/dark pairs.
 **Alternatives:** a ring drawn with braille characters (harder to read at small sizes).
 
 ## D-10 — Extending in overtime
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-17
 **Decision:** when Extend is chosen from the time-up alert, the estimate grows by the
 overtime so far plus the entered amount, so remaining equals the entered amount from now.
 Extending before time is up (`d`) adds exactly the entered amount. Each extension is
@@ -139,14 +139,14 @@ handled by calendar dates, not 24-hour steps.
 4 partial month bars).
 
 ## D-12 — Single-instance lock
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-17
 **Decision:** an exclusive advisory `flock` on `unitock.lock` in the data directory, held
 for the life of the process (released by the OS on crash).
 **Alternatives:** PID file (stale after crashes); rely on SQLite locking (two UIs would
 fight over the active task).
 
 ## D-13 — Alarm sound and notifications
-**Status:** Proposed
+**Status:** Approved — azntaiji, 2026-11-17
 **Decision:** the chime is a short WAV synthesised by the app's own code (no third-party
 audio asset, no licensing question), written once to the data directory. It loops by
 re-running the first available player: `afplay` on macOS; `paplay`, then `aplay` on
