@@ -1,11 +1,21 @@
 # Release kit.
 # Publishes a GitHub Release for every vX.Y.Z tag the agent pushes at gate close.
+# Run it by hand (Actions > release > Run workflow, or
+# `gh workflow run release.yml -f tag=vX.Y.Z`) to publish an existing tag that has no
+# release yet, such as one whose tag-push run failed. It builds the tag's own commit
+# and refuses a tag that already has a release; it never creates or moves a tag.
 # Action versions were current majors in late 2026; bump them when newer majors exist.
 name: release
 
 on:
   push:
     tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to publish, such as v0.1.0"
+        required: true
+        type: string
 
 permissions:
   contents: write # create the release and upload its files
@@ -14,8 +24,32 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      # The tag comes from the push, or from the input on a manual run. It is passed
+      # through env, never expanded into the script, and must be vX.Y.Z.
+      - name: Resolve tag
+        id: tag
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            tag="$INPUT_TAG"
+            if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "::error::$tag already has a release"
+              exit 1
+            fi
+          fi
+          if ! printf '%s' "$tag" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::'$tag' is not a vX.Y.Z tag"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      # refs/tags/ so a branch of the same name can never be built instead; this step
+      # fails if the tag does not exist.
       - uses: actions/checkout@v7
         with:
+          ref: refs/tags/${{ steps.tag.outputs.tag }}
           fetch-depth: 0
       # Not go-version-file: that installs go.mod's minimum (1.26.0) with
       # GOTOOLCHAIN=local, and GoReleaser (pinned in the Makefile) needs Go >= 1.27.3.
@@ -26,6 +60,7 @@ jobs:
       - name: Check
         run: make check
       - name: Release
-        run: make release VERSION="${GITHUB_REF_NAME#v}" NOTES="$RUNNER_TEMP/notes.md"
+        run: make release VERSION="${TAG#v}" NOTES="$RUNNER_TEMP/notes.md"
         env:
+          TAG: ${{ steps.tag.outputs.tag }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
