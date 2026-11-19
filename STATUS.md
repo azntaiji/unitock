@@ -2,15 +2,16 @@
 
 Phase: 4
 Phase name: Hardening and 1.0.0
-Gate: G4 not requested
+Gate: G4 REQUESTED
 Updated: 2026-11-19
 
 Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. `make release-check`, CHANGELOG release notes, gate request (P4-04). At gate close
-   also bump `VERSION=` in the README Install snippet.
+1. Wait for azntaiji's G4 decision. At gate close: VERSION 1.0.0, CHANGELOG [1.0.0],
+   README badges, roadmap, and the Install snippet's `VERSION=`; then check the
+   v1.0.0 GitHub Release body is not empty (first real run of the notes fix).
 
 ## Blockers
 
@@ -20,19 +21,24 @@ None.
 
 | Check | Command | Result | Raw output |
 |---|---|---|---|
-| P4-02 perf (macOS arm64) | `go test ./... -count=1 -run 'Perf' -v` | pass: startup 1.6 ms, stats open 27 ms, tab 0.7 ms | artifacts/phase-4/perf.log |
-| make check after perf task | `make check` | exit 0 | artifacts/phase-4/check-perf.log |
-| old releases published | `gh workflow run release.yml -f tag=v0.X.0` | 3/3 success | gh runs 44429925530, 44430921813, 44431766718 |
-| P4-05 Active row | `go test ./internal/tui/ -count=1 -run 'View\|Extend\|Pause' -v` | pass; make check exit 0 | artifacts/phase-4/p4-05.log |
-| P4-06 sounds, automated part | `go test ./... -count=1 -run 'Sound' -v` | pass (21 tests); by hand pending | artifacts/phase-4/p4-06.log |
-| P4-01 E2E by hand (macOS, Ubuntu) | SPEC end-to-end, 15 rows | pass on both | artifacts/phase-4/e2e-results.md |
-| P4-02 perf (Ubuntu amd64) | perf test binaries at cef31d6 | pass: startup 1.7 ms, stats 50 ms | artifacts/phase-4/perf-ubuntu.log |
-| P4-03 error paths | `go test ./... -count=1 -run 'Error' -v` | pass (19), make check 0 | artifacts/phase-4/p4-03.log |
-| release kit on Go 1.27.3 (CI fix) | `make release-check` | exit 0 | artifacts/phase-4/release-check-ci-fix.log |
+| G4 commands table | `make fmt lint vet test build check release-check`; scaffold | all exit 0 | artifacts/phase-4/gate-*.log |
+| P4-01 E2E by hand | SPEC end-to-end, macOS + Ubuntu | 15/15 rows pass on both | artifacts/phase-4/e2e-results.md |
+| P4-02 perf | `go test ./... -count=1 -run 'Perf' -v` | macOS 1.7/36 ms; Ubuntu 1.7/50 ms | gate-perf.log, perf-ubuntu.log |
+| P4-03 errors | `go test ./... -count=1 -run 'Error' -v` | pass, 0 skips | artifacts/phase-4/gate-error.log |
+| P4-05 row | `go test ./internal/tui/ -run 'View\|Extend\|Pause'` | pass | artifacts/phase-4/gate-p405.log |
+| P4-06 sounds | `go test ./... -count=1 -run 'Sound' -v` + by hand | pass | gate-sound.log, e2e-results.md |
 
 ## Gate request
 
-None.
+Gate: G4, phase 4 (Hardening and 1.0.0)
+Approvers: azntaiji
+Exit criteria: P4-01 to P4-06 all passing
+Review: fresh-context subagent, no gaps; stale PLAN checkboxes ticked
+Proposed version: 1.0.0 (major: SPEC complete and verified on both OSes per PLAN;
+  also q/s no longer quit or open Stats, a breaking key change)
+Look at: artifacts/phase-4/e2e-results.md, perf-ubuntu.log, gate-*.log; CHANGELOG
+  [Unreleased]; README.md
+Open decisions or RFIs the next phase depends on: none (mouse input deferred past 1.0)
 
 ## Handoff
 
@@ -58,13 +64,11 @@ None.
   hash-tested; others normalised to 0.5 peak); Alarm.Preview plays once, the alarm
   always wins over a preview. store/settings.go + migration 0005. tui/sound.go is the
   Sound screen (ctrl+o from Start); tui.New loads the sound and calls SetSound.
-- Phase 3 closed 2026-11-18 as v0.3.0; detail in docs/archive/phase-3.md.
 - Perf: internal/store/storetest.Seed bulk-inserts history in one transaction;
   cmd/unitock/perf_test.go (startup via run() with runUI stubbed, to first View) and
   internal/tui/perf_test.go (s to rendered Stats, then tab). Both skip under -race
   (storetest.Race), so CI's make check does not time them; the P4-02 verify command does.
   Startup excludes process exec and the terminal write (no TTY in tests).
-- Alarm and notification verified by hand on macOS (afplay) and Ubuntu 24.04 (paplay).
 - internal/alarm implements tui.Alarm; main wires it (bell via tea.RawMsg, Close deferred).
 - Lock: cmd/unitock/lock.go. Too small: tui.go `tooSmall` (keys except ctrl+c ignored).
 - Stats: internal/stats (pure); store.Completed/All share `load`; tui/stats.go, chart.go;

@@ -45,14 +45,14 @@ previous period; estimated-vs-actual bar chart; alert overlay), JSON export sche
 - **Goal:** prove the whole app end to end on both platforms and release 1.0.0.
 - **Depends on:** the human's decision to declare 1.0.0.
 - **Tasks:**
-  - [ ] Run the SPEC end-to-end verification on macOS and Ubuntu; record results.
+  - [x] Run the SPEC end-to-end verification on macOS and Ubuntu; record results.
   - [x] Performance check with 10,000 seeded tasks (Constraints).
   - [x] Error paths: unwritable data dir, corrupt database, missing audio and notify
         tools, export directory not writable.
-  - [ ] README usage section, install instructions, and a screenshot or recording.
+  - [x] README usage section, install instructions, and a screenshot or recording.
   - [x] Active screen row: elapsed and estimate (+ added) instead of remaining (R-17).
   - [x] Choosable alarm sounds with a Sound screen and preview (R-51 to R-53, D-16).
-  - [ ] `make release-check` passes; release notes complete.
+  - [x] `make release-check` passes; release notes complete.
 - **Exit criteria:** P4-01 to P4-06.
 - **Gate G4:** azntaiji. Proposed version 1.0.0.
 

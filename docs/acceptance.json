@@ -230,8 +230,8 @@
       "phase": 4,
       "description": "make check and make release-check pass, the README documents install and usage, and the CHANGELOG has notes for the release.",
       "verify": "make check && make release-check; read README.md and CHANGELOG.md.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-19 macOS at a2409b5: make check exit 0 (lint 0 issues), make release-check exit 0 (4 archives + checksums), scaffold 0 errors; README has Install (release, go install, Ubuntu tools) and Usage with key table and demos; CHANGELOG [Unreleased] covers every phase 4 change. artifacts/phase-4/gate-check.log, gate-release-check.log"
     },
     {
       "id": "P4-05",
