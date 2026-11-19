@@ -95,7 +95,7 @@ estimate minus elapsed; below zero it is **overtime**.
 - R-25 A task has an optional project: trimmed, at most 50 characters, blank for none. A
   project matching an existing one case-insensitively uses the existing project and its
   stored spelling (D-15). Projects are not renamed or deleted from the UI.
-- R-26 While the Project input has focus, a dropdown suggests up to 5 existing projects:
+- R-26 While the Project input has focus, a dropdown suggests up to 4 existing projects:
   the most recently used when the input is empty, otherwise those containing the typed
   text (case-insensitive), prefix matches first, then by most recent use. The top match
   shows as dimmed ghost text when it extends the typed text. `↑`/`↓` move a highlight;

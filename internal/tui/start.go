@@ -24,7 +24,7 @@ const MaxNameLen = 100
 const MaxProjectLen = 50
 
 // maxSuggestions is how many projects the dropdown lists (R-26).
-const maxSuggestions = 5
+const maxSuggestions = 4
 
 type focus int
 

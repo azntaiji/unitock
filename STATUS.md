@@ -22,9 +22,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Blockers
 
-None. Found, not fixed (pre-existing, outside the task): with the Project dropdown open
-(5 suggestions) the Start screen is 21 rows, over the 60×20 minimum (R-08); asked the
-human how to resolve it.
+None.
 
 ## Evidence
 

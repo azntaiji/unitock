@@ -28,6 +28,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- The Start screen fits the 60×20 minimum with the project suggestions open: they now
+  list up to 4 projects instead of 5.
 - Release notes are published with each GitHub Release (the release body was empty).
 
 ## [0.3.0] - 2026-11-18

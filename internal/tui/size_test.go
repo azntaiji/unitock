@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // Below 60×20 the app shows the too-small message instead of the screen, ignores the
@@ -57,4 +58,32 @@ func TestTooSmallAlertStillFires(t *testing.T) {
 	if v := h.view(); !strings.Contains(v, "Time's up") {
 		t.Errorf("alert not shown after resize:\n%s", v)
 	}
+}
+
+// Every Start state fits the 60×20 minimum (R-08), including the tallest: the project
+// dropdown full (R-26), and an error with the two hint lines.
+func TestStartFitsMinimumSize(t *testing.T) {
+	h := newHarness(t)
+	h.seedProjects("p1", "p2", "p3", "p4", "p5", "p6")
+	h.send(tea.WindowSizeMsg{Width: MinWidth, Height: MinHeight})
+	check := func(state string) {
+		t.Helper()
+		lines := strings.Split(h.view(), "\n")
+		if len(lines) > MinHeight {
+			t.Errorf("%s: %d rows, want at most %d:\n%s", state, len(lines), MinHeight, h.view())
+		}
+		for _, l := range lines {
+			if w := ansi.StringWidth(l); w > MinWidth {
+				t.Errorf("%s: a row is %d wide, want at most %d: %q", state, w, MinWidth, ansi.Strip(l))
+			}
+		}
+	}
+	if !h.m.start.dropdownOpen() {
+		t.Fatal("dropdown not open")
+	}
+	check("dropdown open")
+	h.press("esc", "esc", "enter") // empty name: error under the button
+	check("button focused with an error")
+	h.press("tab", "tab") // Task name: two hint lines
+	check("typing with an error")
 }

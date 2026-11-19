@@ -30,10 +30,10 @@ func (h *harness) seedProjects(names ...string) {
 func TestProjectDropdownListsRecentWhenEmpty(t *testing.T) {
 	h := newHarness(t)
 	h.seedProjects("a1", "a2", "a3", "a4", "a5", "a6")
-	if got, want := h.m.start.suggestions(), []string{"a6", "a5", "a4", "a3", "a2"}; !slices.Equal(got, want) {
-		t.Errorf("suggestions = %v, want %v (5 most recent)", got, want)
+	if got, want := h.m.start.suggestions(), []string{"a6", "a5", "a4", "a3"}; !slices.Equal(got, want) {
+		t.Errorf("suggestions = %v, want %v (4 most recent)", got, want)
 	}
-	if !h.m.start.dropdownOpen() || !strings.Contains(h.view(), "a6") || strings.Contains(h.view(), "a1") {
+	if !h.m.start.dropdownOpen() || !strings.Contains(h.view(), "a6") || strings.Contains(h.view(), "a2") {
 		t.Errorf("dropdown view:\n%s", h.view())
 	}
 	if !strings.Contains(h.view(), "tab complete") {

@@ -61,3 +61,6 @@ previous period; estimated-vs-actual bar chart; alert overlay), JSON export sche
 Everything in the SPEC Non-goals: multiple or concurrent tasks, task lists, projects,
 tags, editing or deleting history, Pomodoro cycles, sync or network access, Windows, a
 GUI, a configuration file, localisation, and data import.
+
+Deferred until after 1.0.0 (azntaiji, 2026-11-19): mouse input. Every action has a key;
+mouse capture would also take over the terminal's click-and-drag text selection.
