@@ -243,8 +243,8 @@ func overlay(screen, box string) string {
 }
 
 // view draws the Active screen (R-17, R-18, D-09): name, status badge, timer in block
-// digits (plain bold when narrower than blockMinWidth), progress bar, and the remaining
-// and estimate as text. Paused dims the digits.
+// digits (plain bold when narrower than blockMinWidth), progress bar, and the elapsed
+// time and estimate as text. Paused dims the digits.
 func (m activeModel) view(now time.Time, width int, th theme) string {
 	b := bandAt(m.task, now)
 	fg := b.color(th)
@@ -254,10 +254,6 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 	if width == 0 || width >= blockMinWidth {
 		timer = digits.Render(blockText(clock))
 	}
-	left := "Remaining " + clock
-	if b == bandOvertime {
-		left = "Overtime " + clock
-	}
 	lines := append([]string{badge(m.task, b, th)}, heading(m.task)...)
 	lines = append(lines,
 		"",
@@ -265,7 +261,7 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 		"",
 		progressBar(m.task, now, fg),
 		"",
-		dimStyle.Render(left+" · Estimate "+formatClock(m.task.Estimate())),
+		dimStyle.Render(timeRow(m.task, now)),
 	)
 	if m.ext.open {
 		lines = append(lines, "", focusedStyle.Render("> Add time"), "  "+m.ext.input.View())
@@ -309,6 +305,18 @@ func (m activeModel) hints() string {
 		return "p resume · d add time · n cancel · e complete · s stats · q quit"
 	}
 	return "p pause · d add time · n cancel · e complete · s stats · q quit"
+}
+
+// timeRow is the line under the progress bar (R-17): elapsed time and the original
+// estimate, plus the total added once the task has been extended. The big digits
+// already show the remaining time, so it is not repeated. Elapsed rounds down while
+// the digits round up, so the two always sum to the estimate.
+func timeRow(t task.Task, now time.Time) string {
+	row := "Elapsed " + formatClock(t.Elapsed(now)) + " · Estimate " + formatClock(t.OriginalEstimate)
+	if added := t.Estimate() - t.OriginalEstimate; added > 0 {
+		row += " + " + formatClock(added) + " added"
+	}
+	return row
 }
 
 // timerText is the remaining time, or +overtime once the estimate is used up (R-17, R-18).

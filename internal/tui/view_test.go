@@ -57,6 +57,8 @@ func TestActiveView(t *testing.T) {
 	long.OriginalEstimate = 2 * time.Hour
 	noProject := base
 	noProject.Project = ""
+	extended := base
+	extended.Extensions = []task.Extension{{At: t0.Add(20 * time.Minute), Added: 10 * time.Minute}}
 
 	tests := []struct {
 		name  string
@@ -76,12 +78,48 @@ func TestActiveView(t *testing.T) {
 		{"no_color_paused", paused, 10 * time.Minute, 80, theme{noColor: true}},
 		{"hours", long, 10 * time.Minute, 80, col},
 		{"narrow", base, 5 * time.Minute, 50, col},
+		{"extended", extended, 22 * time.Minute, 80, col}, // 25:00 + 10:00, 13:00 left
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := newActiveModel(tt.task, 1)
 			requireGolden(t, "active_"+tt.name, m.view(t0.Add(tt.after), tt.width, tt.theme))
 		})
+	}
+}
+
+// The row under the bar shows elapsed and the original estimate, adds the total added
+// time once extended, and never repeats the remaining time (R-17, P4-05).
+func TestActiveViewTimeRow(t *testing.T) {
+	base := task.Task{StartedAt: t0, OriginalEstimate: 25 * time.Minute}
+	ext := base
+	ext.Extensions = []task.Extension{{At: t0.Add(5 * time.Minute), Added: 10 * time.Minute}, {At: t0.Add(30 * time.Minute), Added: 90 * time.Second}}
+	paused := base
+	paused.Pauses = []task.Pause{{StartedAt: t0.Add(5 * time.Minute), EndedAt: t0.Add(15 * time.Minute)}}
+	long := base
+	long.OriginalEstimate = 90 * time.Minute
+	for _, tt := range []struct {
+		name  string
+		t     task.Task
+		after time.Duration
+		want  string
+	}{
+		{"start", base, 0, "Elapsed 00:00 · Estimate 25:00"},
+		{"rounds elapsed down", base, 12*time.Minute + 30*time.Second + 900*time.Millisecond, "Elapsed 12:30 · Estimate 25:00"},
+		{"paused time not counted", paused, 20 * time.Minute, "Elapsed 10:00 · Estimate 25:00"},
+		{"overtime keeps counting", base, 27 * time.Minute, "Elapsed 27:00 · Estimate 25:00"},
+		{"extensions summed", ext, 31 * time.Minute, "Elapsed 31:00 · Estimate 25:00 + 11:30 added"},
+		{"hours", long, 65 * time.Minute, "Elapsed 1:05:00 · Estimate 1:30:00"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := timeRow(tt.t, t0.Add(tt.after)); got != tt.want {
+				t.Errorf("timeRow = %q, want %q", got, tt.want)
+			}
+		})
+	}
+	view := newActiveModel(base, 1).view(t0.Add(5*time.Minute), 80, theme{})
+	if strings.Contains(view, "Remaining") || strings.Contains(view, "Overtime ") {
+		t.Errorf("view repeats the remaining time:\n%s", view)
 	}
 }
 

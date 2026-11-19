@@ -238,8 +238,8 @@
       "phase": 4,
       "description": "The Active screen's text row shows elapsed time and the estimate, and once time has been added the original estimate and the total added; it no longer repeats the remaining time (R-17).",
       "verify": "go test ./internal/tui/ -count=1 -run 'View|Extend|Pause' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-19: verify exit 0 (TestActiveViewTimeRow, 12 Active goldens incl. new active_extended, extend and pause flows); make check exit 0. artifacts/phase-4/p4-05.log, check-row.log"
     },
     {
       "id": "P4-06",

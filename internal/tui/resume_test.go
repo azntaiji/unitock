@@ -48,8 +48,8 @@ func TestResumeOpensActiveWithClosedTimeElapsed(t *testing.T) {
 	if m.screen != screenActive || m.active.task.ID != tk.ID {
 		t.Fatalf("relaunch screen = %d task %d, want Active task %d", m.screen, m.active.task.ID, tk.ID)
 	}
-	if v := m.View().Content; !strings.Contains(v, "12:40") || !strings.Contains(v, "write") {
-		t.Errorf("resumed view lacks 12:40:\n%s", v)
+	if v := m.View().Content; !strings.Contains(v, "Elapsed 12:20") || !strings.Contains(v, "write") { // 12:40 left
+		t.Errorf("resumed view lacks Elapsed 12:20:\n%s", v)
 	}
 	if m.Init() == nil {
 		t.Error("resumed Active screen did not start its tick loop")

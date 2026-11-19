@@ -118,9 +118,9 @@ func TestFlowStartCountdownComplete(t *testing.T) {
 
 	// No input: the program's own one-second tick must redraw from the clock (R-19).
 	clk.Advance(10 * time.Second)
-	a.probe.waitView(t, "24:50", 3*time.Second)
+	a.probe.waitView(t, "Elapsed 00:10", 3*time.Second) // 24:50 left
 	clk.Advance(5 * time.Minute)
-	a.probe.waitView(t, "19:50", 3*time.Second)
+	a.probe.waitView(t, "Elapsed 05:10", 3*time.Second) // 19:50 left
 
 	a.tm.Type("e")
 	a.probe.waitView(t, messages[3], 3*time.Second)
@@ -150,7 +150,7 @@ func TestResumeTeatestQuitAndRelaunch(t *testing.T) {
 	a.press(tea.KeyEnter)
 	a.probe.waitView(t, "02:00", 3*time.Second)
 	clk.Advance(5 * time.Second)
-	a.probe.waitView(t, "01:55", 3*time.Second)
+	a.probe.waitView(t, "Elapsed 00:05", 3*time.Second) // 01:55 left
 	a.quit(t)
 	_ = a.store.Close()
 
@@ -158,7 +158,7 @@ func TestResumeTeatestQuitAndRelaunch(t *testing.T) {
 	clk.Advance(20 * time.Second)
 	b := launch(t, dir, clk, nil)
 	b.probe.waitView(t, "Deep work", 3*time.Second)
-	b.probe.waitView(t, "01:35", 3*time.Second)
+	b.probe.waitView(t, "Elapsed 00:25", 3*time.Second) // 01:35 left
 	b.quit(t)
 
 	got, err := b.store.Active(context.Background())

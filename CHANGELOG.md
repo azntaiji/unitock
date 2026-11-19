@@ -7,6 +7,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The line under the Active screen's progress bar shows elapsed time and the estimate
+  (`Elapsed 12:31 · Estimate 25:00`), and once time has been added, the original
+  estimate and the total added (`Estimate 25:00 + 10:00 added`). It no longer repeats
+  the remaining time shown in the large digits.
+
+### Fixed
+
+- Release notes are published with each GitHub Release (the release body was empty).
+
 ## [0.3.0] - 2026-11-18
 
 ### Added

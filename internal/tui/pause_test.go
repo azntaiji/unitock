@@ -18,7 +18,7 @@ func TestPauseFreezesTimerAndResumes(t *testing.T) {
 	}
 	h.clock.Advance(30 * time.Minute)
 	h.tick()
-	if !strings.Contains(h.view(), "Remaining 20:00") {
+	if !strings.Contains(h.view(), "Elapsed 05:00") { // 20:00 left
 		t.Errorf("timer not frozen at 20:00 while paused:\n%s", h.view())
 	}
 	h.press("p")
@@ -27,7 +27,7 @@ func TestPauseFreezesTimerAndResumes(t *testing.T) {
 	}
 	h.clock.Advance(time.Minute)
 	h.tick()
-	if !strings.Contains(h.view(), "Remaining 19:00") {
+	if !strings.Contains(h.view(), "Elapsed 06:00") { // 19:00 left
 		t.Errorf("after resume + 1m:\n%s", h.view())
 	}
 	st, err := h.store.Get(h.m.deps.Ctx, h.m.active.task.ID)
@@ -54,7 +54,7 @@ func TestPauseSurvivesRelaunch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if v := m.View().Content; m.screen != screenActive || !strings.Contains(v, "PAUSED") || !strings.Contains(v, "Remaining 20:00") {
+	if v := m.View().Content; m.screen != screenActive || !strings.Contains(v, "PAUSED") || !strings.Contains(v, "Elapsed 05:00") {
 		t.Errorf("relaunch view:\n%s", v)
 	}
 }

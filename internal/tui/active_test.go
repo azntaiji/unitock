@@ -73,7 +73,7 @@ func TestActiveCountdownTicks(t *testing.T) {
 	if v := h.view(); !strings.Contains(v, "write") || !strings.Contains(v, "25:00") {
 		t.Fatalf("Active view = %q", v)
 	}
-	for i, want := range []string{"24:59", "24:58", "24:57"} {
+	for i, want := range []string{"Elapsed 00:01", "Elapsed 00:02", "Elapsed 00:03"} { // 24:59, 24:58, 24:57 left
 		h.clock.Advance(time.Second)
 		h.tick()
 		if !strings.Contains(h.view(), want) {
@@ -82,7 +82,7 @@ func TestActiveCountdownTicks(t *testing.T) {
 	}
 	h.clock.Advance(10 * time.Minute)
 	h.tick()
-	if !strings.Contains(h.view(), "14:57") {
+	if !strings.Contains(h.view(), "Elapsed 10:03") { // 14:57 left
 		t.Errorf("after 10m view = %q", h.view())
 	}
 }

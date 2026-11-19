@@ -20,8 +20,11 @@ func TestExtendAddsEnteredAmount(t *testing.T) {
 	if h.m.active.ext.open {
 		t.Fatalf("input still open: %q %q", h.m.active.ext.err, h.m.active.err)
 	}
-	if v := h.view(); !strings.Contains(v, "Remaining 30:00 · Estimate 35:00") {
+	if v := h.view(); !strings.Contains(v, "Elapsed 05:00 · Estimate 25:00 + 10:00 added") {
 		t.Errorf("after extend:\n%s", v)
+	}
+	if r := h.m.active.task.Remaining(h.clock.Now()); r != 30*time.Minute {
+		t.Errorf("remaining = %v, want 30m", r)
 	}
 	st, err := h.store.Get(h.m.deps.Ctx, h.m.active.task.ID)
 	if err != nil {
@@ -93,7 +96,10 @@ func TestExtendFromAlertSetsRemaining(t *testing.T) {
 	if len(tk.Extensions) != 1 || tk.Extensions[0].Added != 13*time.Minute {
 		t.Fatalf("extensions = %+v, want one of 13m", tk.Extensions)
 	}
-	if !strings.Contains(h.view(), "Remaining 10:00") {
+	if r := tk.Remaining(h.clock.Now()); r != 10*time.Minute {
+		t.Errorf("remaining = %v, want 10m", r)
+	}
+	if !strings.Contains(h.view(), "Elapsed 28:00 · Estimate 25:00 + 13:00 added") {
 		t.Errorf("view:\n%s", h.view())
 	}
 }

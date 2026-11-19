@@ -9,6 +9,9 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
+0. Alarm sounds (R-51 to R-53, D-16, P4-06): alarm.Sound set + synth, SetSound and
+   Preview; store migration 0005 settings; tui Sound screen on `a`. Then vhs GIFs for
+   the README (human wants charmbracelet/vhs).
 1. Error paths (P4-03), tests named `Error`: unwritable data dir, corrupt database,
    missing audio and notify tools, export directory not writable (export already shows
    the error; add a test that proves it). Some exist already under other names
@@ -30,6 +33,7 @@ None.
 | P4-02 perf (macOS arm64) | `go test ./... -count=1 -run 'Perf' -v` | pass: startup 1.6 ms, stats open 27 ms, tab 0.7 ms | artifacts/phase-4/perf.log |
 | make check after perf task | `make check` | exit 0 | artifacts/phase-4/check-perf.log |
 | old releases published | `gh workflow run release.yml -f tag=v0.X.0` | 3/3 success | gh runs 44429925530, 44430921813, 44431766718 |
+| P4-05 Active row | `go test ./internal/tui/ -count=1 -run 'View\|Extend\|Pause' -v` | pass; make check exit 0 | artifacts/phase-4/p4-05.log |
 | release kit on Go 1.27.3 (CI fix) | `make release-check` | exit 0 | artifacts/phase-4/release-check-ci-fix.log |
 
 ## Gate request

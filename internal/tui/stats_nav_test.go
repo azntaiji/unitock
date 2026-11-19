@@ -82,7 +82,7 @@ func TestStatsFromActiveTimerKeepsRunning(t *testing.T) {
 	if h.m.screen != screenActive {
 		t.Fatalf("esc returned to screen %d, want Active", h.m.screen)
 	}
-	if v := h.view(); !strings.Contains(v, "Remaining 23:30") {
+	if v := h.view(); !strings.Contains(v, "Elapsed 01:30") { // 23:30 left
 		t.Errorf("timer did not keep running under Stats:\n%s", v)
 	}
 	// The tick loop is the same one, not a second loop.
