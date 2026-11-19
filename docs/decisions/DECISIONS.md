@@ -207,3 +207,6 @@ the Ubuntu end-to-end check must hear every sound through `paplay` and `aplay`.
 **Amended:** azntaiji, 2026-11-19. The Sound screen opens with `ctrl+o` from any focus
 on Start, not `a` on the button; Start shows `Alarm: <name>` beside the button. Part of
 making app-wide commands `ctrl` chords only (R-06): `ctrl+s` stats, `ctrl+c` quit.
+**Amended:** azntaiji, 2026-11-19. The Ubuntu end-to-end check hears every sound through
+`paplay` only; listening through `aplay` is dropped. Choosing `aplay` when it is the only
+player stays covered by the automated alarm tests.

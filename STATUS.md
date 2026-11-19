@@ -9,14 +9,12 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. P4-06: hear all five sounds through `aplay` on Ubuntu (D-16; e2e form "Extra A",
-   skipped in the 2026-11-19 run). Human needed.
-2. `make release-check`, CHANGELOG release notes, gate request (P4-04). At gate close
+1. `make release-check`, CHANGELOG release notes, gate request (P4-04). At gate close
    also bump `VERSION=` in the README Install snippet.
 
 ## Blockers
 
-P4-06 waits on the human's `aplay` listening check on Ubuntu (e2e form, Extra A).
+None.
 
 ## Evidence
 
