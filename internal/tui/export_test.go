@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -126,3 +127,35 @@ func TestStatsExportNoteFitsWidth(t *testing.T) {
 }
 
 var errDisk = errors.New("disk on fire")
+
+// P4-03: an export directory that cannot be written shows the error on Stats; nothing is
+// written, the screen stays, and the data is untouched.
+func TestErrorExportDirNotWritable(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root ignores file permissions")
+	}
+	h, dir := exportHarness(t)
+	if err := os.Chmod(dir, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(dir, 0o700) })
+	before, err := h.store.All(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	h.press("e")
+	v := ansi.Strip(h.view())
+	if !strings.Contains(v, "Export failed:") || !strings.Contains(v, "permission denied") {
+		t.Errorf("unwritable export dir: error not shown:\n%s", v)
+	}
+	if h.m.screen != screenStats || h.m.stats.exporting {
+		t.Errorf("screen %d, exporting %v; want Stats, finished", h.m.screen, h.m.stats.exporting)
+	}
+	if entries, _ := os.ReadDir(dir); len(entries) != 0 {
+		t.Errorf("files written to an unwritable dir: %v", entries)
+	}
+	after, err := h.store.All(context.Background())
+	if err != nil || !reflect.DeepEqual(before, after) {
+		t.Errorf("tasks changed by a failed export: %v", err)
+	}
+}

@@ -1,7 +1,9 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"math"
 	"os"
 	"strings"
@@ -96,7 +98,7 @@ func (m statsModel) update(msg tea.Msg, d Deps) (statsModel, tea.Cmd) {
 		m.exporting = false
 		if msg.err != nil {
 			d.Log.Error("export", "err", msg.err)
-			m.note, m.noteErr = "Export failed: "+msg.err.Error(), true
+			m.note, m.noteErr = "Export failed: "+exportErrText(msg.err), true
 			return m, nil
 		}
 		d.Log.Info("exported", "path", msg.path)
@@ -136,6 +138,17 @@ func (m statsModel) view(now time.Time, width, height int, th theme) string {
 		renderChart(s, width, height, th),
 	)
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
+}
+
+// exportErrText puts the cause of a file error before its path, so the note line, which
+// keeps the start of a long error, always shows why an export failed (P4-03): for
+// example "permission denied: /long/dir/unitock-export-….json".
+func exportErrText(err error) string {
+	var pe *fs.PathError
+	if errors.As(err, &pe) {
+		return pe.Err.Error() + ": " + pe.Path
+	}
+	return err.Error()
 }
 
 // noteLine is the export result fitted to width, or blank. A long path keeps its

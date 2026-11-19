@@ -222,8 +222,8 @@
       "phase": 4,
       "description": "Unwritable data dir, corrupt database, missing audio and notify tools, and unwritable export directory each produce a clear message and no crash or data loss.",
       "verify": "go test ./... -count=1 -run 'Error' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-19 macOS: verify exit 0, 19 tests pass, none skipped (TestErrorUnwritableDataDir x3, TestErrorCorruptDatabase x4 with the db byte-identical after, TestErrorMissingAudioAndNotifyTools darwin+linux, TestErrorExportDirNotWritable with data unchanged); real binary with PATH=/var/empty alerted, completed, exited cleanly and logged both missing tools. make check exit 0. artifacts/phase-4/p4-03.log, p4-03-missing-tools.log"
     },
     {
       "id": "P4-04",

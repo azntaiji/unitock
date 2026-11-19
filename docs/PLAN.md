@@ -47,7 +47,7 @@ previous period; estimated-vs-actual bar chart; alert overlay), JSON export sche
 - **Tasks:**
   - [ ] Run the SPEC end-to-end verification on macOS and Ubuntu; record results.
   - [x] Performance check with 10,000 seeded tasks (Constraints).
-  - [ ] Error paths: unwritable data dir, corrupt database, missing audio and notify
+  - [x] Error paths: unwritable data dir, corrupt database, missing audio and notify
         tools, export directory not writable.
   - [ ] README usage section, install instructions, and a screenshot or recording.
   - [x] Active screen row: elapsed and estimate (+ added) instead of remaining (R-17).

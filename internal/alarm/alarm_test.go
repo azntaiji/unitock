@@ -314,3 +314,35 @@ func waitBells(t *testing.T, f *fakeOS, n int32) {
 		time.Sleep(5 * time.Millisecond)
 	}
 }
+
+// P4-03: with no notification tool and no audio player at all, nothing fails: each
+// problem is logged naming the missing tool, the alarm falls back to the terminal bell,
+// a preview rings it once, and Close returns.
+func TestErrorMissingAudioAndNotifyTools(t *testing.T) {
+	for _, tc := range []struct{ goos, notifier, player string }{
+		{"darwin", "osascript", "afplay"},
+		{"linux", "notify-send", "paplay"},
+	} {
+		t.Run(tc.goos, func(t *testing.T) {
+			f := newFakeOS() // no tools at all
+			a := New(f.config(t, tc.goos))
+			a.Notify("write report")
+			a.Start()
+			waitBells(t, f, 2)
+			a.Stop()
+			rung := f.bells.Load()
+			a.Preview(Bell)
+			waitBells(t, f, rung+1)
+			a.Close()
+			if len(f.runs) != 0 {
+				t.Errorf("ran %v with no tools installed", f.runs)
+			}
+			log := f.logText()
+			for _, want := range []string{"notification tool not found", tc.notifier, "no alarm player found", tc.player, "terminal bell"} {
+				if !strings.Contains(log, want) {
+					t.Errorf("log lacks %q:\n%s", want, log)
+				}
+			}
+		})
+	}
+}

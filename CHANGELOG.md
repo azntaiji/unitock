@@ -35,6 +35,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Every screen fits the 60×20 minimum: long error messages (such as an invalid
   duration) wrap instead of widening the screen, and the time-up alert's key hints use
   two lines.
+- Clearer startup errors: an unwritable data directory says so and names it, and an
+  unreadable database names the file (which is never changed). A failed export shows
+  the cause before the path, so a long path no longer hides why it failed.
 - Release notes are published with each GitHub Release (the release body was empty).
 
 ## [0.3.0] - 2026-11-18

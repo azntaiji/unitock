@@ -121,7 +121,7 @@ func start(ctx context.Context, dataDir string, getenv func(string) string) erro
 
 	logf, err := os.OpenFile(filepath.Join(dataDir, LogFile), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 	if err != nil {
-		return fmt.Errorf("opening log: %w", err)
+		return fmt.Errorf("data dir %s is not writable: %w", dataDir, err)
 	}
 	defer func() { _ = logf.Close() }()
 	log := slog.New(slog.NewTextHandler(logf, nil))
@@ -137,7 +137,8 @@ func start(ctx context.Context, dataDir string, getenv func(string) string) erro
 	st, err := store.Open(ctx, dataDir)
 	if err != nil {
 		log.Error("open store", "err", err)
-		return fmt.Errorf("database: %w", err)
+		// Name the file; the store never rewrites or deletes one it cannot read.
+		return fmt.Errorf("database %s: %w", filepath.Join(dataDir, store.DBFile), err)
 	}
 	defer func() { _ = st.Close() }()
 

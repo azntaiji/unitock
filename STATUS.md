@@ -9,12 +9,9 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Error paths (P4-03), tests named `Error`: unwritable data dir, corrupt database,
-   missing audio and notify tools, export directory not writable. Some exist under
-   other names (cmd/unitock TestUnusable*); make `-run 'Error'` cover every case.
-2. SPEC end-to-end verification on macOS and Ubuntu, by hand (P4-01), 11 steps; step
+1. SPEC end-to-end verification on macOS and Ubuntu, by hand (P4-01), 11 steps; step
    11 also completes P4-06 (hear every sound). Human needed for Ubuntu. Rerun Perf there.
-3. `make release-check`, CHANGELOG release notes, gate request (P4-04). At gate close
+2. `make release-check`, CHANGELOG release notes, gate request (P4-04). At gate close
    also bump `VERSION=` in the README Install snippet.
 
 ## Blockers
@@ -31,6 +28,7 @@ for --version (only release builds get -ldflags); a debug.ReadBuildInfo fallback
 | old releases published | `gh workflow run release.yml -f tag=v0.X.0` | 3/3 success | gh runs 44429925530, 44430921813, 44431766718 |
 | P4-05 Active row | `go test ./internal/tui/ -count=1 -run 'View\|Extend\|Pause' -v` | pass; make check exit 0 | artifacts/phase-4/p4-05.log |
 | P4-06 sounds, automated part | `go test ./... -count=1 -run 'Sound' -v` | pass (21 tests); by hand pending | artifacts/phase-4/p4-06.log |
+| P4-03 error paths | `go test ./... -count=1 -run 'Error' -v` | pass (19), make check 0 | artifacts/phase-4/p4-03.log |
 | release kit on Go 1.27.3 (CI fix) | `make release-check` | exit 0 | artifacts/phase-4/release-check-ci-fix.log |
 
 ## Gate request

@@ -176,7 +176,7 @@ func (s *Store) migrate(ctx context.Context) error {
 	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("starting migration: %w", err)
+		return fmt.Errorf("reading: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
 
