@@ -22,7 +22,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 ## Blockers
 
 None. Tags v0.1.0 to v0.3.0 have no GitHub Release; the human chose to publish them by
-hand with the release workflow's manual trigger once it reaches GitHub (G4 push).
+hand with the release workflow's manual trigger (pushed early on approval).
 
 ## Evidence
 
@@ -40,10 +40,12 @@ None.
 
 - Release workflow failed for v0.1.0 to v0.3.0: setup-go took go.mod's 1.26.0 with
   GOTOOLCHAIN=local; GoReleaser v2.19.0 needs >= 1.27.3. release.yml now pins Go 1.27.3
-  (committed locally; reaches GitHub at the G4 push). Rerunning old runs would reuse
+  (pushed early, see below). Rerunning old runs would reuse
   the old workflow file at each tag, so release.yml gained workflow_dispatch: input
   `tag` (vX.Y.Z, must exist, must have no release), builds that tag's commit with the
   fixed Go. Run: `gh workflow run release.yml -f tag=v0.1.0`. actionlint 1.7.12 clean.
+- 2026-11-18: azntaiji approved a one-off push of main before G4, to prove the release
+  fix by publishing v0.1.0 to v0.3.0. Not a precedent; the gate-close push rule stands.
 - Phase 3 closed 2026-11-18 as v0.3.0; detail in docs/archive/phase-3.md.
 - Perf: internal/store/storetest.Seed bulk-inserts history in one transaction;
   cmd/unitock/perf_test.go (startup via run() with runUI stubbed, to first View) and
