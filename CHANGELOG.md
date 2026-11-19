@@ -30,6 +30,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- `--version`, and the `app_version` in exports, name the real version for builds made
+  with `go install` (they printed `dev`).
 - The Start screen fits the 60×20 minimum with the project suggestions open: they now
   list up to 4 projects instead of 5.
 - Every screen fits the 60×20 minimum: long error messages (such as an invalid

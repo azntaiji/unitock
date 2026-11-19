@@ -16,8 +16,8 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Blockers
 
-None. Asked the human: `go install …@v0.3.0` builds report `unitock dev (none, unknown)`
-for --version (only release builds get -ldflags); a debug.ReadBuildInfo fallback fixes it.
+None. Waiting on the human's by-hand E2E (P4-01, P4-06): form in
+artifacts/phase-4/e2e-results.md, bundle bin/unitock-e2e-cef31d6.tar.gz.
 
 ## Evidence
 
@@ -47,6 +47,8 @@ None.
   set after with `gh release edit --notes-file` from each tag's CHANGELOG section.
   .goreleaser.yaml now enables it (local commit, goes out at G4); not yet proven on
   GitHub, so check the v1.0.0 release body after the G4 release run.
+- Version: cmd/unitock/version.go falls back to debug.ReadBuildInfo when -ldflags did not
+  set it (go install gives the module version; local builds a pseudo-version + vcs).
 - Demos: docs/demo/*.tape (settings + launch shared; alert seeds --running 9),
   scripts/demoseed (6 months, refuses an existing db), `make demo` needs vhs.
   Recorded with PATH=/var/empty so no sound or notification fires.
