@@ -40,21 +40,22 @@ previous period; estimated-vs-actual bar chart; alert overlay), JSON export sche
 (D-14), and Unicode case-insensitive project names (amended D-15). Detail:
 `docs/archive/phase-3.md`.
 
-## Phase 4 — Hardening and 1.0.0
+## Phase 4 — Hardening and 1.0.0 (done, G4 approved 2026-11-19, v1.0.0)
 
-- **Goal:** prove the whole app end to end on both platforms and release 1.0.0.
-- **Depends on:** the human's decision to declare 1.0.0.
-- **Tasks:**
-  - [x] Run the SPEC end-to-end verification on macOS and Ubuntu; record results.
-  - [x] Performance check with 10,000 seeded tasks (Constraints).
-  - [x] Error paths: unwritable data dir, corrupt database, missing audio and notify
-        tools, export directory not writable.
-  - [x] README usage section, install instructions, and a screenshot or recording.
-  - [x] Active screen row: elapsed and estimate (+ added) instead of remaining (R-17).
-  - [x] Choosable alarm sounds with a Sound screen and preview (R-51 to R-53, D-16).
-  - [x] `make release-check` passes; release notes complete.
-- **Exit criteria:** P4-01 to P4-06.
-- **Gate G4:** azntaiji. Proposed version 1.0.0.
+Shipped the SPEC end-to-end verification by hand on macOS and Ubuntu, the 10,000-task
+performance check, tested error paths, five choosable alarm sounds with a Sound screen
+(D-16), app-wide `ctrl` chords (R-06), the elapsed/estimate Active row, the README with
+install, usage, and vhs demos, and release notes in GitHub Releases. Detail:
+`docs/archive/phase-4.md`.
+
+## Phase 5 — Not yet planned
+
+- **Goal:** to be set by azntaiji. 1.0.0 meets the SPEC; candidates include mouse input
+  (deferred below).
+- **Depends on:** azntaiji's scope for work after 1.0.0.
+- **Tasks:** none yet.
+- **Exit criteria:** none yet.
+- **Gate G5:** azntaiji.
 
 ## Out of scope
 

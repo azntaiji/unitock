@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-19
+
 ### Added
 
 - README install and usage sections, with animated demos recorded by vhs from

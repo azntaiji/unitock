@@ -1,7 +1,7 @@
 # unitock
 
-[![version](https://img.shields.io/badge/version-0.3.0-blue)](CHANGELOG.md)
-[![phase](https://img.shields.io/badge/phase-4%20hardening%20and%201.0.0-orange)](docs/PLAN.md)
+[![version](https://img.shields.io/badge/version-1.0.0-blue)](CHANGELOG.md)
+[![phase](https://img.shields.io/badge/phase-5%20not%20yet%20planned-orange)](docs/PLAN.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/azntaiji/unitock/ci.yml?branch=main&label=CI)](https://github.com/azntaiji/unitock/actions)
 [![SemVer](https://img.shields.io/badge/semver-2.0.0-blue)](https://semver.org/spec/v2.0.0.html)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-fe5196)](https://www.conventionalcommits.org/en/v1.0.0/)
@@ -12,8 +12,8 @@ task, give it a duration in plain language (`45m`, `1.5 hours`), and watch a col
 countdown; when time is up it alerts you on screen, with a system notification, and with a
 looping alarm sound until you extend or complete the task. A stats screen compares actual
 with estimated time over 7 days, 30 days, or 3 months, and everything exports to JSON.
-Status: 0.3.0 is released; Phase 4 (hardening for 1.0.0) is in progress, and `main`
-already has the changes listed under Unreleased in the [CHANGELOG](CHANGELOG.md).
+Status: 1.0.0 is released, with every requirement verified end to end on macOS and
+Ubuntu; see the [CHANGELOG](CHANGELOG.md).
 
 ![Starting a task, pausing, and adding time](docs/demo/start.gif)
 
@@ -58,7 +58,7 @@ has a static binary for macOS and Linux, on amd64 and arm64. Pick the archive fo
 system (`darwin_arm64`, `darwin_amd64`, `linux_amd64`, or `linux_arm64`):
 
 ```sh
-VERSION=0.3.0 TARGET=linux_amd64
+VERSION=1.0.0 TARGET=linux_amd64
 curl -LO "https://github.com/azntaiji/unitock/releases/download/v${VERSION}/unitock_${VERSION}_${TARGET}.tar.gz"
 curl -LO "https://github.com/azntaiji/unitock/releases/download/v${VERSION}/checksums.txt"
 grep "_${TARGET}.tar.gz" checksums.txt | shasum -a 256 -c   # sha256sum -c on Linux
@@ -145,7 +145,8 @@ make check          # build, vet, lint, race tests
 | 1 | Walking skeleton: start, countdown, complete, resume | Done (v0.1.0) |
 | 2 | Active screen and time-up alert | Done (v0.2.0) |
 | 3 | Stats and export | Done (v0.3.0) |
-| 4 | Hardening and 1.0.0 | In progress |
+| 4 | Hardening and 1.0.0 | Done (v1.0.0) |
+| 5 | Not yet planned | Planned |
 <!-- END:roadmap -->
 
 Status values: Planned, In progress, Awaiting gate, Done (vX.Y.Z).
