@@ -33,22 +33,12 @@ badges, `NO_COLOR`), optional projects with suggestions (D-15), pause, extend, c
 the time-up alert with notification and looping chime, the single-instance lock, and the
 minimum terminal size. Detail: `docs/archive/phase-2.md`.
 
-## Phase 3 — Stats and export
+## Phase 3 — Stats and export (done, G3 approved 2026-11-18, v0.3.0)
 
-- **Goal:** the Stats screen with periods, scorecards, and the actual-vs-estimated chart,
-  plus JSON export.
-- **Depends on:** D-11, D-14.
-- **Tasks:**
-  - [x] Unicode case-insensitive project matching per amended D-15 (R-25).
-  - [x] `internal/stats`: periods, buckets, previous-period comparison, per D-11, as
-        pure functions with table tests including DST and month-end dates (R-40 to R-44).
-  - [x] Scorecards (R-41, R-42).
-  - [x] Vertical bar chart with legend, y-axis, and per-period labels (R-43, R-45).
-  - [x] Navigation: `s` from Start and Active, `esc` back, alert overlay on Stats
-        (R-24, R-30, R-46).
-  - [x] Export to JSON schema v1 (R-47, R-50, D-14) with a golden-file test.
-- **Exit criteria:** P3-01 to P3-05.
-- **Gate G3:** azntaiji. Expected version 0.3.0.
+Shipped the Stats screen (7 days, 30 days, 3 months per D-11; scorecards against the
+previous period; estimated-vs-actual bar chart; alert overlay), JSON export schema v1
+(D-14), and Unicode case-insensitive project names (amended D-15). Detail:
+`docs/archive/phase-3.md`.
 
 ## Phase 4 — Hardening and 1.0.0
 
