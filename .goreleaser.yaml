@@ -25,8 +25,10 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# Keep the changelog step enabled: it is where --release-notes (the CHANGELOG.md
+# section from `make release-notes`) is loaded. Disabled, the release body is empty.
 changelog:
-  disable: true
+  disable: false
 
 release:
   github:

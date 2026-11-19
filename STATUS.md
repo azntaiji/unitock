@@ -21,8 +21,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Blockers
 
-None. Tags v0.1.0 to v0.3.0 have no GitHub Release; the human chose to publish them by
-hand with the release workflow's manual trigger (pushed early on approval).
+None.
 
 ## Evidence
 
@@ -30,6 +29,7 @@ hand with the release workflow's manual trigger (pushed early on approval).
 |---|---|---|---|
 | P4-02 perf (macOS arm64) | `go test ./... -count=1 -run 'Perf' -v` | pass: startup 1.6 ms, stats open 27 ms, tab 0.7 ms | artifacts/phase-4/perf.log |
 | make check after perf task | `make check` | exit 0 | artifacts/phase-4/check-perf.log |
+| old releases published | `gh workflow run release.yml -f tag=v0.X.0` | 3/3 success | gh runs 44429925530, 44430921813, 44431766718 |
 | release kit on Go 1.27.3 (CI fix) | `make release-check` | exit 0 | artifacts/phase-4/release-check-ci-fix.log |
 
 ## Gate request
@@ -46,6 +46,12 @@ None.
   fixed Go. Run: `gh workflow run release.yml -f tag=v0.1.0`. actionlint 1.7.12 clean.
 - 2026-11-18: azntaiji approved a one-off push of main before G4, to prove the release
   fix by publishing v0.1.0 to v0.3.0. Not a precedent; the gate-close push rule stands.
+- v0.1.0 to v0.3.0 published via manual runs (all green; 4 archives + checksums each;
+  v0.3.0 darwin_arm64 checksum OK, `--version` runs). Their bodies came out empty:
+  `changelog: disable: true` skips the GoReleaser step that loads --release-notes. Notes
+  set after with `gh release edit --notes-file` from each tag's CHANGELOG section.
+  .goreleaser.yaml now enables it (local commit, goes out at G4); not yet proven on
+  GitHub, so check the v1.0.0 release body after the G4 release run.
 - Phase 3 closed 2026-11-18 as v0.3.0; detail in docs/archive/phase-3.md.
 - Perf: internal/store/storetest.Seed bulk-inserts history in one transaction;
   cmd/unitock/perf_test.go (startup via run() with runUI stubbed, to first View) and
