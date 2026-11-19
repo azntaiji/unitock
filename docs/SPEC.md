@@ -252,7 +252,8 @@ whole seconds.
 
 On each of macOS and Ubuntu, with `--data-dir` pointing at a scratch directory:
 
-1. Launch; type `Write spec`, tab, `1m`, enter. Active screen shows ~`01:00` counting down.
+1. Launch; press `tab` (no project), type `Write spec`, `tab`, `1m`, `enter`. The Active
+   screen shows ~`01:00` counting down.
 2. Press `p`, wait 10 s, press `p`: the timer lost no time while paused.
 3. Press `d`, enter `1m`: the row reads `Estimate 01:00 + 01:00 added` and remaining
    grows by a minute.
