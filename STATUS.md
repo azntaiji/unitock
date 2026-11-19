@@ -2,21 +2,19 @@
 
 Phase: 3
 Phase name: Stats and export
-Gate: G3 not requested
+Gate: G3 REQUESTED
 Updated: 2026-11-18
 
 Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. All Phase 3 tasks, checks, and the review are done. On P3-03 approval: mark P3-03,
-   then write the G3 request (proposed 0.3.0, minor: new features) and commit.
+1. Wait for the G3 decision. On approval, run the gate close routine (docs/process/gates.md).
 
 ## Blockers
 
-- Checkpoint: P3-03 golden review by azntaiji. Files: internal/tui/testdata/stats_*.golden
-  (7days, 30days, 3months, 7days_wide, 7days_no_color, empty). Verify passes; mark P3-03
-  only after approval.
+None. Branch `phase-3` is not yet fast-forwarded into main (human to run
+`git merge --ff-only phase-3` from the main checkout before gate close).
 
 ## Evidence
 
@@ -24,7 +22,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 |---|---|---|---|
 | P3-01 | `go test ./internal/stats/ -count=1 -v` | 15 PASS, 0 FAIL | artifacts/phase-3/p3-01-stats.txt |
 | P3-02 | `go test ./... -count=1 -run 'Scorecard' -v` | 4 PASS, 0 FAIL | artifacts/phase-3/p3-02-scorecard.txt |
-| P3-03 | `go test ./internal/tui/ -count=1 -run 'Chart' -v` | 12 PASS, 0 FAIL; goldens await review | artifacts/phase-3/p3-03-chart.txt |
+| P3-03 | `go test ./internal/tui/ -count=1 -run 'Chart' -v` | 12 PASS, 0 FAIL; goldens approved by azntaiji | artifacts/phase-3/p3-03-chart.txt |
 | P3-05 | `go test ./... -count=1 -run 'Export' -v` | 9 PASS, 0 FAIL | artifacts/phase-3/p3-05-export.txt |
 | P3-04 | `go test ./internal/tui/ -count=1 -run 'Stats' -v` | 11 PASS, 0 FAIL | artifacts/phase-3/p3-04-stats-nav.txt |
 | gate cmds | Commands table + `make release-check` + scaffold | all rc=0 (lint 0 issues) | artifacts/phase-3/gate-*.txt |
@@ -35,7 +33,14 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Gate request
 
-None.
+Gate: G3, phase 3 (Stats and export)
+Approvers: azntaiji
+Exit criteria: P3-01, P3-02, P3-03, P3-04, P3-05 all passing
+Review: fresh-context subagent found no gaps; one stale evidence count (P3-04) fixed
+Proposed version: 0.3.0 (minor: feat commits for Stats screen, chart, export; fix for D-15)
+Look at: artifacts/phase-3/, internal/tui/testdata/stats_*.golden,
+  internal/export/testdata/export_v1.golden.json, CHANGELOG.md [Unreleased]
+Open decisions or RFIs the next phase depends on: none
 
 ## Handoff
 

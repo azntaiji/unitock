@@ -182,8 +182,8 @@
       "phase": 3,
       "description": "The bar chart renders estimated and actual bars per bucket with legend, y-axis, and the R-43 label formats for each period, and an empty state with no data, matching reviewed golden files (R-43, R-45).",
       "verify": "go test ./internal/tui/ -count=1 -run 'Chart' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18: go test ./internal/tui/ -count=1 -run 'Chart' -v: 12 PASS, 0 FAIL (artifacts/phase-3/p3-03-chart.txt); golden files stats_*.golden reviewed and approved by azntaiji 2026-11-18."
     },
     {
       "id": "P3-04",
