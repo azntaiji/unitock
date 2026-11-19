@@ -60,7 +60,7 @@ var runUI = func(ctx context.Context, d deps) error {
 		},
 	})
 	defer al.Close() // no player or notifier outlives the app (R-31)
-	m, err := tui.New(tui.Deps{Ctx: ctx, Store: d.store, Clock: d.clock, Log: d.log, Alarm: al})
+	m, err := tui.New(tui.Deps{Ctx: ctx, Store: d.store, Clock: d.clock, Log: d.log, Alarm: al, Version: version})
 	if err != nil {
 		return err
 	}

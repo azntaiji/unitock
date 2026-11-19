@@ -82,7 +82,7 @@ func TestScorecardOnlyCompletedCount(t *testing.T) {
 	}
 
 	var m statsModel
-	m = m.update(loadStats(h.m.deps)(), h.m.deps)
+	m, _ = m.update(loadStats(h.m.deps)(), h.m.deps)
 	if !m.loaded || m.err != "" {
 		t.Fatalf("loaded=%v err=%q", m.loaded, m.err)
 	}
@@ -101,7 +101,7 @@ func TestScorecardOnlyCompletedCount(t *testing.T) {
 func TestScorecardLoadError(t *testing.T) {
 	var m statsModel
 	h := newHarness(t)
-	m = m.update(statsLoadedMsg{err: context.Canceled}, h.m.deps)
+	m, _ = m.update(statsLoadedMsg{err: context.Canceled}, h.m.deps)
 	if v := m.view(t0, 60, 20, theme{}); !strings.Contains(v, "Could not load stats") {
 		t.Errorf("view lacks the load error:\n%s", v)
 	}

@@ -3,12 +3,14 @@ package tui
 import (
 	"fmt"
 	"math"
+	"os"
 	"strings"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/azntaiji/unitock/internal/export"
 	"github.com/azntaiji/unitock/internal/stats"
 	"github.com/azntaiji/unitock/internal/task"
 )
@@ -39,30 +41,79 @@ func loadStats(d Deps) tea.Cmd {
 	}
 }
 
+// exportedMsg reports the result of an export: the written path, or the error.
+type exportedMsg struct {
+	path string
+	err  error
+}
+
+// runExport writes every task to a new export file (R-47, R-50).
+func runExport(d Deps) tea.Cmd {
+	now := d.Clock.Now()
+	return func() tea.Msg {
+		dir := d.ExportDir
+		if dir == "" {
+			wd, err := os.Getwd()
+			if err != nil {
+				return exportedMsg{err: fmt.Errorf("finding the working directory: %w", err)}
+			}
+			dir = wd
+		}
+		ts, err := d.Store.All(d.Ctx)
+		if err != nil {
+			return exportedMsg{err: err}
+		}
+		path, err := export.Write(dir, ts, d.Version, now)
+		return exportedMsg{path: path, err: err}
+	}
+}
+
 // statsModel is the Stats screen (R-40 to R-47). It opens on 7 days every time (R-40).
 type statsModel struct {
 	period stats.Period
 	loaded bool
 	tasks  []task.Task
 	err    string
+	// exporting is true while an export runs; note is its result (R-47).
+	exporting bool
+	note      string // "Exported to <path>" or "Export failed: <error>"
+	noteErr   bool
 }
 
-func (m statsModel) update(msg tea.Msg, d Deps) statsModel {
+const exportedPrefix = "Exported to "
+
+func (m statsModel) update(msg tea.Msg, d Deps) (statsModel, tea.Cmd) {
 	switch msg := msg.(type) {
 	case statsLoadedMsg:
 		m.loaded = true
 		if msg.err != nil {
 			d.Log.Error("loading stats", "err", msg.err)
 			m.err = "Could not load stats: " + msg.err.Error()
-			return m
+			return m, nil
 		}
 		m.tasks = msg.tasks
+	case exportedMsg:
+		m.exporting = false
+		if msg.err != nil {
+			d.Log.Error("export", "err", msg.err)
+			m.note, m.noteErr = "Export failed: "+msg.err.Error(), true
+			return m, nil
+		}
+		d.Log.Info("exported", "path", msg.path)
+		m.note, m.noteErr = exportedPrefix+msg.path, false
 	case tea.KeyPressMsg:
-		if msg.String() == "tab" {
+		switch msg.String() {
+		case "tab":
 			m.period = m.period.Next()
+		case "e":
+			if m.exporting {
+				return m, nil
+			}
+			m.exporting, m.note = true, ""
+			return m, runExport(d)
 		}
 	}
-	return m
+	return m, nil
 }
 
 var cardStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(0, 1).Width(28)
@@ -71,7 +122,7 @@ var cardStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(0, 
 // (R-43, R-45) sized to the terminal.
 func (m statsModel) view(now time.Time, width, height int, th theme) string {
 	s := stats.Compute(m.period, now, m.tasks)
-	lines := []string{titleStyle.Render("Stats") + "  " + periodTabs(m.period), ""}
+	lines := []string{titleStyle.Render("Stats") + "  " + periodTabs(m.period), m.noteLine(width)}
 	if m.err != "" {
 		return lipgloss.JoinVertical(lipgloss.Left, append(lines, errStyle.Render(m.err))...)
 	}
@@ -85,6 +136,32 @@ func (m statsModel) view(now time.Time, width, height int, th theme) string {
 		renderChart(s, width, height, th),
 	)
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
+}
+
+// noteLine is the export result fitted to width, or blank. A long path keeps its
+// label and loses its start (the file name at the end is the part worth reading); a
+// long error loses its end.
+func (m statsModel) noteLine(width int) string {
+	if m.note == "" {
+		return ""
+	}
+	if width <= 0 {
+		width = chartDefWidth
+	}
+	text := []rune(m.note)
+	if len(text) > width {
+		if m.noteErr {
+			text = append(text[:width-1:width-1], '…')
+		} else {
+			label := []rune(exportedPrefix)
+			keep := width - len(label) - 1
+			text = append(append(label, '…'), text[len(text)-keep:]...)
+		}
+	}
+	if m.noteErr {
+		return errStyle.Render(string(text))
+	}
+	return messageStyle.Render(string(text))
 }
 
 // periodTabs lists the periods with the current one highlighted.
@@ -182,4 +259,4 @@ func scorecard(title string, c card, th theme) string {
 	))
 }
 
-func (m statsModel) hints() string { return "tab period · esc back · q quit" }
+func (m statsModel) hints() string { return "tab period · e export · esc back · q quit" }

@@ -46,7 +46,7 @@ minimum terminal size. Detail: `docs/archive/phase-2.md`.
   - [x] Vertical bar chart with legend, y-axis, and per-period labels (R-43, R-45).
   - [x] Navigation: `s` from Start and Active, `esc` back, alert overlay on Stats
         (R-24, R-30, R-46).
-  - [ ] Export to JSON schema v1 (R-47, R-50, D-14) with a golden-file test.
+  - [x] Export to JSON schema v1 (R-47, R-50, D-14) with a golden-file test.
 - **Exit criteria:** P3-01 to P3-05.
 - **Gate G3:** azntaiji. Expected version 0.3.0.
 

@@ -30,6 +30,7 @@ type Store interface {
 	AddExtension(ctx context.Context, id int64, at time.Time, added time.Duration) (task.Task, error)
 	Resume(ctx context.Context, id int64, at time.Time) (task.Task, error)
 	Completed(ctx context.Context, from, to time.Time) ([]task.Task, error)
+	All(ctx context.Context) ([]task.Task, error)
 }
 
 // Deps are the UI's collaborators.
@@ -42,6 +43,11 @@ type Deps struct {
 	Rand func(n int) int
 	// Alarm notifies and sounds at time up. Defaults to doing nothing.
 	Alarm Alarm
+	// Version is the app version written into exports (R-50).
+	Version string
+	// ExportDir is where exports are written. Empty means the working directory at the
+	// time of the export (R-50).
+	ExportDir string
 }
 
 type screen int
@@ -233,8 +239,8 @@ func (m Model) updateStats(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	}
-	m.stats = m.stats.update(msg, m.deps)
-	return m, nil
+	m.stats, cmd = m.stats.update(msg, m.deps)
+	return m, cmd
 }
 
 // openActive shows t on the Active screen and starts its tick loop.

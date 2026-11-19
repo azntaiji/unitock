@@ -9,8 +9,9 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Export (R-47, R-50, D-14, P3-05): `e` on Stats; schema v1 golden; never overwrite;
-   add `e export` to Stats hints then.
+1. All Phase 3 tasks done. Remaining before the G3 request: P3-03 golden review
+   (checkpoint below), the fresh-context review (docs/process/review.md), every
+   Commands-table check plus `make release-check` into artifacts/phase-3/.
 
 ## Blockers
 
@@ -25,6 +26,7 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 | P3-01 | `go test ./internal/stats/ -count=1 -v` | 15 PASS, 0 FAIL | artifacts/phase-3/p3-01-stats.txt |
 | P3-02 | `go test ./... -count=1 -run 'Scorecard' -v` | 4 PASS, 0 FAIL | artifacts/phase-3/p3-02-scorecard.txt |
 | P3-03 | `go test ./internal/tui/ -count=1 -run 'Chart' -v` | 12 PASS, 0 FAIL; goldens await review | artifacts/phase-3/p3-03-chart.txt |
+| P3-05 | `go test ./... -count=1 -run 'Export' -v` | 9 PASS, 0 FAIL | artifacts/phase-3/p3-05-export.txt |
 | P3-04 | `go test ./internal/tui/ -count=1 -run 'Stats' -v` | 7 PASS, 0 FAIL | artifacts/phase-3/p3-04-stats-nav.txt |
 | perf | one-off test, 10k tasks (deleted) | Completed 44 ms, 3× Compute 1 ms | — |
 | check | `make check` | pass (lint 0 issues) | — |
@@ -50,6 +52,10 @@ None.
 - Chart: tui/chart.go. Plot rows = terminal height − 14 (4..16); slot per bucket from
   width (4..16); 7-day labels split onto two lines when they do not fit. Estimated `▒`
   faint, actual `█` blue, so NO_COLOR still reads.
+- Export: internal/export (`Build` pure, `Write` O_EXCL, mode 0600), golden
+  internal/export/testdata/export_v1.golden.json (task 1 = SPEC example). `e` on Stats
+  via tui/stats.go `runExport`; Deps.Version (main passes ldflags version) and
+  Deps.ExportDir (empty = cwd at export). Result shows on the line under the title.
 - Alarm heard and notification seen on macOS only; Ubuntu untested (Phase 4 E2E).
 - internal/alarm implements tui.Alarm; main wires it (bell via tea.RawMsg, Close deferred).
 - Lock: cmd/unitock/lock.go. Too small: tui.go `tooSmall` (keys except ctrl+c ignored).

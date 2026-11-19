@@ -79,4 +79,32 @@ func TestCompletedRangeAndDetail(t *testing.T) {
 	if err != nil || len(none) != 0 {
 		t.Errorf("empty range = %v, %v", none, err)
 	}
+
+	// All returns every task, any status, by id, each as Get returns it (R-50).
+	all, err := s.All(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 6 {
+		t.Fatalf("All returned %d tasks, want 6", len(all))
+	}
+	for i, tk := range all {
+		if tk.ID != int64(i+1) {
+			t.Errorf("All[%d].ID = %d, want %d", i, tk.ID, i+1)
+		}
+		want, err := s.Get(ctx, tk.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(tk, want) {
+			t.Errorf("All task %d = %+v\nGet = %+v", tk.ID, tk, want)
+		}
+	}
+}
+
+func TestAllEmpty(t *testing.T) {
+	s, _ := openTemp(t)
+	if all, err := s.All(context.Background()); err != nil || len(all) != 0 {
+		t.Errorf("All on empty db = %v, %v", all, err)
+	}
 }

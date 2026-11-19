@@ -107,7 +107,7 @@ func (h *harness) run(cmd tea.Cmd) {
 	switch msg := cmd().(type) {
 	case tea.QuitMsg:
 		h.quit = true
-	case taskStartedMsg, startErrMsg, taskCompletedMsg, taskUpdatedMsg, saveErrMsg, projectsMsg:
+	case taskStartedMsg, startErrMsg, taskCompletedMsg, taskUpdatedMsg, saveErrMsg, projectsMsg, exportedMsg:
 		h.send(msg)
 	case taskCancelledMsg: // its follow-up (blink, project load) returns at once
 		next, cmd := h.m.Update(msg)

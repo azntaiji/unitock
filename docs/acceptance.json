@@ -198,8 +198,8 @@
       "phase": 3,
       "description": "Export writes a new timestamped file in the working directory with all tasks, pauses, and extensions in schema v1, never overwrites, and the path or error is shown (R-47, R-50, D-14).",
       "verify": "go test ./... -count=1 -run 'Export' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18: go test ./... -count=1 -run 'Export' -v: 9 PASS, 0 FAIL (schema v1 golden whose first task is the SPEC example, active/cancelled nulls, never overwrites, file in export dir with path shown, overwrite and store errors shown) (artifacts/phase-3/p3-05-export.txt)"
     },
     {
       "id": "P4-01",

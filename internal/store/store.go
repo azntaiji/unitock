@@ -345,49 +345,62 @@ func (s *Store) Get(ctx context.Context, id int64) (task.Task, error) {
 	return t, nil
 }
 
-// completedWhere selects the completed tasks that ended in [?, ?); it is shared by the
-// three queries of Completed so they agree on the set.
+// completedWhere selects the completed tasks that ended in [?, ?).
 const completedWhere = `t.status = 'completed' AND t.ended_at >= ? AND t.ended_at < ?`
 
 // Completed returns the completed tasks that ended in [from, to), with their extensions
-// and pauses, ordered by end time (R-44). It reads everything in three queries, so the
-// Stats screen stays fast with many tasks.
+// and pauses, ordered by end time (R-44).
 func (s *Store) Completed(ctx context.Context, from, to time.Time) ([]task.Task, error) {
-	lo, hi := from.UnixMilli(), to.UnixMilli()
-	rows, err := s.db.QueryContext(ctx,
-		`SELECT t.id, t.name, t.started_at, t.ended_at, t.original_estimate_ms, p.name
-		 FROM tasks t LEFT JOIN projects p ON p.id = t.project_id
-		 WHERE `+completedWhere+` ORDER BY t.ended_at, t.id`, lo, hi)
+	ts, err := s.load(ctx, completedWhere, "t.ended_at, t.id", from.UnixMilli(), to.UnixMilli())
 	if err != nil {
 		return nil, fmt.Errorf("reading completed tasks: %w", err)
 	}
+	return ts, nil
+}
+
+// All returns every task of any status, with its extensions and pauses, ordered by id
+// (R-50).
+func (s *Store) All(ctx context.Context) ([]task.Task, error) {
+	ts, err := s.load(ctx, "1 = 1", "t.id")
+	if err != nil {
+		return nil, fmt.Errorf("reading all tasks: %w", err)
+	}
+	return ts, nil
+}
+
+// load reads the tasks matching where (over tasks aliased t), ordered by order, with
+// their extensions and pauses, in three queries however many tasks match. where and
+// order are constants from this package, never user input.
+func (s *Store) load(ctx context.Context, where, order string, args ...any) ([]task.Task, error) {
 	var out []task.Task
 	index := map[int64]int{}
-	for rows.Next() {
+	err := s.eachRow(ctx, func(r *sql.Rows) error {
 		var (
-			t              task.Task
-			started, ended int64
-			estMS          int64
-			project        sql.NullString
+			t       task.Task
+			status  string
+			started int64
+			ended   sql.NullInt64
+			estMS   int64
+			project sql.NullString
 		)
-		if err := rows.Scan(&t.ID, &t.Name, &started, &ended, &estMS, &project); err != nil {
-			_ = rows.Close()
-			return nil, fmt.Errorf("reading completed tasks: %w", err)
+		if err := r.Scan(&t.ID, &t.Name, &status, &started, &ended, &estMS, &project); err != nil {
+			return err
 		}
-		t.Status = task.Completed
+		t.Status = task.Status(status)
 		t.Project = project.String
-		t.StartedAt, t.EndedAt = fromMS(started), fromMS(ended)
+		t.StartedAt = fromMS(started)
+		if ended.Valid {
+			t.EndedAt = fromMS(ended.Int64)
+		}
 		t.OriginalEstimate = time.Duration(estMS) * time.Millisecond
 		index[t.ID] = len(out)
 		out = append(out, t)
-	}
-	err = rows.Err()
-	_ = rows.Close()
-	if err != nil {
-		return nil, fmt.Errorf("reading completed tasks: %w", err)
-	}
-	if len(out) == 0 {
-		return nil, nil
+		return nil
+	}, `SELECT t.id, t.name, t.status, t.started_at, t.ended_at, t.original_estimate_ms, p.name
+		FROM tasks t LEFT JOIN projects p ON p.id = t.project_id
+		WHERE `+where+` ORDER BY `+order, args...)
+	if err != nil || len(out) == 0 {
+		return out, err
 	}
 
 	err = s.eachRow(ctx, func(r *sql.Rows) error {
@@ -399,9 +412,9 @@ func (s *Store) Completed(ctx context.Context, from, to time.Time) ([]task.Task,
 		t.Extensions = append(t.Extensions, task.Extension{At: fromMS(at), Added: time.Duration(added) * time.Millisecond})
 		return nil
 	}, `SELECT e.task_id, e.at, e.added_ms FROM extensions e JOIN tasks t ON t.id = e.task_id
-		WHERE `+completedWhere+` ORDER BY e.task_id, e.at, e.id`, lo, hi)
+		WHERE `+where+` ORDER BY e.task_id, e.at, e.id`, args...)
 	if err != nil {
-		return nil, fmt.Errorf("reading extensions: %w", err)
+		return nil, fmt.Errorf("extensions: %w", err)
 	}
 	err = s.eachRow(ctx, func(r *sql.Rows) error {
 		var id, started int64
@@ -417,9 +430,9 @@ func (s *Store) Completed(ctx context.Context, from, to time.Time) ([]task.Task,
 		t.Pauses = append(t.Pauses, p)
 		return nil
 	}, `SELECT pa.task_id, pa.started_at, pa.ended_at FROM pauses pa JOIN tasks t ON t.id = pa.task_id
-		WHERE `+completedWhere+` ORDER BY pa.task_id, pa.started_at, pa.id`, lo, hi)
+		WHERE `+where+` ORDER BY pa.task_id, pa.started_at, pa.id`, args...)
 	if err != nil {
-		return nil, fmt.Errorf("reading pauses: %w", err)
+		return nil, fmt.Errorf("pauses: %w", err)
 	}
 	return out, nil
 }
