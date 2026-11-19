@@ -185,3 +185,22 @@ Unicode simple case folding applied in Go (the same rule as `strings.EqualFold`)
 unique index; the store matches on it instead of `NOCASE`. On upgrade the store fills
 the keys for existing rows; where two existing projects share a key, the older one is
 kept and the other's tasks move to it.
+
+## D-16 — Choosable alarm sounds
+**Status:** Approved — azntaiji, 2026-11-19 (in conversation, on the agent's recommendation)
+**Decision:** five alarm sounds, all synthesised by the app's own code like D-13's chime:
+Chime (the D-13 chime, default), Bell, Beep, Marimba, and Rising. The choice is made on a
+Sound screen opened with `a` from Start (R-51 to R-53), which previews each sound once
+as it is highlighted, and is stored in the database: migration 0005 adds
+`settings(key TEXT PRIMARY KEY, value TEXT NOT NULL)`, key `alarm_sound`, value the
+sound's lower-case name. The alarm writes the chosen sound to `alarm.wav` (rewritten
+only when it differs) and plays it with D-13's players. A preview plays once and never
+delays or replaces the time-up alarm.
+**Why:** picking a sound needs to hear it, which a menu with preview gives and a config
+file does not; a configuration file is a SPEC non-goal, and the database already holds
+the user's data. Synthesised sounds need no assets or licences.
+**Alternatives:** a config file or `--sound` flag (non-goal; no preview); shipping
+recorded audio files (licensing, binary size); a silent option (breaks the "unmissable
+alert" goal).
+**Consequences:** amends D-07's table list and D-13's single chime; R-14, R-34 amended;
+the Ubuntu end-to-end check must hear every sound through `paplay` and `aplay`.

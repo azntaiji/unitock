@@ -79,9 +79,9 @@ estimate minus elapsed; below zero it is **overtime**.
 - R-13 `tab` cycles focus project → name → duration → button → project; `↑`/`↓` move
   focus. `enter` starts the task from any focus. While the project suggestions (R-26) are
   open, `tab`, `↑`/`↓`, `enter`, and `esc` work them first.
-- R-14 While a text input has focus, printable keys type into it. `s` (stats) and `q`
-  (quit) work only when the button has focus; `esc` moves focus to the button. The key
-  hints change with focus.
+- R-14 While a text input has focus, printable keys type into it. `s` (stats), `a`
+  (alarm sound, R-51), and `q` (quit) work only when the button has focus; `esc` moves
+  focus to the button. The key hints change with focus.
 - R-15 Task name is required, trimmed, and at most 100 characters. Starting with an empty
   name or invalid duration shows an inline error and does not start.
 - R-16 Starting creates the task and opens the Active screen.
@@ -105,8 +105,11 @@ estimate minus elapsed; below zero it is **overtime**.
 - R-17 Shows a status badge (D-09: RUNNING, ENDING, OVERTIME, or PAUSED); beneath it the
   project in bold and the task name in regular dimmed text (with no project, the task
   name alone in bold); the remaining time in large block digits as `H:MM:SS` (or `MM:SS`
-  under an hour; plain bold text when the terminal is too narrow); the remaining and
-  estimate as text; and a progress bar of elapsed / estimate with the elapsed percentage.
+  under an hour; plain bold text when the terminal is too narrow); a progress bar of
+  elapsed / estimate with the elapsed percentage; and beneath it the elapsed time and the
+  estimate as text, `Elapsed 12:31 · Estimate 25:00`, or once time has been added the
+  original estimate and the total added, `Elapsed 32:31 · Estimate 25:00 + 10:00 added`.
+  The remaining time is not repeated as text.
 - R-18 The timer and bar change colour by remaining fraction of the estimate (D-09):
   neutral, then info, then warning, then error. Overtime shows `+MM:SS` counting up in
   the error colour with a full bar.
@@ -133,9 +136,21 @@ estimate minus elapsed; below zero it is **overtime**.
   remaining time, counted from now (D-10). Escaping the input returns to the alert.
 - R-33 Notifications use `osascript` on macOS and `notify-send` on Ubuntu (D-13). If the
   tool is missing or fails, the app carries on and logs it.
-- R-34 The sound is a chime embedded in the binary, looped with `afplay` (macOS) or
-  `paplay`, then `aplay` (Ubuntu) (D-13). With no player available, the app rings the
-  terminal bell every 2 seconds instead.
+- R-34 The sound is the one chosen on the Sound screen (R-51), synthesised by the app
+  (D-13, D-16), looped with `afplay` (macOS) or `paplay`, then `aplay` (Ubuntu). With no
+  player available, the app rings the terminal bell every 2 seconds instead.
+
+### Alarm sound
+
+- R-51 From the Start screen with the button focused, `a` opens the Sound screen: Chime,
+  Bell, Beep, Marimba, and Rising, with the saved choice marked and highlighted. The
+  default is Chime (D-16).
+- R-52 `↑`/`↓` move the highlight and play the highlighted sound once, stopping any
+  sound still previewing. `enter` saves the highlighted sound and returns to Start; `esc`
+  returns without changing it. Leaving the screen stops the preview. `q` quits.
+- R-53 The choice is stored in the database, survives restarts, and is what the next
+  alarm plays. A missing or unknown stored value means Chime. If saving fails, the
+  screen shows the error and keeps the previous choice.
 
 ### Stats screen
 
@@ -179,8 +194,8 @@ unitock [--data-dir DIR] [--version]
   another instance running).
 
 **Data directory:** `unitock.db` (SQLite, schema per D-07, migrated on startup),
-`unitock.lock` (instance lock), `unitock.log` (diagnostic log), `alarm.wav` (alarm
-chime, D-13). The database schema is
+`unitock.lock` (instance lock), `unitock.log` (diagnostic log), `alarm.wav` (the
+chosen alarm sound, rewritten when it changes, D-13, D-16). The database schema is
 internal; the export format is the stable way to read data.
 
 **Export JSON, schema version 1** (D-14). Times are RFC 3339 with offset; durations are
@@ -233,7 +248,8 @@ On each of macOS and Ubuntu, with `--data-dir` pointing at a scratch directory:
 
 1. Launch; type `Write spec`, tab, `1m`, enter. Active screen shows ~`01:00` counting down.
 2. Press `p`, wait 10 s, press `p`: the timer lost no time while paused.
-3. Press `d`, enter `1m`: estimate becomes 2:00 and remaining grows by a minute.
+3. Press `d`, enter `1m`: the row reads `Estimate 01:00 + 01:00 added` and remaining
+   grows by a minute.
 4. Press `q`, wait 20 s, relaunch: the task resumes with 20 s less remaining.
 5. Press `s` and wait for zero on the Stats screen: the alert appears over Stats, a
    system notification shows, and the chime loops. Choose Extend `1m`: sound stops,
@@ -247,6 +263,10 @@ On each of macOS and Ubuntu, with `--data-dir` pointing at a scratch directory:
 9. Press `e`: a JSON file appears in the working directory with both tasks, pauses, and
    extensions, matching the export format.
 10. Start a second instance with the same `--data-dir`: it exits 1 naming the lock file.
+11. In the first instance, from Start press `esc`, then `a`: Chime is marked. Press `↓`
+    through the list: each sound plays once and they are clearly different. Choose
+    Bell with `enter`, quit, relaunch, start a `10s` task, and wait: the alert loops
+    Bell. Complete it.
 
 ## Open questions
 

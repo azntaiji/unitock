@@ -232,6 +232,22 @@
       "verify": "make check && make release-check; read README.md and CHANGELOG.md.",
       "passes": false,
       "evidence": ""
+    },
+    {
+      "id": "P4-05",
+      "phase": 4,
+      "description": "The Active screen's text row shows elapsed time and the estimate, and once time has been added the original estimate and the total added; it no longer repeats the remaining time (R-17).",
+      "verify": "go test ./internal/tui/ -count=1 -run 'View|Extend|Pause' -v",
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "P4-06",
+      "phase": 4,
+      "description": "The Sound screen lists Chime, Bell, Beep, Marimba, and Rising; highlighting one previews it once; enter saves it in the database and the next alarm plays it; esc leaves the choice unchanged; a missing or unknown stored value means Chime; a failed save shows the error (R-51 to R-53, R-34, D-16). Every sound heard by hand on macOS and Ubuntu.",
+      "verify": "go test ./... -count=1 -run 'Sound' -v; then by hand per SPEC end-to-end step 11 on each OS.",
+      "passes": false,
+      "evidence": ""
     }
   ]
 }
