@@ -262,7 +262,7 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 	if m.ext.open {
 		lines = append(lines, "", focusedStyle.Render("> Add time"), "  "+m.ext.input.View())
 		if m.ext.err != "" {
-			lines = append(lines, errStyle.Render("  "+m.ext.err))
+			lines = append(lines, errText(2, m.ext.err))
 		}
 	}
 	if m.conf.open {
@@ -275,7 +275,7 @@ func (m activeModel) view(now time.Time, width int, th theme) string {
 		lines = append(lines, "", errStyle.Render("Cancel this task?")+"  "+yes+" "+no)
 	}
 	if m.err != "" {
-		lines = append(lines, "", errStyle.Render(m.err))
+		lines = append(lines, "", errText(0, m.err))
 	}
 	screen := lipgloss.JoinVertical(lipgloss.Left, lines...)
 	if m.alert.open {
@@ -292,7 +292,7 @@ func (m activeModel) hints() string {
 		return "enter add · esc cancel · ctrl+c quit"
 	}
 	if m.alert.open {
-		return "←/→ choose · enter select · d extend · e complete · ctrl+c quit"
+		return "←/→ choose · enter select · d extend · e complete\n" + chordHints()
 	}
 	if m.conf.open {
 		return "y yes · n/esc no · ←/→ choose · enter select · ctrl+c quit"

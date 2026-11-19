@@ -11,6 +11,13 @@ var hintStyle = lipgloss.NewStyle().Faint(true)
 // renderHints draws the key-hint bar shown on every screen (R-07).
 func renderHints(s string) string { return hintStyle.Render(s) }
 
+// errText renders msg in the error colour, indented by indent spaces and word-wrapped so
+// it never makes a screen wider than the minimum (R-08). Duration errors list the
+// accepted forms and are longer than one line.
+func errText(indent int, msg string) string {
+	return errStyle.PaddingLeft(indent).Width(MinWidth).Render(msg)
+}
+
 // chordHints is the hint line for the app-wide ctrl chords (R-06, R-07): the given ones,
 // then quit.
 func chordHints(chords ...string) string {

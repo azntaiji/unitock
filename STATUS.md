@@ -9,20 +9,18 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. vhs (charmbracelet/vhs) GIFs for the README, with README usage and install sections.
-2. Error paths (P4-03), tests named `Error`: unwritable data dir, corrupt database,
-   missing audio and notify tools, export directory not writable (export already shows
-   the error; add a test that proves it). Some exist already under other names
-   (cmd/unitock TestUnusableDataDirExitsOne, TestUnusableDatabaseExitsOne); check
-   `-run 'Error'` picks up every case.
-3. SPEC end-to-end verification on macOS and Ubuntu, by hand (P4-01), now 11 steps;
-   step 11 also completes P4-06 (hear every sound). Needs the human for Ubuntu. Rerun
-   the Perf tests on Ubuntu at the same time.
-4. `make release-check`, CHANGELOG release notes, gate request (P4-04).
+1. Error paths (P4-03), tests named `Error`: unwritable data dir, corrupt database,
+   missing audio and notify tools, export directory not writable. Some exist under
+   other names (cmd/unitock TestUnusable*); make `-run 'Error'` cover every case.
+2. SPEC end-to-end verification on macOS and Ubuntu, by hand (P4-01), 11 steps; step
+   11 also completes P4-06 (hear every sound). Human needed for Ubuntu. Rerun Perf there.
+3. `make release-check`, CHANGELOG release notes, gate request (P4-04). At gate close
+   also bump `VERSION=` in the README Install snippet.
 
 ## Blockers
 
-None.
+None. Asked the human: `go install …@v0.3.0` builds report `unitock dev (none, unknown)`
+for --version (only release builds get -ldflags); a debug.ReadBuildInfo fallback fixes it.
 
 ## Evidence
 
@@ -51,6 +49,9 @@ None.
   set after with `gh release edit --notes-file` from each tag's CHANGELOG section.
   .goreleaser.yaml now enables it (local commit, goes out at G4); not yet proven on
   GitHub, so check the v1.0.0 release body after the G4 release run.
+- Demos: docs/demo/*.tape (settings + launch shared; alert seeds --running 9),
+  scripts/demoseed (6 months, refuses an existing db), `make demo` needs vhs.
+  Recorded with PATH=/var/empty so no sound or notification fires.
 - Keys (R-06 amended 2026-11-19): ctrl+s stats, ctrl+o sound, ctrl+c quit; no plain
   q/s/a commands. Hints: screen keys, then `chordHints(...)` on a 2nd line (Start,
   Active). Verified in a real pty via tmux (ctrl+s is not eaten as XOFF).

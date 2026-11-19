@@ -11,7 +11,7 @@ GORELEASER := go run github.com/goreleaser/goreleaser/v2@$(GORELEASER_VERSION)
 VERSION ?= $(shell cat VERSION 2>/dev/null)
 NOTES ?= bin/release-notes.md
 
-.PHONY: build test test-race vet lint fmt golden check release-notes release-check release clean
+.PHONY: build test test-race vet lint fmt golden check demo release-notes release-check release clean
 
 build:
 	go build -o bin/$(BINARY) ./cmd/$(BINARY)
@@ -38,6 +38,14 @@ golden:
 
 # Everything a task must pass before it is called done.
 check: build vet lint test-race
+
+# Re-record the README GIFs in docs/demo/ from the *.tape scripts. Needs charmbracelet/vhs
+# (with ttyd and ffmpeg) on PATH; it is not installed by this Makefile. Every tape runs
+# against a fresh scratch data dir seeded by scripts/demoseed, never real data.
+DEMOS := start alert stats sound
+demo: build
+	go build -o bin/demoseed ./scripts/demoseed
+	@for t in $(DEMOS); do echo "vhs docs/demo/$$t.tape"; vhs -q docs/demo/$$t.tape || exit 1; done
 
 # --- Release kit (optional; delete these targets if you did not adopt it) ---------
 

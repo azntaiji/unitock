@@ -124,7 +124,7 @@ func (m statsModel) view(now time.Time, width, height int, th theme) string {
 	s := stats.Compute(m.period, now, m.tasks)
 	lines := []string{titleStyle.Render("Stats") + "  " + periodTabs(m.period), m.noteLine(width)}
 	if m.err != "" {
-		return lipgloss.JoinVertical(lipgloss.Left, append(lines, errStyle.Render(m.err))...)
+		return lipgloss.JoinVertical(lipgloss.Left, append(lines, errText(0, m.err))...)
 	}
 	lines = append(lines,
 		lipgloss.JoinHorizontal(lipgloss.Top,

@@ -131,7 +131,7 @@ func (m Model) soundView() string {
 		}
 	}
 	if m.snd.err != "" {
-		lines = append(lines, "", errStyle.Render(m.snd.err))
+		lines = append(lines, "", errText(0, m.snd.err))
 	}
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
 }

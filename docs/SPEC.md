@@ -272,7 +272,7 @@ On each of macOS and Ubuntu, with `--data-dir` pointing at a scratch directory:
 11. In the first instance, on Start the button shows `Alarm: Chime`. While typing in
     the Task name input, press `ctrl+o`: the Sound screen opens with Chime marked.
     Press `↓` through the list: each sound plays once and they are clearly different.
-    Choose Bell with `enter`: Start shows `Alarm: Bell`. Quit, relaunch, start a `10s`
+    Choose Bell with `enter`: Start shows `Alarm: Bell`. Quit, relaunch, start a `1m`
     task, and wait: the alert loops Bell. Complete it. Pressing `q` or `s` anywhere
     never quits or opens Stats.
 

@@ -86,4 +86,45 @@ func TestStartFitsMinimumSize(t *testing.T) {
 	check("button focused with an error")
 	h.press("tab", "tab") // Task name: two hint lines
 	check("typing with an error")
+	h.typeText("Write")
+	h.press("tab")
+	h.typeText("soon")
+	h.press("enter") // the longest error: an invalid duration lists the accepted forms
+	if !strings.Contains(h.m.start.err, "30m") {
+		t.Fatalf("no duration error: %q", h.m.start.err)
+	}
+	check("invalid duration error")
+}
+
+// Every Active state fits the 60×20 minimum (R-08): running, the time-up alert, the
+// cancel confirmation, and the Add time input with an error, each with its hints.
+func TestActiveFitsMinimumSize(t *testing.T) {
+	check := func(h *harness, state string) {
+		t.Helper()
+		lines := strings.Split(h.view(), "\n")
+		if len(lines) > MinHeight {
+			t.Errorf("%s: %d rows, want at most %d:\n%s", state, len(lines), MinHeight, h.view())
+		}
+		for _, l := range lines {
+			if w := ansi.StringWidth(l); w > MinWidth {
+				t.Errorf("%s: a row is %d wide, want at most %d: %q", state, w, MinWidth, ansi.Strip(l))
+			}
+		}
+	}
+	h := newHarness(t)
+	h.send(tea.WindowSizeMsg{Width: MinWidth, Height: MinHeight})
+	h.startTask("A task name long enough to matter", "1m")
+	check(h, "running")
+	h.press("n")
+	check(h, "cancel confirmation")
+	h.press("esc", "d")
+	h.typeText("soon")
+	h.press("enter")
+	check(h, "Add time input with an error")
+	h.press("esc")
+	h.runOut()
+	if !h.m.active.alert.open {
+		t.Fatal("alert not open")
+	}
+	check(h, "time-up alert")
 }

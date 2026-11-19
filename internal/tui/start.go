@@ -374,7 +374,7 @@ func (m startModel) view(alarmLabel string) string {
 		lipgloss.JoinHorizontal(lipgloss.Center, button.MarginLeft(2).Render("Start task"), "  "+dimStyle.Render("Alarm: "+alarmLabel)),
 	)
 	if m.err != "" {
-		lines = append(lines, "", errStyle.Render("  "+m.err))
+		lines = append(lines, "", errText(2, m.err))
 	}
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
 }

@@ -10,10 +10,12 @@
 unitock is a terminal time tracker for one task at a time, for macOS and Ubuntu. Name a
 task, give it a duration in plain language (`45m`, `1.5 hours`), and watch a colour-shifting
 countdown; when time is up it alerts you on screen, with a system notification, and with a
-looping chime until you extend or complete the task. A stats screen compares actual with
-estimated time over 7 days, 30 days, or 3 months, and everything exports to JSON.
-Status: early development (0.3.0). Everything above works; hardening for 1.0.0 is next
-(Phase 4).
+looping alarm sound until you extend or complete the task. A stats screen compares actual
+with estimated time over 7 days, 30 days, or 3 months, and everything exports to JSON.
+Status: 0.3.0 is released; Phase 4 (hardening for 1.0.0) is in progress, and `main`
+already has the changes listed under Unreleased in the [CHANGELOG](CHANGELOG.md).
+
+![Starting a task, pausing, and adding time](docs/demo/start.gif)
 
 ## Key features
 
@@ -25,25 +27,103 @@ Status: early development (0.3.0). Everything above works; hardening for 1.0.0 i
   accented letters ("über" is "Über").
 - Watch a large block-digit countdown with a progress bar and a status badge (`● RUNNING`,
   `◐ ENDING`, `▲ OVERTIME`, `❚❚ PAUSED`), coloured from your terminal's palette as time
-  runs low; `+MM:SS` once over the estimate. `NO_COLOR` is respected.
+  runs low; `+MM:SS` once over the estimate. Beneath it, elapsed time and the estimate,
+  with any time you added (`Elapsed 32:31 · Estimate 25:00 + 10:00 added`). `NO_COLOR`
+  is respected.
 - `p` pauses and resumes, `d` adds time, `n` cancels (after a confirmation), and `e`
   completes the task with a motivational message.
 - At zero, an alert offers Extend or Mark as completed, with a system notification and a
-  looping chime until you choose (terminal bell if no audio player works).
+  looping alarm sound until you choose (terminal bell if no audio player works).
+- Five alarm sounds (Chime, Bell, Beep, Marimba, Rising): `ctrl+o` on the Start screen
+  previews each as you highlight it and saves your choice.
+- App-wide commands are `ctrl` chords, so they work even while typing: `ctrl+s` Stats,
+  `ctrl+o` alarm sound, `ctrl+c` quit.
 - Quit any time: the task keeps running, and relaunching picks it up with the time spent
   away counted.
 - Everything is stored in SQLite in `--data-dir` (default `$XDG_DATA_HOME/unitock` or
   `~/.local/share/unitock`).
-- `s` opens Stats (from the Start button or the Active screen; the timer keeps running):
-  completed tasks and average per day against the previous period, and a bar chart of
-  estimated vs actual time, for 7 days, 30 days, or 3 months (`tab` cycles).
+- Stats (from Start or the Active screen; the timer keeps running): completed tasks and
+  average per day against the previous period, and a bar chart of estimated vs actual
+  time, for 7 days, 30 days, or 3 months (`tab` cycles).
 - `e` on Stats exports every task, with pauses and extensions, to
   `unitock-export-YYYYMMDD-HHMMSS.json` in the current directory (JSON schema v1); it
   never overwrites a file.
 - One instance per data directory; terminals smaller than 60×20 get a resize message.
 <!-- END:features -->
 
-## Quick start
+## Install
+
+**From a release.** Each [GitHub Release](https://github.com/azntaiji/unitock/releases)
+has a static binary for macOS and Linux, on amd64 and arm64. Pick the archive for your
+system (`darwin_arm64`, `darwin_amd64`, `linux_amd64`, or `linux_arm64`):
+
+```sh
+VERSION=0.3.0 TARGET=linux_amd64
+curl -LO "https://github.com/azntaiji/unitock/releases/download/v${VERSION}/unitock_${VERSION}_${TARGET}.tar.gz"
+curl -LO "https://github.com/azntaiji/unitock/releases/download/v${VERSION}/checksums.txt"
+grep "_${TARGET}.tar.gz" checksums.txt | shasum -a 256 -c   # sha256sum -c on Linux
+tar xzf "unitock_${VERSION}_${TARGET}.tar.gz" unitock
+mkdir -p ~/.local/bin && mv unitock ~/.local/bin/          # make sure it is on your PATH
+unitock --version
+```
+
+On macOS, a binary downloaded with a web browser is quarantined and Gatekeeper blocks it
+(the binaries are not notarised). Downloading with `curl` as above avoids this; otherwise
+run `xattr -d com.apple.quarantine ~/.local/bin/unitock` once.
+
+**With Go** (1.26 or newer):
+
+```sh
+go install github.com/azntaiji/unitock/cmd/unitock@latest
+```
+
+**On Ubuntu**, the alarm sound and notification use standard desktop tools. Without them
+unitock still works, ringing the terminal bell instead of a sound:
+
+```sh
+sudo apt install pulseaudio-utils libnotify-bin   # paplay and notify-send
+```
+
+macOS needs nothing extra (`afplay` and `osascript` are built in).
+
+## Usage
+
+```sh
+unitock                     # data in $XDG_DATA_HOME/unitock or ~/.local/share/unitock
+unitock --data-dir DIR      # keep the data somewhere else
+unitock --version
+```
+
+Type a project (optional), a task name, and a duration, then press `enter`. Every screen
+shows the keys that work right now at the bottom; these are all of them:
+
+| Where | Keys |
+|---|---|
+| Anywhere | `ctrl+c` quit (a running task keeps going) |
+| Start | `tab` / `shift+tab` move between fields · `enter` start · `esc` to the button · `ctrl+s` Stats · `ctrl+o` alarm sound |
+| Running task | `p` pause or resume · `d` add time · `n` cancel · `e` complete · `ctrl+s` Stats |
+| Time's up | `←` / `→` choose · `enter` select · `d` extend · `e` complete |
+| Stats | `tab` next period · `e` export to JSON · `esc` back |
+| Alarm sound | `↑` / `↓` highlight and preview · `enter` save · `esc` back |
+
+### Tour
+
+When time runs out, the alert stays up and the alarm loops until you extend or complete:
+
+![Time's up alert, then completing the task](docs/demo/alert.gif)
+
+`ctrl+s` opens Stats from anywhere; `tab` steps through the periods:
+
+![Stats for 7 days, 30 days, and 3 months](docs/demo/stats.gif)
+
+`ctrl+o` on the Start screen chooses the alarm sound, playing each one as you go:
+
+![Choosing the alarm sound](docs/demo/sound.gif)
+
+The GIFs are recorded with [vhs](https://github.com/charmbracelet/vhs) from the tapes in
+[docs/demo/](docs/demo/), against generated data: `make demo` re-records them.
+
+## Build from source
 
 <!-- BEGIN:quickstart (must match the Commands table in AGENTS.md) -->
 Requires Go 1.26 or newer.
