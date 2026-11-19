@@ -191,7 +191,7 @@
       "description": "Stats opens from Start and Active, tab cycles periods starting at 7 days, esc returns to the previous screen with the timer still running, and the time-up alert appears over Stats (R-24, R-30, R-40, R-46).",
       "verify": "go test ./internal/tui/ -count=1 -run 'Stats' -v",
       "passes": true,
-      "evidence": "2026-11-18: go test ./internal/tui/ -count=1 -run 'Stats' -v: 7 PASS, 0 FAIL (s from Start button only and from Active, tab cycle from 7 days, esc back with timer running, alert over Stats with complete and extend, q quits) (artifacts/phase-3/p3-04-stats-nav.txt)"
+      "evidence": "2026-11-18: go test ./internal/tui/ -count=1 -run 'Stats' -v: 11 PASS, 0 FAIL (s from Start button only and from Active, tab cycle from 7 days, esc back with timer running, alert over Stats with complete and extend, q quits; also matches the 4 TestStatsExport tests) (artifacts/phase-3/p3-04-stats-nav.txt)"
     },
     {
       "id": "P3-05",

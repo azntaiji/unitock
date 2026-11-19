@@ -9,9 +9,8 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. All Phase 3 tasks done. Remaining before the G3 request: P3-03 golden review
-   (checkpoint below), the fresh-context review (docs/process/review.md), every
-   Commands-table check plus `make release-check` into artifacts/phase-3/.
+1. All Phase 3 tasks, checks, and the review are done. On P3-03 approval: mark P3-03,
+   then write the G3 request (proposed 0.3.0, minor: new features) and commit.
 
 ## Blockers
 
@@ -27,7 +26,10 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 | P3-02 | `go test ./... -count=1 -run 'Scorecard' -v` | 4 PASS, 0 FAIL | artifacts/phase-3/p3-02-scorecard.txt |
 | P3-03 | `go test ./internal/tui/ -count=1 -run 'Chart' -v` | 12 PASS, 0 FAIL; goldens await review | artifacts/phase-3/p3-03-chart.txt |
 | P3-05 | `go test ./... -count=1 -run 'Export' -v` | 9 PASS, 0 FAIL | artifacts/phase-3/p3-05-export.txt |
-| P3-04 | `go test ./internal/tui/ -count=1 -run 'Stats' -v` | 7 PASS, 0 FAIL | artifacts/phase-3/p3-04-stats-nav.txt |
+| P3-04 | `go test ./internal/tui/ -count=1 -run 'Stats' -v` | 11 PASS, 0 FAIL | artifacts/phase-3/p3-04-stats-nav.txt |
+| gate cmds | Commands table + `make release-check` + scaffold | all rc=0 (lint 0 issues) | artifacts/phase-3/gate-*.txt |
+| e2e | real binary in pty, scratch dirs: esc, s, tab, e, q | Stats shown, export written and path shown, exit 0 | — |
+| review | fresh-context subagent, docs/process/review.md | no gaps; P3-04 count fixed | — |
 | perf | one-off test, 10k tasks (deleted) | Completed 44 ms, 3× Compute 1 ms | — |
 | check | `make check` | pass (lint 0 issues) | — |
 
