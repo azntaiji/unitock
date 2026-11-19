@@ -5,6 +5,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+
+	"github.com/azntaiji/unitock/internal/alarm"
 )
 
 // Alarm is the system side of the time-up alert (R-30, R-33, R-34). Every method must
@@ -15,15 +17,21 @@ type Alarm interface {
 	Notify(taskName string)
 	// Start begins the looping alarm sound.
 	Start()
-	// Stop ends the alarm sound.
+	// Stop ends the alarm sound, or a preview.
 	Stop()
+	// SetSound sets the sound the next alarm plays (R-53).
+	SetSound(s alarm.Sound)
+	// Preview plays s once, never replacing a playing alarm (R-52, D-16).
+	Preview(s alarm.Sound)
 }
 
 type nopAlarm struct{}
 
-func (nopAlarm) Notify(string) {}
-func (nopAlarm) Start()        {}
-func (nopAlarm) Stop()         {}
+func (nopAlarm) Notify(string)        {}
+func (nopAlarm) Start()               {}
+func (nopAlarm) Stop()                {}
+func (nopAlarm) SetSound(alarm.Sound) {}
+func (nopAlarm) Preview(alarm.Sound)  {}
 
 // timeUpAlert is the modal shown when a running task reaches zero (R-30, R-31).
 type timeUpAlert struct {

@@ -18,8 +18,8 @@ Packages (keep current):
 - `internal/task`: task model and timer maths from stored timestamps; `Clock` (system, fake).
 - `internal/stats`, `internal/export`: D-11 periods and scorecards (pure, of now); D-14 JSON.
 - `internal/store`: SQLite (modernc), embedded migrations, tasks, projects; `storetest` seeds.
-- `internal/tui`: Bubble Tea UI; root model routes to screens (Start, Active, Done, Stats).
-- `internal/alarm`: time-up notification and looping chime via OS tools (D-13).
+- `internal/tui`: Bubble Tea UI; root model routes screens (Start, Active, Done, Stats, Sound).
+- `internal/alarm`: time-up notification, alarm sounds and previews via OS tools (D-13, D-16).
 
 Never run the binary against the real data dir; always pass `--data-dir` with a
 scratch or `t.TempDir()` path.

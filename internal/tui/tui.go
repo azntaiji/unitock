@@ -15,6 +15,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/colorprofile"
 
+	"github.com/azntaiji/unitock/internal/alarm"
 	"github.com/azntaiji/unitock/internal/store"
 	"github.com/azntaiji/unitock/internal/task"
 )
@@ -31,6 +32,8 @@ type Store interface {
 	Resume(ctx context.Context, id int64, at time.Time) (task.Task, error)
 	Completed(ctx context.Context, from, to time.Time) ([]task.Task, error)
 	All(ctx context.Context) ([]task.Task, error)
+	Setting(ctx context.Context, key string) (value string, ok bool, err error)
+	SetSetting(ctx context.Context, key, value string) error
 }
 
 // Deps are the UI's collaborators.
@@ -57,6 +60,7 @@ const (
 	screenActive
 	screenDone
 	screenStats
+	screenSound
 )
 
 // Model is the root Bubble Tea model.
@@ -67,6 +71,9 @@ type Model struct {
 	active activeModel
 	done   doneModel
 	stats  statsModel
+	snd    soundModel
+	// sound is the saved alarm sound (R-53).
+	sound alarm.Sound
 	// statsFrom is the screen Stats was opened from; esc returns to it unchanged (R-46).
 	statsFrom screen
 	gen       int // tick loop generation; bumped for each Active screen
@@ -91,6 +98,8 @@ func New(d Deps) (Model, error) {
 		d.Alarm = nopAlarm{}
 	}
 	m := Model{deps: d, screen: screenStart, start: newStartModel(), theme: theme{}}
+	m.sound = loadSound(d)
+	d.Alarm.SetSound(m.sound)
 	t, err := d.Store.Active(d.Ctx)
 	switch {
 	case errors.Is(err, store.ErrNoActive):
@@ -149,6 +158,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.String() == "s" && m.canOpenStats() {
 			return m.openStats()
 		}
+		if msg.String() == "a" && m.screen == screenStart && !m.start.inputFocused() { // R-51
+			return m.openSound(), nil
+		}
+	case soundSavedMsg:
+		return m.soundSaved(msg)
 	case taskStartedMsg:
 		m.deps.Log.Info("task started", "id", msg.task.ID)
 		m.start = newStartModel()
@@ -173,6 +187,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.active, cmd = m.active.update(msg, m.deps)
 	case screenStats:
 		return m.updateStats(msg)
+	case screenSound:
+		return m.updateSound(msg)
 	case screenDone:
 		if k, ok := msg.(tea.KeyPressMsg); ok { // any key opens Start (R-23)
 			if k.String() == "q" { // except q, which quits from any screen (R-06)
@@ -267,6 +283,8 @@ func (m Model) View() tea.View {
 		body, hints = m.active.view(m.deps.Clock.Now(), m.width, m.theme), m.active.hints()
 	case m.screen == screenDone:
 		body, hints = m.done.view(), m.done.hints()
+	case m.screen == screenSound:
+		body, hints = m.soundView(), soundHints()
 	case m.screen == screenStats:
 		body, hints = m.stats.view(m.deps.Clock.Now(), m.width, m.height, m.theme), m.stats.hints()
 		if m.overActive() && m.active.alert.open {

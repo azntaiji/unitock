@@ -51,7 +51,7 @@ previous period; estimated-vs-actual bar chart; alert overlay), JSON export sche
         tools, export directory not writable.
   - [ ] README usage section, install instructions, and a screenshot or recording.
   - [x] Active screen row: elapsed and estimate (+ added) instead of remaining (R-17).
-  - [ ] Choosable alarm sounds with a Sound screen and preview (R-51 to R-53, D-16).
+  - [x] Choosable alarm sounds with a Sound screen and preview (R-51 to R-53, D-16).
   - [ ] `make release-check` passes; release notes complete.
 - **Exit criteria:** P4-01 to P4-06.
 - **Gate G4:** azntaiji. Proposed version 1.0.0.

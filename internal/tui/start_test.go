@@ -10,6 +10,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/azntaiji/unitock/internal/alarm"
 	"github.com/azntaiji/unitock/internal/store"
 	"github.com/azntaiji/unitock/internal/task"
 )
@@ -25,16 +26,27 @@ type harness struct {
 	quit  bool
 }
 
-// fakeAlarm records Alarm calls; playing is whether the sound is on.
+// fakeAlarm records Alarm calls; playing is whether the alarm sound is on, previewing
+// whether a preview is, and sound the sound set for the next alarm.
 type fakeAlarm struct {
-	notified []string
-	starts   int
-	playing  bool
+	notified   []string
+	starts     int
+	playing    bool
+	previews   []alarm.Sound
+	previewing bool
+	sound      alarm.Sound
+	stops      int
 }
 
-func (a *fakeAlarm) Notify(name string) { a.notified = append(a.notified, name) }
-func (a *fakeAlarm) Start()             { a.starts++; a.playing = true }
-func (a *fakeAlarm) Stop()              { a.playing = false }
+func (a *fakeAlarm) Notify(name string)     { a.notified = append(a.notified, name) }
+func (a *fakeAlarm) Start()                 { a.starts++; a.playing, a.previewing = true, false }
+func (a *fakeAlarm) Stop()                  { a.stops++; a.playing, a.previewing = false, false }
+func (a *fakeAlarm) SetSound(s alarm.Sound) { a.sound = s }
+func (a *fakeAlarm) Preview(s alarm.Sound) {
+	if !a.playing {
+		a.previews, a.previewing = append(a.previews, s), true
+	}
+}
 
 func newHarness(t *testing.T) *harness {
 	t.Helper()
@@ -44,12 +56,12 @@ func newHarness(t *testing.T) *harness {
 	}
 	t.Cleanup(func() { _ = st.Close() })
 	clk := task.NewFakeClock(t0)
-	alarm := &fakeAlarm{}
-	m, err := New(Deps{Store: st, Clock: clk, Alarm: alarm})
+	al := &fakeAlarm{}
+	m, err := New(Deps{Store: st, Clock: clk, Alarm: al})
 	if err != nil {
 		t.Fatal(err)
 	}
-	h := &harness{t: t, m: m, store: st, clock: clk, alarm: alarm}
+	h := &harness{t: t, m: m, store: st, clock: clk, alarm: al}
 	h.run(loadProjects(m.deps)) // what Init does for the Start screen
 	return h
 }
@@ -107,7 +119,7 @@ func (h *harness) run(cmd tea.Cmd) {
 	switch msg := cmd().(type) {
 	case tea.QuitMsg:
 		h.quit = true
-	case taskStartedMsg, startErrMsg, taskCompletedMsg, taskUpdatedMsg, saveErrMsg, projectsMsg, exportedMsg:
+	case taskStartedMsg, startErrMsg, taskCompletedMsg, taskUpdatedMsg, saveErrMsg, projectsMsg, exportedMsg, soundSavedMsg:
 		h.send(msg)
 	case taskCancelledMsg: // its follow-up (blink, project load) returns at once
 		next, cmd := h.m.Update(msg)

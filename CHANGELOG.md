@@ -7,6 +7,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Choose the alarm sound: press `a` on the Start screen (with the button focused) to
+  open the Sound screen and pick Chime (default), Bell, Beep, Marimba, or Rising. Each
+  plays once as you highlight it; `enter` saves, `esc` cancels. The choice is kept in
+  the database (a new `settings` table, migrated on startup).
+
 ### Changed
 
 - The line under the Active screen's progress bar shows elapsed time and the estimate

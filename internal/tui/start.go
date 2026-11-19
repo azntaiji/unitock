@@ -394,5 +394,5 @@ func (m startModel) hints() string {
 	if m.inputFocused() {
 		return "tab next · ↑/↓ move · enter start · esc button · ctrl+c quit"
 	}
-	return "tab next · ↑/↓ move · enter start · s stats · q quit"
+	return "tab next · ↑/↓ move · enter start · s stats · a sound · q quit"
 }

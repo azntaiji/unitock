@@ -18,8 +18,10 @@ import (
 type Config struct {
 	// GOOS picks the tools; default runtime.GOOS.
 	GOOS string
-	// Dir is where the chime is written (the data directory).
+	// Dir is where the sound is written (the data directory).
 	Dir string
+	// Sound is the alarm sound until SetSound changes it; default DefaultSound.
+	Sound Sound
 	// Log receives tool failures; default discards.
 	Log *slog.Logger
 	// Bell rings the terminal bell. It is the fallback when no player works (R-34);
@@ -42,13 +44,16 @@ const notifyTimeout = 10 * time.Second
 // tight loop.
 const minPlay = 200 * time.Millisecond
 
-// Alarm implements the TUI's Alarm interface.
+// Alarm implements the TUI's Alarm interface. At most one sound plays at a time: the
+// looping alarm, or a one-off preview (D-16).
 type Alarm struct {
-	cfg  Config
-	mu   sync.Mutex
-	stop chan struct{} // nil while silent
-	done chan struct{} // closed when the current loop has ended
-	wg   sync.WaitGroup
+	cfg     Config
+	mu      sync.Mutex
+	sound   Sound
+	stop    chan struct{} // nil while silent
+	done    chan struct{} // closed when the current sound has ended
+	preview bool          // the current sound is a preview, not the alarm
+	wg      sync.WaitGroup
 }
 
 // New returns an Alarm for cfg, filling in defaults.
@@ -71,7 +76,10 @@ func New(cfg Config) *Alarm {
 	if cfg.Exec == nil {
 		cfg.Exec = runCommand
 	}
-	return &Alarm{cfg: cfg}
+	if _, ok := ParseSound(string(cfg.Sound)); !ok {
+		cfg.Sound = DefaultSound
+	}
+	return &Alarm{cfg: cfg, sound: cfg.Sound}
 }
 
 // runCommand runs path with args, with no stdin and no terminal output, and kills it when
@@ -135,18 +143,67 @@ func (a *Alarm) Notify(taskName string) {
 	})
 }
 
-// Start begins the looping alarm sound. It does nothing if the sound is already playing.
+// SetSound sets the sound the next alarm plays (R-53). An unknown sound means
+// DefaultSound. A loop already playing keeps its sound.
+func (a *Alarm) SetSound(s Sound) {
+	if _, ok := ParseSound(string(s)); !ok {
+		s = DefaultSound
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.sound = s
+}
+
+// Start begins the looping alarm sound, ending any preview first. It does nothing if
+// the alarm is already playing.
 func (a *Alarm) Start() {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	if a.stop != nil {
+	if a.stop != nil && !a.preview {
 		return
 	}
-	a.stop, a.done = make(chan struct{}), make(chan struct{})
+	a.play(a.sound, false)
+}
+
+// Preview plays s once (R-52), ending any earlier preview. It does nothing while the
+// alarm is playing, so a preview never replaces it. Stop ends it.
+func (a *Alarm) Preview(s Sound) {
+	if _, ok := ParseSound(string(s)); !ok {
+		return
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.stop != nil && !a.preview {
+		return
+	}
+	a.play(s, true)
+}
+
+// play ends the current sound, if any, and starts s: looping, or once for a preview.
+// The new sound waits for the old one's player to exit, so two never write or play the
+// sound file at once. a.mu must be held.
+func (a *Alarm) play(s Sound, once bool) {
+	prev := a.done
+	if a.stop != nil {
+		close(a.stop)
+	}
+	a.stop, a.done, a.preview = make(chan struct{}), make(chan struct{}), once
 	stop, done := a.stop, a.done
 	go func() {
 		defer close(done)
-		a.loop(stop)
+		if prev != nil {
+			<-prev
+		}
+		select {
+		case <-stop: // stopped while waiting
+			return
+		default:
+		}
+		if once {
+			a.once(s, stop)
+		} else {
+			a.loop(s, stop)
+		}
 	}()
 }
 
@@ -171,30 +228,58 @@ func (a *Alarm) stopLoop() (done chan struct{}) {
 	}
 	close(a.stop)
 	done = a.done
-	a.stop, a.done = nil, nil
+	a.stop, a.done, a.preview = nil, nil, false
 	return done
 }
 
-// loop plays the chime with the first available player until stop closes. With no
-// player, or once the player fails, it rings the bell instead.
-func (a *Alarm) loop(stop chan struct{}) {
-	player := a.player()
+// prepare finds a player and writes s for it, returning the player's path, the sound
+// file, and a context cancelled when stop closes. It returns ok false, having logged
+// why, when the bell must stand in.
+func (a *Alarm) prepare(s Sound, stop chan struct{}) (player, wav string, ctx context.Context, cancel context.CancelFunc, ok bool) {
+	player = a.player()
 	if player == "" {
-		a.bell(stop)
-		return
+		return "", "", nil, nil, false
 	}
-	wav, err := writeChime(a.cfg.Dir)
+	wav, err := writeSound(a.cfg.Dir, s)
 	if err != nil {
 		a.cfg.Log.Warn("writing alarm sound failed; using the terminal bell", "err", err)
+		return "", "", nil, nil, false
+	}
+	ctx, cancel = context.WithCancel(context.Background())
+	go func() {
+		select {
+		case <-stop:
+			cancel()
+		case <-ctx.Done():
+		}
+	}()
+	return player, wav, ctx, cancel, true
+}
+
+// once plays s a single time for a preview (R-52). With no player, or if it fails, it
+// rings the bell once.
+func (a *Alarm) once(s Sound, stop chan struct{}) {
+	player, wav, ctx, cancel, ok := a.prepare(s, stop)
+	if !ok {
+		a.cfg.Bell()
+		return
+	}
+	defer cancel()
+	if err := a.cfg.Exec(ctx, player, wav); err != nil && ctx.Err() == nil {
+		a.cfg.Log.Warn("sound preview failed", "player", player, "sound", s, "err", err)
+		a.cfg.Bell()
+	}
+}
+
+// loop plays s with the first available player until stop closes. With no player, or
+// once the player fails, it rings the bell instead.
+func (a *Alarm) loop(s Sound, stop chan struct{}) {
+	player, wav, ctx, cancel, ok := a.prepare(s, stop)
+	if !ok {
 		a.bell(stop)
 		return
 	}
-	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go func() {
-		<-stop
-		cancel()
-	}()
 	for {
 		began := time.Now()
 		err := a.cfg.Exec(ctx, player, wav)

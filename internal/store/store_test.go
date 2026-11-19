@@ -44,7 +44,7 @@ func TestOpenMigratesFreshDataDir(t *testing.T) {
 	if v != len(ms) || v < 1 {
 		t.Errorf("schema version = %d, want %d", v, len(ms))
 	}
-	for _, table := range []string{"tasks", "extensions", "pauses"} {
+	for _, table := range []string{"tasks", "extensions", "pauses", "projects", "settings"} {
 		var n int
 		if err := s.db.QueryRowContext(ctx,
 			`SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = ?`, table).Scan(&n); err != nil {

@@ -9,17 +9,15 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-0. Alarm sounds (R-51 to R-53, D-16, P4-06): alarm.Sound set + synth, SetSound and
-   Preview; store migration 0005 settings; tui Sound screen on `a`. Then vhs GIFs for
-   the README (human wants charmbracelet/vhs).
-1. Error paths (P4-03), tests named `Error`: unwritable data dir, corrupt database,
+1. vhs (charmbracelet/vhs) GIFs for the README, with README usage and install sections.
+2. Error paths (P4-03), tests named `Error`: unwritable data dir, corrupt database,
    missing audio and notify tools, export directory not writable (export already shows
    the error; add a test that proves it). Some exist already under other names
    (cmd/unitock TestUnusableDataDirExitsOne, TestUnusableDatabaseExitsOne); check
    `-run 'Error'` picks up every case.
-2. README usage section, install instructions, and a screenshot or recording.
-3. SPEC end-to-end verification on macOS and Ubuntu, by hand (P4-01); needs the human
-   for Ubuntu. Rerun the Perf tests on Ubuntu at the same time.
+3. SPEC end-to-end verification on macOS and Ubuntu, by hand (P4-01), now 11 steps;
+   step 11 also completes P4-06 (hear every sound). Needs the human for Ubuntu. Rerun
+   the Perf tests on Ubuntu at the same time.
 4. `make release-check`, CHANGELOG release notes, gate request (P4-04).
 
 ## Blockers
@@ -34,6 +32,7 @@ None.
 | make check after perf task | `make check` | exit 0 | artifacts/phase-4/check-perf.log |
 | old releases published | `gh workflow run release.yml -f tag=v0.X.0` | 3/3 success | gh runs 44429925530, 44430921813, 44431766718 |
 | P4-05 Active row | `go test ./internal/tui/ -count=1 -run 'View\|Extend\|Pause' -v` | pass; make check exit 0 | artifacts/phase-4/p4-05.log |
+| P4-06 sounds, automated part | `go test ./... -count=1 -run 'Sound' -v` | pass (21 tests); by hand pending | artifacts/phase-4/p4-06.log |
 | release kit on Go 1.27.3 (CI fix) | `make release-check` | exit 0 | artifacts/phase-4/release-check-ci-fix.log |
 
 ## Gate request
@@ -56,6 +55,10 @@ None.
   set after with `gh release edit --notes-file` from each tag's CHANGELOG section.
   .goreleaser.yaml now enables it (local commit, goes out at G4); not yet proven on
   GitHub, so check the v1.0.0 release body after the G4 release run.
+- Sounds (D-16): alarm/sound.go synthesises the five (Chime byte-identical to D-13,
+  hash-tested; others normalised to 0.5 peak); Alarm.Preview plays once, the alarm
+  always wins over a preview. store/settings.go + migration 0005. tui/sound.go is the
+  Sound screen (`a` from Start button); tui.New loads the sound and calls SetSound.
 - Phase 3 closed 2026-11-18 as v0.3.0; detail in docs/archive/phase-3.md.
 - Perf: internal/store/storetest.Seed bulk-inserts history in one transaction;
   cmd/unitock/perf_test.go (startup via run() with runUI stubbed, to first View) and

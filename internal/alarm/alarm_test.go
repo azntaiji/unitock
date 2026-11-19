@@ -3,7 +3,6 @@ package alarm
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
 	"errors"
 	"log/slog"
 	"os"
@@ -292,7 +291,7 @@ func TestBellWhenPlayerExitsAtOnce(t *testing.T) {
 	}
 }
 
-func TestBellWhenChimeUnwritable(t *testing.T) {
+func TestBellWhenSoundUnwritable(t *testing.T) {
 	f := newFakeOS("afplay")
 	cfg := f.config(t, "darwin")
 	cfg.Dir = filepath.Join(cfg.Dir, "missing")
@@ -313,55 +312,5 @@ func waitBells(t *testing.T, f *fakeOS, n int32) {
 			t.Fatalf("bell rang %d times, want at least %d", f.bells.Load(), n)
 		}
 		time.Sleep(5 * time.Millisecond)
-	}
-}
-
-func TestChimeIsPCMWAV(t *testing.T) {
-	b := chime()
-	if string(b[0:4]) != "RIFF" || string(b[8:16]) != "WAVEfmt " || string(b[36:40]) != "data" {
-		t.Fatalf("bad header % x", b[:44])
-	}
-	if got := binary.LittleEndian.Uint32(b[4:8]); int(got) != len(b)-8 {
-		t.Errorf("RIFF size %d, file %d", got, len(b))
-	}
-	if got := binary.LittleEndian.Uint32(b[40:44]); int(got) != len(b)-44 {
-		t.Errorf("data size %d, want %d", got, len(b)-44)
-	}
-	if rate := binary.LittleEndian.Uint32(b[24:28]); rate != sampleRate {
-		t.Errorf("rate %d", rate)
-	}
-	var peak int16
-	for i := 44; i+1 < len(b); i += 2 {
-		peak = max(peak, int16(binary.LittleEndian.Uint16(b[i:])))
-	}
-	if peak < 5000 {
-		t.Errorf("peak %d: chime is near silent", peak)
-	}
-}
-
-func TestWriteChimeOnce(t *testing.T) {
-	dir := t.TempDir()
-	p, err := writeChime(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	old := time.Now().Add(-time.Hour)
-	if err := os.Chtimes(p, old, old); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := writeChime(dir); err != nil {
-		t.Fatal(err)
-	}
-	if st, _ := os.Stat(p); !st.ModTime().Equal(old) {
-		t.Error("an identical chime was rewritten")
-	}
-	if err := os.WriteFile(p, []byte("junk"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := writeChime(dir); err != nil {
-		t.Fatal(err)
-	}
-	if b, _ := os.ReadFile(p); !bytes.Equal(b, chime()) {
-		t.Error("a damaged chime was not replaced")
 	}
 }
