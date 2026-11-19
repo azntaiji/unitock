@@ -17,9 +17,12 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      # Not go-version-file: that installs go.mod's minimum (1.26.0) with
+      # GOTOOLCHAIN=local, and GoReleaser (pinned in the Makefile) needs Go >= 1.27.3.
+      # Keep this at or above GoReleaser's minimum when bumping it.
       - uses: actions/setup-go@v7
         with:
-          go-version-file: go.mod
+          go-version: "1.27.3"
       - name: Check
         run: make check
       - name: Release

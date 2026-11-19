@@ -21,7 +21,8 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Blockers
 
-None.
+None. Open for the human: tags v0.1.0 to v0.3.0 have no GitHub Release (every release
+run failed, see Handoff); whether to publish them is a release decision.
 
 ## Evidence
 
@@ -29,6 +30,7 @@ None.
 |---|---|---|---|
 | P4-02 perf (macOS arm64) | `go test ./... -count=1 -run 'Perf' -v` | pass: startup 1.6 ms, stats open 27 ms, tab 0.7 ms | artifacts/phase-4/perf.log |
 | make check after perf task | `make check` | exit 0 | artifacts/phase-4/check-perf.log |
+| release kit on Go 1.27.3 (CI fix) | `make release-check` | exit 0 | artifacts/phase-4/release-check-ci-fix.log |
 
 ## Gate request
 
@@ -36,6 +38,10 @@ None.
 
 ## Handoff
 
+- Release workflow failed for v0.1.0 to v0.3.0: setup-go took go.mod's 1.26.0 with
+  GOTOOLCHAIN=local; GoReleaser v2.19.0 needs >= 1.27.3. release.yml now pins Go 1.27.3
+  (committed locally; reaches GitHub at the G4 push). Rerunning old runs would reuse
+  the old workflow file at each tag.
 - Phase 3 closed 2026-11-18 as v0.3.0; detail in docs/archive/phase-3.md.
 - Perf: internal/store/storetest.Seed bulk-inserts history in one transaction;
   cmd/unitock/perf_test.go (startup via run() with runUI stubbed, to first View) and
