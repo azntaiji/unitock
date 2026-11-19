@@ -214,8 +214,8 @@
       "phase": 4,
       "description": "With 10,000 seeded tasks, startup to first frame is under 300 ms and a stats render under 100 ms.",
       "verify": "go test ./... -count=1 -run 'Perf' -v",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-18 macOS (darwin/arm64): TestPerfStartup slowest 1.6 ms (budget 300 ms; process start and terminal write excluded), TestPerfStats slowest open 27 ms and tab 0.7 ms (budget 100 ms), 9,500 completed of 10,000 seeded tasks loaded; artifacts/phase-4/perf.log"
     },
     {
       "id": "P4-03",

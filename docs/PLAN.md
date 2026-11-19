@@ -46,7 +46,7 @@ previous period; estimated-vs-actual bar chart; alert overlay), JSON export sche
 - **Depends on:** the human's decision to declare 1.0.0.
 - **Tasks:**
   - [ ] Run the SPEC end-to-end verification on macOS and Ubuntu; record results.
-  - [ ] Performance check with 10,000 seeded tasks (Constraints).
+  - [x] Performance check with 10,000 seeded tasks (Constraints).
   - [ ] Error paths: unwritable data dir, corrupt database, missing audio and notify
         tools, export directory not writable.
   - [ ] README usage section, install instructions, and a screenshot or recording.

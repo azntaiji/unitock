@@ -9,13 +9,15 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. Start Phase 4 in a new session: read the Phase 4 section of docs/PLAN.md and P4-01
-   to P4-04 in docs/acceptance.json.
-2. Performance check with 10,000 seeded tasks: a one-off measurement in Phase 3 gave
-   44 ms to load stats and 1 ms to compute; make it a repeatable check, and measure
-   startup to first frame (Constraints).
-3. Error paths, including an export directory that is not writable (export already
-   shows the error; add a test that proves it).
+1. Error paths (P4-03), tests named `Error`: unwritable data dir, corrupt database,
+   missing audio and notify tools, export directory not writable (export already shows
+   the error; add a test that proves it). Some exist already under other names
+   (cmd/unitock TestUnusableDataDirExitsOne, TestUnusableDatabaseExitsOne); check
+   `-run 'Error'` picks up every case.
+2. README usage section, install instructions, and a screenshot or recording.
+3. SPEC end-to-end verification on macOS and Ubuntu, by hand (P4-01); needs the human
+   for Ubuntu. Rerun the Perf tests on Ubuntu at the same time.
+4. `make release-check`, CHANGELOG release notes, gate request (P4-04).
 
 ## Blockers
 
@@ -25,6 +27,8 @@ None.
 
 | Check | Command | Result | Raw output |
 |---|---|---|---|
+| P4-02 perf (macOS arm64) | `go test ./... -count=1 -run 'Perf' -v` | pass: startup 1.6 ms, stats open 27 ms, tab 0.7 ms | artifacts/phase-4/perf.log |
+| make check after perf task | `make check` | exit 0 | artifacts/phase-4/check-perf.log |
 
 ## Gate request
 
@@ -33,11 +37,11 @@ None.
 ## Handoff
 
 - Phase 3 closed 2026-11-18 as v0.3.0; detail in docs/archive/phase-3.md.
-- Start Phase 4 in a new session.
-- Phase 3 was built on branch `phase-3` in worktree .claude/worktrees/phase-3 and
-  fast-forwarded into main; the worktree and branch can be removed once main has the
-  release commit and tag (`git worktree remove .claude/worktrees/phase-3`,
-  `git branch -d phase-3`).
+- Perf: internal/store/storetest.Seed bulk-inserts history in one transaction;
+  cmd/unitock/perf_test.go (startup via run() with runUI stubbed, to first View) and
+  internal/tui/perf_test.go (s to rendered Stats, then tab). Both skip under -race
+  (storetest.Race), so CI's make check does not time them; the P4-02 verify command does.
+  Startup excludes process exec and the terminal write (no TTY in tests).
 - Alarm heard and notification seen on macOS only; Ubuntu untested (Phase 4 E2E).
 - internal/alarm implements tui.Alarm; main wires it (bell via tea.RawMsg, Close deferred).
 - Lock: cmd/unitock/lock.go. Too small: tui.go `tooSmall` (keys except ctrl+c ignored).
