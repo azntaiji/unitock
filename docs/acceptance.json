@@ -206,8 +206,8 @@
       "phase": 4,
       "description": "Every step of the SPEC end-to-end verification passes on macOS and on Ubuntu, run by hand against a scratch --data-dir, with results recorded.",
       "verify": "Follow docs/SPEC.md 'End-to-end verification' on each OS; record per-step results in artifacts/phase-4/.",
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "2026-11-19 by azntaiji, build 0.3.0-e2e.cef31d6, scratch --data-dir: all 15 rows (steps 1-11, 11a-11d) pass on macOS 15.7.6 arm64 (iTerm2) and on Ubuntu 24.04.4 LTS x86_64 (KDE Plasma, kitty, PulseAudio on PipeWire). artifacts/phase-4/e2e-results.md"
     },
     {
       "id": "P4-02",
@@ -215,7 +215,7 @@
       "description": "With 10,000 seeded tasks, startup to first frame is under 300 ms and a stats render under 100 ms.",
       "verify": "go test ./... -count=1 -run 'Perf' -v",
       "passes": true,
-      "evidence": "2026-11-18 macOS (darwin/arm64): TestPerfStartup slowest 1.6 ms (budget 300 ms; process start and terminal write excluded), TestPerfStats slowest open 27 ms and tab 0.7 ms (budget 100 ms), 9,500 completed of 10,000 seeded tasks loaded; artifacts/phase-4/perf.log"
+      "evidence": "2026-11-18 macOS (darwin/arm64): TestPerfStartup slowest 1.6 ms (budget 300 ms; process start and terminal write excluded), TestPerfStats slowest open 27 ms and tab 0.7 ms (budget 100 ms), 9,500 completed of 10,000 seeded tasks loaded; artifacts/phase-4/perf.log. 2026-11-19 Ubuntu 24.04 (linux/amd64), test binaries at cef31d6: startup slowest 1.7 ms, stats open 50 ms and tab 1.2 ms, both PASS; artifacts/phase-4/perf-ubuntu.log"
     },
     {
       "id": "P4-03",
@@ -247,7 +247,7 @@
       "description": "The Sound screen lists Chime, Bell, Beep, Marimba, and Rising; highlighting one previews it once; enter saves it in the database and the next alarm plays it; esc leaves the choice unchanged; a missing or unknown stored value means Chime; a failed save shows the error (R-51 to R-53, R-34, D-16). Every sound heard by hand on macOS and Ubuntu.",
       "verify": "go test ./... -count=1 -run 'Sound' -v; then by hand per SPEC end-to-end step 11 on each OS.",
       "passes": false,
-      "evidence": "2026-11-19 automated part only: verify exit 0, 21 Sound tests pass (alarm, store, tui); make check exit 0; all five WAVs play through afplay (exit 0, full length). By-hand listening on macOS and Ubuntu pending. artifacts/phase-4/p4-06.log, check-sound.log"
+      "evidence": "2026-11-19 automated part only: verify exit 0, 21 Sound tests pass (alarm, store, tui); make check exit 0; all five WAVs play through afplay (exit 0, full length). By hand 2026-11-19 (azntaiji): all five heard and distinct via afplay on macOS and via paplay on Ubuntu 24.04 (SPEC step 11 pass on both). Still pending: hearing all five through aplay on Ubuntu (D-16). artifacts/phase-4/p4-06.log, check-sound.log, e2e-results.md"
     }
   ]
 }

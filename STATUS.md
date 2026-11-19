@@ -3,21 +3,20 @@
 Phase: 4
 Phase name: Hardening and 1.0.0
 Gate: G4 not requested
-Updated: 2026-11-18
+Updated: 2026-11-19
 
 Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Next tasks
 
-1. SPEC end-to-end verification on macOS and Ubuntu, by hand (P4-01), 11 steps; step
-   11 also completes P4-06 (hear every sound). Human needed for Ubuntu. Rerun Perf there.
+1. P4-06: hear all five sounds through `aplay` on Ubuntu (D-16; e2e form "Extra A",
+   skipped in the 2026-11-19 run). Human needed.
 2. `make release-check`, CHANGELOG release notes, gate request (P4-04). At gate close
    also bump `VERSION=` in the README Install snippet.
 
 ## Blockers
 
-None. Waiting on the human's by-hand E2E (P4-01, P4-06): form in
-artifacts/phase-4/e2e-results.md, bundle bin/unitock-e2e-cef31d6.tar.gz.
+P4-06 waits on the human's `aplay` listening check on Ubuntu (e2e form, Extra A).
 
 ## Evidence
 
@@ -28,6 +27,8 @@ artifacts/phase-4/e2e-results.md, bundle bin/unitock-e2e-cef31d6.tar.gz.
 | old releases published | `gh workflow run release.yml -f tag=v0.X.0` | 3/3 success | gh runs 44429925530, 44430921813, 44431766718 |
 | P4-05 Active row | `go test ./internal/tui/ -count=1 -run 'View\|Extend\|Pause' -v` | pass; make check exit 0 | artifacts/phase-4/p4-05.log |
 | P4-06 sounds, automated part | `go test ./... -count=1 -run 'Sound' -v` | pass (21 tests); by hand pending | artifacts/phase-4/p4-06.log |
+| P4-01 E2E by hand (macOS, Ubuntu) | SPEC end-to-end, 15 rows | pass on both | artifacts/phase-4/e2e-results.md |
+| P4-02 perf (Ubuntu amd64) | perf test binaries at cef31d6 | pass: startup 1.7 ms, stats 50 ms | artifacts/phase-4/perf-ubuntu.log |
 | P4-03 error paths | `go test ./... -count=1 -run 'Error' -v` | pass (19), make check 0 | artifacts/phase-4/p4-03.log |
 | release kit on Go 1.27.3 (CI fix) | `make release-check` | exit 0 | artifacts/phase-4/release-check-ci-fix.log |
 
@@ -65,7 +66,7 @@ None.
   internal/tui/perf_test.go (s to rendered Stats, then tab). Both skip under -race
   (storetest.Race), so CI's make check does not time them; the P4-02 verify command does.
   Startup excludes process exec and the terminal write (no TTY in tests).
-- Alarm heard and notification seen on macOS only; Ubuntu untested (Phase 4 E2E).
+- Alarm and notification verified by hand on macOS (afplay) and Ubuntu 24.04 (paplay).
 - internal/alarm implements tui.Alarm; main wires it (bell via tea.RawMsg, Close deferred).
 - Lock: cmd/unitock/lock.go. Too small: tui.go `tooSmall` (keys except ctrl+c ignored).
 - Stats: internal/stats (pure); store.Completed/All share `load`; tui/stats.go, chart.go;
