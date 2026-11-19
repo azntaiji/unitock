@@ -22,7 +22,9 @@ Working state for the current phase only. Rewrite in place; keep under 80 lines.
 
 ## Blockers
 
-None.
+None. Found, not fixed (pre-existing, outside the task): with the Project dropdown open
+(5 suggestions) the Start screen is 21 rows, over the 60×20 minimum (R-08); asked the
+human how to resolve it.
 
 ## Evidence
 
@@ -41,12 +43,8 @@ None.
 
 ## Handoff
 
-- Release workflow failed for v0.1.0 to v0.3.0: setup-go took go.mod's 1.26.0 with
-  GOTOOLCHAIN=local; GoReleaser v2.19.0 needs >= 1.27.3. release.yml now pins Go 1.27.3
-  (pushed early, see below). Rerunning old runs would reuse
-  the old workflow file at each tag, so release.yml gained workflow_dispatch: input
-  `tag` (vX.Y.Z, must exist, must have no release), builds that tag's commit with the
-  fixed Go. Run: `gh workflow run release.yml -f tag=v0.1.0`. actionlint 1.7.12 clean.
+- Release workflow pins Go 1.27.3 (GoReleaser v2.19.0 needs it) and has a manual
+  trigger to publish an existing tag: `gh workflow run release.yml -f tag=vX.Y.Z`.
 - 2026-11-18: azntaiji approved a one-off push of main before G4, to prove the release
   fix by publishing v0.1.0 to v0.3.0. Not a precedent; the gate-close push rule stands.
 - v0.1.0 to v0.3.0 published via manual runs (all green; 4 archives + checksums each;
@@ -55,10 +53,13 @@ None.
   set after with `gh release edit --notes-file` from each tag's CHANGELOG section.
   .goreleaser.yaml now enables it (local commit, goes out at G4); not yet proven on
   GitHub, so check the v1.0.0 release body after the G4 release run.
+- Keys (R-06 amended 2026-11-19): ctrl+s stats, ctrl+o sound, ctrl+c quit; no plain
+  q/s/a commands. Hints: screen keys, then `chordHints(...)` on a 2nd line (Start,
+  Active). Verified in a real pty via tmux (ctrl+s is not eaten as XOFF).
 - Sounds (D-16): alarm/sound.go synthesises the five (Chime byte-identical to D-13,
   hash-tested; others normalised to 0.5 peak); Alarm.Preview plays once, the alarm
   always wins over a preview. store/settings.go + migration 0005. tui/sound.go is the
-  Sound screen (`a` from Start button); tui.New loads the sound and calls SetSound.
+  Sound screen (ctrl+o from Start); tui.New loads the sound and calls SetSound.
 - Phase 3 closed 2026-11-18 as v0.3.0; detail in docs/archive/phase-3.md.
 - Perf: internal/store/storetest.Seed bulk-inserts history in one transaction;
   cmd/unitock/perf_test.go (startup via run() with runUI stubbed, to first View) and
@@ -73,4 +74,4 @@ None.
 - Visuals: internal/tui/timer.go, chart.go; goldens in internal/tui/testdata and
   internal/export/testdata (`make golden`).
 - TUI tests: harness in start_test.go (send/press/typeText/run, fakeAlarm); teatest
-  flows in flow_test.go; `pressS` in stats_nav_test.go.
+  flows in flow_test.go; `pressStats` in stats_nav_test.go; `key("ctrl+x")` chords.

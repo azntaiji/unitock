@@ -141,8 +141,6 @@ func (m activeModel) update(msg tea.Msg, d Deps) (activeModel, tea.Cmd) {
 			return m.confirmKey(msg, d)
 		}
 		switch msg.String() {
-		case "q":
-			return m, tea.Quit
 		case "d":
 			return m.openExtend(false)
 		case "n":
@@ -191,8 +189,6 @@ func (m activeModel) confirmKey(msg tea.KeyPressMsg, d Deps) (activeModel, tea.C
 		return m.cancel(d)
 	case "y":
 		return m.cancel(d)
-	case "q":
-		return m, tea.Quit
 	}
 	return m, nil
 }
@@ -296,15 +292,16 @@ func (m activeModel) hints() string {
 		return "enter add · esc cancel · ctrl+c quit"
 	}
 	if m.alert.open {
-		return "←/→ choose · enter select · d extend · e complete · q quit"
+		return "←/→ choose · enter select · d extend · e complete · ctrl+c quit"
 	}
 	if m.conf.open {
-		return "y yes · n/esc no · ←/→ choose · enter select · q quit"
+		return "y yes · n/esc no · ←/→ choose · enter select · ctrl+c quit"
 	}
+	p := "p pause"
 	if m.task.Paused() {
-		return "p resume · d add time · n cancel · e complete · s stats · q quit"
+		p = "p resume"
 	}
-	return "p pause · d add time · n cancel · e complete · s stats · q quit"
+	return p + " · d add time · n cancel · e complete\n" + chordHints("ctrl+s stats")
 }
 
 // timeRow is the line under the progress bar (R-17): elapsed time and the original

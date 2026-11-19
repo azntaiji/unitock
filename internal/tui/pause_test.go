@@ -45,9 +45,9 @@ func TestPauseSurvivesRelaunch(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "25m")
 	h.clock.Advance(5 * time.Minute)
-	h.press("p", "q")
+	h.press("p", "ctrl+c")
 	if !h.quit {
-		t.Fatal("q did not quit")
+		t.Fatal("ctrl+c did not quit")
 	}
 	h.clock.Advance(2 * time.Hour)
 	m, err := New(h.m.deps)

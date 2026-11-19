@@ -155,10 +155,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.tooSmall() { // the screen is hidden, so its keys are too (R-08)
 			return m, nil
 		}
-		if msg.String() == "s" && m.canOpenStats() {
+		if msg.String() == "ctrl+s" && m.canOpenStats() { // R-24, R-06
 			return m.openStats()
 		}
-		if msg.String() == "a" && m.screen == screenStart && !m.start.inputFocused() { // R-51
+		if msg.String() == "ctrl+o" && m.screen == screenStart { // R-51, from any focus
 			return m.openSound(), nil
 		}
 	case soundSavedMsg:
@@ -190,10 +190,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case screenSound:
 		return m.updateSound(msg)
 	case screenDone:
-		if k, ok := msg.(tea.KeyPressMsg); ok { // any key opens Start (R-23)
-			if k.String() == "q" { // except q, which quits from any screen (R-06)
-				return m, tea.Quit
-			}
+		if _, ok := msg.(tea.KeyPressMsg); ok { // any key opens Start (R-23); ctrl+c quits above
 			m.screen = screenStart
 			m.start = newStartModel()
 			cmd = m.startCmds()
@@ -202,13 +199,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-// canOpenStats reports whether `s` opens Stats now: from Start only with the button
-// focused (R-14), and from Active only when no input, confirmation, or alert is open
-// (R-24).
+// canOpenStats reports whether ctrl+s opens Stats now: from Start in any focus (R-14),
+// and from Active only when no input, confirmation, or alert is open (R-24).
 func (m Model) canOpenStats() bool {
 	switch m.screen {
 	case screenStart:
-		return !m.start.inputFocused()
+		return true
 	case screenActive:
 		return !m.active.ext.open && !m.active.conf.open && !m.active.alert.open
 	}
@@ -251,8 +247,6 @@ func (m Model) updateStats(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			m.screen = m.statsFrom
 			return m, nil
-		case "q":
-			return m, tea.Quit
 		}
 	}
 	m.stats, cmd = m.stats.update(msg, m.deps)
@@ -278,7 +272,7 @@ func (m Model) View() tea.View {
 		)
 		hints = "ctrl+c quit"
 	case m.screen == screenStart:
-		body, hints = m.start.view(), m.start.hints()
+		body, hints = m.start.view(m.sound.Label()), m.start.hints()
 	case m.screen == screenActive:
 		body, hints = m.active.view(m.deps.Clock.Now(), m.width, m.theme), m.active.hints()
 	case m.screen == screenDone:

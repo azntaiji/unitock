@@ -86,8 +86,9 @@ func key(s string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeyLeft}
 	case "right":
 		return tea.KeyPressMsg{Code: tea.KeyRight}
-	case "ctrl+c":
-		return tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}
+	}
+	if l, ok := strings.CutPrefix(s, "ctrl+"); ok && len(l) == 1 {
+		return tea.KeyPressMsg{Code: rune(l[0]), Mod: tea.ModCtrl}
 	}
 	r := []rune(s)
 	if len(r) != 1 {
@@ -106,7 +107,7 @@ func (h *harness) send(msg tea.Msg) {
 	h.m = next.(Model)
 	if k, ok := msg.(tea.KeyPressMsg); ok {
 		switch k.String() {
-		case "enter", "e", "p", "y", "q", "ctrl+c":
+		case "enter", "e", "p", "y", "ctrl+c", "ctrl+s":
 			h.run(cmd)
 		}
 	}
@@ -172,7 +173,7 @@ func (h *harness) taskCount() int {
 }
 
 func TestStartKeyNames(t *testing.T) {
-	for _, k := range []string{"tab", "shift+tab", "enter", "esc", "up", "down", "left", "right", "ctrl+c", "q"} {
+	for _, k := range []string{"tab", "shift+tab", "enter", "esc", "up", "down", "left", "right", "ctrl+c", "ctrl+s", "ctrl+o", "q"} {
 		if got := key(k).String(); got != k {
 			t.Errorf("key(%q).String() = %q", k, got)
 		}
@@ -232,16 +233,17 @@ func TestStartTypingQAndSDoesNotQuitOrLeave(t *testing.T) {
 	}
 }
 
-func TestStartEscFocusesButtonAndQQuits(t *testing.T) {
+// R-06: on the button, plain q and s do nothing; only chords are commands.
+func TestStartEscFocusesButtonAndQDoesNotQuit(t *testing.T) {
 	h := newHarness(t)
 	h.typeText("x")
 	h.press("esc")
 	if h.m.start.focus != focusButton {
 		t.Fatalf("esc: focus = %d, want button", h.m.start.focus)
 	}
-	h.press("q")
-	if !h.quit {
-		t.Error("q on the button did not quit")
+	h.press("q", "s", "a")
+	if h.quit || h.m.screen != screenStart || h.m.start.focus != focusButton {
+		t.Errorf("q, s, a on the button: quit %v screen %d focus %d; want nothing", h.quit, h.m.screen, h.m.start.focus)
 	}
 }
 
@@ -255,20 +257,30 @@ func TestStartCtrlCAlwaysQuits(t *testing.T) {
 
 func TestStartHintsChangeWithFocus(t *testing.T) {
 	h := newHarness(t)
+	h.press("tab") // Task name: no dropdown
 	inputHints := h.m.start.hints()
-	if strings.Contains(inputHints, "q quit") || !strings.Contains(inputHints, "esc") {
+	for _, want := range []string{"esc button", "\nctrl+s stats · ctrl+o sound · ctrl+c quit"} {
+		if !strings.Contains(inputHints, want) {
+			t.Errorf("input hints = %q, want %q", inputHints, want)
+		}
+	}
+	if strings.Contains(inputHints, "q quit") && !strings.Contains(inputHints, "ctrl+c quit") || strings.Contains(inputHints, "↑/↓") {
 		t.Errorf("input hints = %q", inputHints)
 	}
-	if !strings.Contains(h.view(), inputHints) {
-		t.Error("view does not show the hint bar")
+	for _, line := range strings.Split(inputHints, "\n") {
+		if !strings.Contains(h.view(), line) {
+			t.Errorf("view does not show hint line %q", line)
+		}
 	}
 	h.press("esc")
 	buttonHints := h.m.start.hints()
-	if buttonHints == inputHints || !strings.Contains(buttonHints, "q quit") {
+	if buttonHints == inputHints || !strings.Contains(buttonHints, "ctrl+s stats · ctrl+o sound · ctrl+c quit") {
 		t.Errorf("button hints = %q", buttonHints)
 	}
-	if !strings.Contains(h.view(), buttonHints) {
-		t.Error("view does not show the button hint bar")
+	for _, line := range strings.Split(buttonHints, "\n") {
+		if !strings.Contains(h.view(), line) {
+			t.Errorf("view does not show button hint line %q", line)
+		}
 	}
 }
 
@@ -366,8 +378,13 @@ func TestStartIsQuitDetectsQuit(t *testing.T) {
 	}
 	h := newHarness(t)
 	h.press("esc")
-	h.typeText("q") // on the button, q is a key, not text: typeText must still see the quit
-	if !h.quit {
-		t.Fatal("typeText did not record a quit")
+	h.typeText("q") // not a quit any more (R-06)
+	if h.quit {
+		t.Fatal("q quit")
+	}
+	next, cmd := h.m.Update(key("ctrl+c"))
+	h.m = next.(Model)
+	if !isQuit(cmd) {
+		t.Fatal("ctrl+c did not return a quit")
 	}
 }

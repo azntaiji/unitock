@@ -35,9 +35,9 @@ func TestResumeOpensActiveWithClosedTimeElapsed(t *testing.T) {
 	h := &harness{t: t, m: m, store: st, clock: clk}
 	tk := h.startTask("write", "25m")
 	clk.Advance(2 * time.Minute)
-	h.press("q")
+	h.press("ctrl+c")
 	if !h.quit {
-		t.Fatal("q did not quit")
+		t.Fatal("ctrl+c did not quit")
 	}
 	_ = st.Close()
 
@@ -94,12 +94,12 @@ func TestDoneScreenKeys(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "25m")
 	h.press("e")
-	if !strings.Contains(h.view(), "q quit") || !strings.Contains(h.view(), "any key") {
+	if !strings.Contains(h.view(), "ctrl+c quit") || !strings.Contains(h.view(), "any key") {
 		t.Errorf("Done hints:\n%s", h.view())
 	}
-	h.press("q")
+	h.press("ctrl+c")
 	if !h.quit || h.m.screen != screenDone {
-		t.Errorf("q on Done: quit=%v screen=%d", h.quit, h.m.screen)
+		t.Errorf("ctrl+c on Done: quit=%v screen=%d", h.quit, h.m.screen)
 	}
 
 	h = newHarness(t)

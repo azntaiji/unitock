@@ -29,7 +29,7 @@ func exportHarness(t *testing.T) (*harness, string) {
 	h.press("e") // complete
 	h.press("x") // any key: Done → Start
 	h.startTask("second", "5m")
-	h.pressS()
+	h.pressStats()
 	if h.m.screen != screenStats {
 		t.Fatal("Stats did not open from Active")
 	}

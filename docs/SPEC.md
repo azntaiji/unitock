@@ -57,9 +57,13 @@ estimate minus elapsed; below zero it is **overtime**.
 - R-05 If a task is active at launch, the app opens on the Active screen with the timer
   where wall-clock time puts it. If the task ran out while the app was closed, the alert
   (R-30) fires immediately. A task paused at quit is still paused at launch.
-- R-06 `q` quits from any screen except while typing in a text input; `ctrl+c` always
-  quits. Quitting never ends or changes the active task.
+- R-06 `ctrl+c` quits from any screen and state, including while typing and while the
+  alert is open. App-wide commands are `ctrl` chords so they never clash with typing:
+  `ctrl+c` quit, `ctrl+s` stats (R-24), `ctrl+o` alarm sound (R-51); plain letters
+  never quit. Quitting never ends or changes the active task.
 - R-07 Every screen shows a key-hint bar listing the keys that work in its current state.
+  Where they do not fit on one line, the screen's own keys come first and the `ctrl`
+  chords on a second line.
 - R-08 Below a minimum terminal size of 60×20 the app shows a "terminal too small"
   message instead of the screen; it redraws correctly on resize.
 - R-09 Only one instance runs per data directory (D-12). A second instance exits with
@@ -79,9 +83,9 @@ estimate minus elapsed; below zero it is **overtime**.
 - R-13 `tab` cycles focus project → name → duration → button → project; `↑`/`↓` move
   focus. `enter` starts the task from any focus. While the project suggestions (R-26) are
   open, `tab`, `↑`/`↓`, `enter`, and `esc` work them first.
-- R-14 While a text input has focus, printable keys type into it. `s` (stats), `a`
-  (alarm sound, R-51), and `q` (quit) work only when the button has focus; `esc` moves
-  focus to the button. The key hints change with focus.
+- R-14 While a text input has focus, printable keys type into it. `ctrl+s`, `ctrl+o`,
+  and `ctrl+c` (R-06) work from every focus; `esc` moves focus to the button. The key
+  hints change with focus.
 - R-15 Task name is required, trimmed, and at most 100 characters. Starting with an empty
   name or invalid duration shows an inline error and does not start.
 - R-16 Starting creates the task and opens the Active screen.
@@ -122,7 +126,8 @@ estimate minus elapsed; below zero it is **overtime**.
   cancelled and opens the Start screen; `n`/`esc` returns unchanged.
 - R-23 `e` marks the task completed, shows a random message from a built-in list of at
   least 20 motivational messages, and on any key opens the Start screen.
-- R-24 `s` opens the Stats screen; the timer keeps running.
+- R-24 `ctrl+s` opens the Stats screen (from Start, or from Active when no input,
+  confirmation, or alert is open); the timer keeps running.
 
 ### Time-up alert
 
@@ -131,7 +136,7 @@ estimate minus elapsed; below zero it is **overtime**.
   a looping alarm sound.
 - R-31 The alert offers Extend and Mark as completed (`←`/`→`/`tab` to choose, `enter`
   to select; `d` and `e` also work). The sound stops only when one is chosen or the app
-  quits. Other screen keys are inactive while the alert is open, except `q`/`ctrl+c`.
+  quits. Other screen keys are inactive while the alert is open, except `ctrl+c`.
 - R-32 Extend from the alert opens the duration input; the entered amount becomes the new
   remaining time, counted from now (D-10). Escaping the input returns to the alert.
 - R-33 Notifications use `osascript` on macOS and `notify-send` on Ubuntu (D-13). If the
@@ -142,12 +147,13 @@ estimate minus elapsed; below zero it is **overtime**.
 
 ### Alarm sound
 
-- R-51 From the Start screen with the button focused, `a` opens the Sound screen: Chime,
-  Bell, Beep, Marimba, and Rising, with the saved choice marked and highlighted. The
-  default is Chime (D-16).
+- R-51 The Start screen shows the saved sound beside the Start task button as
+  `Alarm: <name>`. `ctrl+o` on the Start screen, from any focus, opens the Sound screen:
+  Chime, Bell, Beep, Marimba, and Rising, with the saved choice marked and highlighted.
+  The default is Chime (D-16).
 - R-52 `↑`/`↓` move the highlight and play the highlighted sound once, stopping any
   sound still previewing. `enter` saves the highlighted sound and returns to Start; `esc`
-  returns without changing it. Leaving the screen stops the preview. `q` quits.
+  returns without changing it. Leaving the screen stops the preview.
 - R-53 The choice is stored in the database, survives restarts, and is what the next
   alarm plays. A missing or unknown stored value means Chime. If saving fails, the
   screen shows the error and keeps the previous choice.
@@ -167,7 +173,7 @@ estimate minus elapsed; below zero it is **overtime**.
 - R-44 Only completed tasks count in stats, attributed to the local date they were
   completed. Cancelled and active tasks are excluded.
 - R-45 With no completed tasks in the period, the chart area shows an empty-state message.
-- R-46 `esc` returns to the previous screen in the state it was left. `q` quits.
+- R-46 `esc` returns to the previous screen in the state it was left.
 - R-47 `e` exports all data (R-50) and shows the written path or the error in the screen.
 
 ### Export
@@ -250,8 +256,8 @@ On each of macOS and Ubuntu, with `--data-dir` pointing at a scratch directory:
 2. Press `p`, wait 10 s, press `p`: the timer lost no time while paused.
 3. Press `d`, enter `1m`: the row reads `Estimate 01:00 + 01:00 added` and remaining
    grows by a minute.
-4. Press `q`, wait 20 s, relaunch: the task resumes with 20 s less remaining.
-5. Press `s` and wait for zero on the Stats screen: the alert appears over Stats, a
+4. Press `ctrl+c`, wait 20 s, relaunch: the task resumes with 20 s less remaining.
+5. Press `ctrl+s` and wait for zero on the Stats screen: the alert appears over Stats, a
    system notification shows, and the chime loops. Choose Extend `1m`: sound stops,
    remaining is 1:00.
 6. Let it run out again; choose Mark as completed: a motivational message shows, then the
@@ -263,10 +269,12 @@ On each of macOS and Ubuntu, with `--data-dir` pointing at a scratch directory:
 9. Press `e`: a JSON file appears in the working directory with both tasks, pauses, and
    extensions, matching the export format.
 10. Start a second instance with the same `--data-dir`: it exits 1 naming the lock file.
-11. In the first instance, from Start press `esc`, then `a`: Chime is marked. Press `↓`
-    through the list: each sound plays once and they are clearly different. Choose
-    Bell with `enter`, quit, relaunch, start a `10s` task, and wait: the alert loops
-    Bell. Complete it.
+11. In the first instance, on Start the button shows `Alarm: Chime`. While typing in
+    the Task name input, press `ctrl+o`: the Sound screen opens with Chime marked.
+    Press `↓` through the list: each sound plays once and they are clearly different.
+    Choose Bell with `enter`: Start shows `Alarm: Bell`. Quit, relaunch, start a `10s`
+    task, and wait: the alert loops Bell. Complete it. Pressing `q` or `s` anywhere
+    never quits or opens Stats.
 
 ## Open questions
 

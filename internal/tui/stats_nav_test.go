@@ -9,27 +9,33 @@ import (
 )
 
 // pressS sends `s` and, if it opened Stats, runs the data load as the runtime would.
-func (h *harness) pressS() {
+// pressStats presses ctrl+s and, if Stats opened, delivers its loaded data.
+func (h *harness) pressStats() {
 	h.t.Helper()
-	next, cmd := h.m.Update(key("s"))
+	next, cmd := h.m.Update(key("ctrl+s"))
 	h.m = next.(Model)
 	if h.m.screen == screenStats && cmd != nil {
 		h.send(cmd())
 	}
 }
 
-// P3-04: `s` on Start works only with the button focused (R-14); in an input it types.
-func TestStatsFromStartButtonOnly(t *testing.T) {
+// P3-04, R-14, R-24: ctrl+s opens Stats from Start in any focus, even while typing;
+// plain s types in an input and does nothing on the button.
+func TestStatsFromStartAnyFocus(t *testing.T) {
 	h := newHarness(t)
-	h.pressS()
+	h.typeText("s")
 	if h.m.screen != screenStart || h.m.start.project.Value() != "s" {
 		t.Fatalf("s in the Project input: screen %d, value %q; want typed text", h.m.screen, h.m.start.project.Value())
 	}
-	h.press("esc") // focus the button
+	h.press("esc", "esc", "s") // button: s is not a command (R-06)
+	if h.m.screen != screenStart {
+		t.Fatalf("plain s on the button opened screen %d", h.m.screen)
+	}
+	h.press("tab") // back into the Project input
 	before := h.m.start
-	h.pressS()
+	h.pressStats()
 	if h.m.screen != screenStats || !h.m.stats.loaded {
-		t.Fatalf("s on the button: screen %d loaded %v; want Stats", h.m.screen, h.m.stats.loaded)
+		t.Fatalf("ctrl+s in the Project input: screen %d loaded %v; want Stats", h.m.screen, h.m.stats.loaded)
 	}
 	if !strings.Contains(h.view(), "tab period") {
 		t.Errorf("Stats hints missing:\n%s", h.view())
@@ -46,7 +52,7 @@ func TestStatsFromStartButtonOnly(t *testing.T) {
 func TestStatsTabCyclesAndReopensOnSevenDays(t *testing.T) {
 	h := newHarness(t)
 	h.press("esc")
-	h.pressS()
+	h.pressStats()
 	var got []stats.Period
 	for range 4 {
 		got = append(got, h.m.stats.period)
@@ -59,7 +65,7 @@ func TestStatsTabCyclesAndReopensOnSevenDays(t *testing.T) {
 		}
 	}
 	h.press("tab", "esc")
-	h.pressS()
+	h.pressStats()
 	if h.m.stats.period != stats.Days7 {
 		t.Errorf("reopened on %v, want 7 days", h.m.stats.period)
 	}
@@ -70,7 +76,7 @@ func TestStatsTabCyclesAndReopensOnSevenDays(t *testing.T) {
 func TestStatsFromActiveTimerKeepsRunning(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "25m")
-	h.pressS()
+	h.pressStats()
 	if h.m.screen != screenStats {
 		t.Fatalf("s on Active did not open Stats")
 	}
@@ -91,19 +97,23 @@ func TestStatsFromActiveTimerKeepsRunning(t *testing.T) {
 	}
 }
 
-// `s` does nothing while Active has an input or confirmation open.
+// ctrl+s does nothing while Active has an input or confirmation open (R-24).
 func TestStatsNotFromActiveDialogs(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "25m")
 	h.press("n") // cancel confirmation
-	h.pressS()
+	h.pressStats()
 	if h.m.screen != screenActive {
 		t.Errorf("s with the cancel confirmation open opened screen %d", h.m.screen)
 	}
 	h.press("esc", "d")
-	h.pressS()
-	if h.m.screen != screenActive || h.m.active.ext.input.Value() != "s" {
-		t.Errorf("s in the duration input: screen %d value %q; want typed", h.m.screen, h.m.active.ext.input.Value())
+	h.pressStats()
+	if h.m.screen != screenActive || h.m.active.ext.input.Value() != "" {
+		t.Errorf("ctrl+s in the duration input: screen %d value %q; want Active, nothing typed", h.m.screen, h.m.active.ext.input.Value())
+	}
+	h.typeText("s")
+	if h.m.active.ext.input.Value() != "s" {
+		t.Errorf("s in the duration input: value %q; want typed", h.m.active.ext.input.Value())
 	}
 }
 
@@ -112,7 +122,7 @@ func TestStatsNotFromActiveDialogs(t *testing.T) {
 func TestStatsAlertOverlayComplete(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "1m")
-	h.pressS()
+	h.pressStats()
 	h.clock.Advance(time.Minute)
 	h.tick()
 	v := h.view()
@@ -136,7 +146,7 @@ func TestStatsAlertOverlayComplete(t *testing.T) {
 func TestStatsAlertOverlayExtend(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "1m")
-	h.pressS()
+	h.pressStats()
 	h.clock.Advance(time.Minute)
 	h.tick()
 	h.press("d")
@@ -149,9 +159,13 @@ func TestStatsAlertOverlayExtend(t *testing.T) {
 func TestStatsQuit(t *testing.T) {
 	h := newHarness(t)
 	h.press("esc")
-	h.pressS()
+	h.pressStats()
 	h.press("q")
+	if h.quit || h.m.screen != screenStats {
+		t.Error("plain q acted on Stats")
+	}
+	h.press("ctrl+c")
 	if !h.quit {
-		t.Error("q on Stats did not quit")
+		t.Error("ctrl+c on Stats did not quit")
 	}
 }

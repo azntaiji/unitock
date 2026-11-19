@@ -95,9 +95,6 @@ func (m Model) updateSound(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, saveSound(m.deps, alarm.Sounds[m.snd.cursor])
 	case "esc":
 		return m.closeSound(), nil
-	case "q":
-		m.deps.Alarm.Stop()
-		return m, tea.Quit
 	}
 	return m, nil
 }
@@ -139,4 +136,4 @@ func (m Model) soundView() string {
 	return lipgloss.JoinVertical(lipgloss.Left, lines...)
 }
 
-func soundHints() string { return "↑/↓ choose and play · enter save · esc back · q quit" }
+func soundHints() string { return "↑/↓ choose and play · enter save · esc back · ctrl+c quit" }

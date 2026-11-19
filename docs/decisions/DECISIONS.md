@@ -204,3 +204,6 @@ recorded audio files (licensing, binary size); a silent option (breaks the "unmi
 alert" goal).
 **Consequences:** amends D-07's table list and D-13's single chime; R-14, R-34 amended;
 the Ubuntu end-to-end check must hear every sound through `paplay` and `aplay`.
+**Amended:** azntaiji, 2026-11-19. The Sound screen opens with `ctrl+o` from any focus
+on Start, not `a` on the button; Start shows `Alarm: <name>` beside the button. Part of
+making app-wide commands `ctrl` chords only (R-06): `ctrl+s` stats, `ctrl+c` quit.

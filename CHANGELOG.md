@@ -9,13 +9,18 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Choose the alarm sound: press `a` on the Start screen (with the button focused) to
-  open the Sound screen and pick Chime (default), Bell, Beep, Marimba, or Rising. Each
-  plays once as you highlight it; `enter` saves, `esc` cancels. The choice is kept in
-  the database (a new `settings` table, migrated on startup).
+- Choose the alarm sound: press `ctrl+o` on the Start screen to open the Sound screen
+  and pick Chime (default), Bell, Beep, Marimba, or Rising. Each plays once as you
+  highlight it; `enter` saves, `esc` cancels. The choice is kept in the database (a new
+  `settings` table, migrated on startup) and shown beside the Start task button as
+  `Alarm: <name>`.
 
 ### Changed
 
+- App-wide commands are now `ctrl` chords that work from any focus, including while
+  typing: `ctrl+s` opens Stats, `ctrl+o` opens the Sound screen, and `ctrl+c` quits.
+  Plain `q` and `s` no longer quit or open Stats on any screen. Key hints that do not
+  fit on one line show the chords on a second line.
 - The line under the Active screen's progress bar shows elapsed time and the estimate
   (`Elapsed 12:31 · Estimate 25:00`), and once time has been added, the original
   estimate and the total added (`Estimate 25:00 + 10:00 added`). It no longer repeats

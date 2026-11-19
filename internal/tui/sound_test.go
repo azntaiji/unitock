@@ -13,12 +13,12 @@ import (
 	"github.com/azntaiji/unitock/internal/task"
 )
 
-// openSoundScreen moves Start's focus to the button and presses a.
+// openSoundScreen presses ctrl+o on Start.
 func (h *harness) openSoundScreen() {
 	h.t.Helper()
-	h.press("esc", "a")
+	h.press("ctrl+o")
 	if h.m.screen != screenSound {
-		h.t.Fatalf("a did not open the Sound screen (screen %d)", h.m.screen)
+		h.t.Fatalf("ctrl+o did not open the Sound screen (screen %d)", h.m.screen)
 	}
 }
 
@@ -31,25 +31,32 @@ func (h *harness) savedSound() (string, bool) {
 	return v, ok
 }
 
-// R-51, R-14: a opens the Sound screen only with the button focused; in an input it
-// types.
-func TestSoundScreenOpensFromStartButtonOnly(t *testing.T) {
+// R-51, R-14: ctrl+o opens the Sound screen from any Start focus, even while typing;
+// plain a types in an input and does nothing on the button. Start shows the saved
+// sound beside the button.
+func TestSoundScreenOpensFromStartAnyFocus(t *testing.T) {
 	h := newHarness(t)
-	h.press("tab") // Task name
+	if v := ansi.Strip(h.view()); !strings.Contains(v, "Start task  │  Alarm: Chime") {
+		t.Errorf("Start lacks Alarm: Chime beside the button:\n%s", v)
+	}
+	h.press("esc", "a")
+	if h.m.screen != screenStart {
+		t.Fatalf("plain a on the button: screen %d, want Start", h.m.screen)
+	}
+	h.press("tab", "tab") // Task name
 	h.typeText("a")
 	if h.m.screen != screenStart || h.m.start.name.Value() != "a" {
 		t.Fatalf("a in the name input: screen %d, name %q", h.m.screen, h.m.start.name.Value())
 	}
-	h.press("esc")
-	if !strings.Contains(h.view(), "a sound") {
-		t.Errorf("Start hints with the button focused lack a sound:\n%s", h.view())
+	if !strings.Contains(h.view(), "ctrl+o sound") {
+		t.Errorf("Start hints while typing lack ctrl+o sound:\n%s", h.view())
 	}
-	h.press("a")
+	h.press("ctrl+o")
 	if h.m.screen != screenSound {
-		t.Fatalf("a on the button: screen %d, want Sound", h.m.screen)
+		t.Fatalf("ctrl+o while typing: screen %d, want Sound", h.m.screen)
 	}
 	v := ansi.Strip(h.view())
-	for _, want := range []string{"Alarm sound", "Chime  (current)", "Bell", "Beep", "Marimba", "Rising", "↑/↓ choose and play"} {
+	for _, want := range []string{"Alarm sound", "Chime  (current)", "Bell", "Beep", "Marimba", "Rising", "↑/↓ choose and play", "ctrl+c quit"} {
 		if !strings.Contains(v, want) {
 			t.Errorf("Sound screen lacks %q:\n%s", want, v)
 		}
@@ -93,7 +100,10 @@ func TestSoundScreenEnterSavesAndAlarmUsesIt(t *testing.T) {
 	if h.alarm.sound != alarm.Bell || h.alarm.previewing {
 		t.Errorf("alarm sound %q, previewing %v; want bell, stopped", h.alarm.sound, h.alarm.previewing)
 	}
-	h.press("a")
+	if v := ansi.Strip(h.view()); !strings.Contains(v, "Alarm: Bell") {
+		t.Errorf("Start does not show the new sound:\n%s", v)
+	}
+	h.press("ctrl+o")
 	if h.m.snd.cursor != 1 || !strings.Contains(ansi.Strip(h.view()), "Bell  (current)") {
 		t.Errorf("reopened: cursor %d\n%s", h.m.snd.cursor, ansi.Strip(h.view()))
 	}
@@ -108,8 +118,9 @@ func TestSoundScreenEnterSavesAndAlarmUsesIt(t *testing.T) {
 	}
 }
 
-// R-52: esc returns without changing the choice and stops the preview; q quits.
-func TestSoundScreenEscLeavesChoiceAndQQuits(t *testing.T) {
+// R-52, R-06: esc returns without changing the choice and stops the preview; plain q
+// does nothing and ctrl+c quits.
+func TestSoundScreenEscLeavesChoiceAndCtrlCQuits(t *testing.T) {
 	h := newHarness(t)
 	h.openSoundScreen()
 	h.press("down", "down") // Beep, previewing
@@ -120,10 +131,13 @@ func TestSoundScreenEscLeavesChoiceAndQQuits(t *testing.T) {
 	if v, ok := h.savedSound(); ok {
 		t.Errorf("esc stored %q", v)
 	}
-	h.press("a", "down")
-	h.press("q")
+	h.press("ctrl+o", "down", "q")
+	if h.quit || h.m.screen != screenSound {
+		t.Errorf("plain q on Sound: quit %v, screen %d", h.quit, h.m.screen)
+	}
+	h.press("ctrl+c")
 	if !h.quit || h.alarm.previewing {
-		t.Errorf("q: quit %v, previewing %v", h.quit, h.alarm.previewing)
+		t.Errorf("ctrl+c: quit %v, previewing %v", h.quit, h.alarm.previewing)
 	}
 }
 

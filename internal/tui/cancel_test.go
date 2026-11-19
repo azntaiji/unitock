@@ -85,8 +85,12 @@ func TestCancelOtherKeysInactive(t *testing.T) {
 		t.Fatalf("keys acted during confirmation: paused=%v screen=%d ext=%v", h.m.active.task.Paused(), h.m.screen, h.m.active.ext.open)
 	}
 	h.press("q")
+	if h.quit || !h.m.active.conf.open {
+		t.Error("plain q acted during the confirmation")
+	}
+	h.press("ctrl+c")
 	if !h.quit {
-		t.Error("q did not quit from the confirmation")
+		t.Error("ctrl+c did not quit from the confirmation")
 	}
 }
 

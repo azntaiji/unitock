@@ -60,7 +60,7 @@ func (m activeModel) checkTimeUp(now time.Time, d Deps) activeModel {
 }
 
 // alertKey handles a key while the alert is open (R-31): ←/→/tab choose, enter selects,
-// d and e select directly, q quits. Other keys are inactive. Choosing either option
+// d and e select directly; ctrl+c quits (root model). Other keys are inactive. Choosing either option
 // stops the sound.
 func (m activeModel) alertKey(msg tea.KeyPressMsg, d Deps) (activeModel, tea.Cmd) {
 	switch k := msg.String(); k {
@@ -75,9 +75,6 @@ func (m activeModel) alertKey(msg tea.KeyPressMsg, d Deps) (activeModel, tea.Cmd
 		d.Alarm.Stop()
 		m.alert.open = false
 		return m.openExtend(true) // D-10: remaining becomes the amount entered (R-32)
-	case "q":
-		d.Alarm.Stop()
-		return m, tea.Quit
 	}
 	return m, nil
 }

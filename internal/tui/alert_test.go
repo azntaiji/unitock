@@ -113,9 +113,12 @@ func TestAlertOtherKeysInactiveAndQuit(t *testing.T) {
 	if h.m.active.task.Paused() || h.m.active.conf.open || !h.m.active.alert.open {
 		t.Fatalf("keys acted under the alert: paused %v confirm %v", h.m.active.task.Paused(), h.m.active.conf.open)
 	}
-	h.press("q")
-	if !h.quit || h.alarm.playing {
-		t.Errorf("q: quit %v playing %v", h.quit, h.alarm.playing)
+	h.press("q", "s")
+	if h.quit || !h.alarm.playing || !h.m.active.alert.open {
+		t.Errorf("q, s under the alert: quit %v playing %v open %v; want inactive", h.quit, h.alarm.playing, h.m.active.alert.open)
+	}
+	if !strings.Contains(h.view(), "ctrl+c quit") {
+		t.Errorf("alert hints lack ctrl+c quit:\n%s", h.view())
 	}
 }
 
@@ -133,7 +136,7 @@ func TestAlertCtrlCStopsSound(t *testing.T) {
 func TestAlertOnRelaunchInOvertime(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "1m")
-	h.press("q")
+	h.press("ctrl+c")
 	h.clock.Advance(10 * time.Minute)
 	alarm := &fakeAlarm{}
 	d := h.m.deps

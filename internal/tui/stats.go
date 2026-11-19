@@ -259,4 +259,4 @@ func scorecard(title string, c card, th theme) string {
 	))
 }
 
-func (m statsModel) hints() string { return "tab period · e export · esc back · q quit" }
+func (m statsModel) hints() string { return "tab period · e export · esc back · ctrl+c quit" }

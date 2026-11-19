@@ -255,9 +255,6 @@ func (m startModel) update(msg tea.Msg, d Deps) (startModel, tea.Cmd) {
 			return m, nil
 		}
 		if !m.inputFocused() {
-			if msg.String() == "q" {
-				return m, tea.Quit
-			}
 			return m, nil
 		}
 	}
@@ -348,7 +345,7 @@ func (m startModel) dropdownView() []string {
 	return out
 }
 
-func (m startModel) view() string {
+func (m startModel) view(alarmLabel string) string {
 	label := func(s string, f focus) string {
 		if m.focus == f {
 			return focusedStyle.Render("> " + s)
@@ -374,7 +371,7 @@ func (m startModel) view() string {
 		label("Task duration", focusDuration),
 		"  "+m.duration.View(),
 		"",
-		button.MarginLeft(2).Render("Start task"),
+		lipgloss.JoinHorizontal(lipgloss.Center, button.MarginLeft(2).Render("Start task"), "  "+dimStyle.Render("Alarm: "+alarmLabel)),
 	)
 	if m.err != "" {
 		lines = append(lines, "", errStyle.Render("  "+m.err))
@@ -389,10 +386,11 @@ func (m startModel) hints() string {
 		if m.pick >= 0 {
 			enter = "enter choose"
 		}
-		return "tab complete · ↑/↓ choose · " + enter + " · esc close · ctrl+c quit"
+		// One line, so the screen still fits with the dropdown open (R-08).
+		return "tab complete · " + enter + " · esc close · ctrl+c quit"
 	}
 	if m.inputFocused() {
-		return "tab next · ↑/↓ move · enter start · esc button · ctrl+c quit"
+		return "tab next · enter start · esc button\n" + chordHints("ctrl+s stats", "ctrl+o sound")
 	}
-	return "tab next · ↑/↓ move · enter start · s stats · a sound · q quit"
+	return "tab next · enter start\n" + chordHints("ctrl+s stats", "ctrl+o sound")
 }

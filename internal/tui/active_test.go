@@ -132,8 +132,12 @@ func TestActiveQuitLeavesTaskActive(t *testing.T) {
 	h := newHarness(t)
 	tk := h.startTask("write", "25m")
 	h.press("q")
+	if h.quit {
+		t.Fatal("plain q quit (R-06)")
+	}
+	h.press("ctrl+c")
 	if !h.quit {
-		t.Fatal("q did not quit")
+		t.Fatal("ctrl+c did not quit")
 	}
 	got, err := h.store.Active(context.Background())
 	if err != nil || got.ID != tk.ID {
@@ -157,10 +161,17 @@ func TestActiveCompleteErrorStays(t *testing.T) {
 func TestActiveHints(t *testing.T) {
 	h := newHarness(t)
 	h.startTask("write", "25m")
-	for _, k := range []string{"e complete", "q quit"} {
+	if got, want := h.m.active.hints(), "p pause · d add time · n cancel · e complete\nctrl+s stats · ctrl+c quit"; got != want {
+		t.Errorf("hints = %q, want %q", got, want)
+	}
+	for _, k := range []string{"e complete", "ctrl+s stats · ctrl+c quit"} {
 		if !strings.Contains(h.view(), k) {
-			t.Errorf("hints lack %q", k)
+			t.Errorf("view lacks hint %q", k)
 		}
+	}
+	h.press("p")
+	if !strings.HasPrefix(h.m.active.hints(), "p resume · ") {
+		t.Errorf("paused hints = %q", h.m.active.hints())
 	}
 }
 
